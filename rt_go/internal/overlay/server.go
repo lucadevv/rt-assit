@@ -76,9 +76,11 @@ func (s *Server) Hub() *Hub {
 func handleWebSocket(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("websocket upgrade error: %v", err)
+		log.Printf("[WebSocket] upgrade error: %v", err)
 		return
 	}
+
+	log.Printf("[WebSocket] Client connected! Total clients: %d", len(hub.clients)+1)
 
 	client := &Client{
 		hub:  hub,
@@ -96,6 +98,7 @@ func handleWebSocket(hub *Hub, w http.ResponseWriter, r *http.Request) {
 func (c *Client) writePump() {
 	defer func() {
 		c.hub.unregister <- c
+		log.Printf("[WebSocket] Client disconnected")
 		if conn, ok := c.conn.(*websocket.Conn); ok {
 			conn.Close()
 		}
@@ -103,7 +106,9 @@ func (c *Client) writePump() {
 
 	for message := range c.send {
 		if conn, ok := c.conn.(*websocket.Conn); ok {
+			log.Printf("[WebSocket] Sending message: %s", string(message))
 			if err := conn.WriteMessage(websocket.TextMessage, message); err != nil {
+				log.Printf("[WebSocket] Write error: %v", err)
 				return
 			}
 		}

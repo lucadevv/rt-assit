@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -22,45 +23,73 @@ type Transcript struct {
 	EndTime    time.Time
 	Confidence float64
 	IsFinal    bool
+	Speaker    int    // Speaker ID (0 = unknown, 1 = speaker 1, etc.)
+	Words      []Word // Individual words with timing
+}
+
+// Word represents a single word with timing and speaker info.
+type Word struct {
+	Text       string  `json:"word"`
+	Start      float64 `json:"start"`
+	End        float64 `json:"end"`
+	Speaker    int     `json:"speaker"`
+	Confidence float64 `json:"confidence"`
 }
 
 // DeepgramConfig holds Deepgram client configuration.
 type DeepgramConfig struct {
-	APIKey     string
-	Model      string
-	Language   string
-	Encoding   string
-	SampleRate int
-	Channels   int
-	Punctuate  bool
-	UseFlux    bool
+	APIKey         string
+	Model          string
+	Language       string
+	Encoding       string
+	SampleRate     int
+	Channels       int
+	Punctuate      bool
+	UseFlux        bool
+	UtteranceEndMs int  // Silence ms to detect end of utterance (0 = disabled)
+	Endpointing    int  // Endpointing in ms (0 = default 10ms, -1 = disabled)
+	VADEvents      bool // Enable VAD events
 }
 
 // DefaultDeepgramConfig returns default configuration.
 func DefaultDeepgramConfig() DeepgramConfig {
 	return DeepgramConfig{
-		Model:      "nova-2",
-		Language:   "es-419", // Spanish (Latin America)
-		Punctuate:  true,
-		Encoding:   "linear16",
-		Channels:   1,
-		SampleRate: 48000,
-		UseFlux:    false,
+		Model:          "nova-2", // Default to nova-2, works with most features
+		Language:       "es-419", // Spanish (Latin America)
+		Punctuate:      true,
+		Encoding:       "linear16",
+		Channels:       1,
+		SampleRate:     48000,
+		UseFlux:        false,
+		UtteranceEndMs: 0,     // Disabled by default - enable with DEEPGRAM_UTTERANCE_END_MS
+		Endpointing:    0,     // Disabled by default - enable with DEEPGRAM_ENDPOINTING
+		VADEvents:      false, // Disabled by default
 	}
 }
 
 // DeepgramClient handles Deepgram streaming STT using native WebSocket.
 type DeepgramClient struct {
-	conn   *websocket.Conn
-	ctx    context.Context
-	outCh  chan<- Transcript
-	doneCh chan struct{}
+	conn           *websocket.Conn
+	ctx            context.Context
+	outCh          chan<- Transcript
+	utteranceEndCh chan<- struct{}
+	doneCh         chan struct{}
+	writeMu        sync.Mutex // Protects concurrent writes to WebSocket
+}
+
+// NewDeepgramClientWithUtteranceEnd creates a new Deepgram STT client with utterance end events.
+func NewDeepgramClientWithUtteranceEnd(apiKey string, outCh chan<- Transcript, utteranceEndCh chan<- struct{}) *DeepgramClient {
+	return &DeepgramClient{
+		outCh:          outCh,
+		utteranceEndCh: utteranceEndCh,
+	}
 }
 
 // NewDeepgramClient creates a new Deepgram STT client.
-func NewDeepgramClient(apiKey string, outCh chan<- Transcript) *DeepgramClient {
+func NewDeepgramClient(apiKey string, outCh chan<- Transcript, utteranceEndCh chan<- struct{}) *DeepgramClient {
 	return &DeepgramClient{
-		outCh: outCh,
+		outCh:          outCh,
+		utteranceEndCh: utteranceEndCh,
 	}
 }
 
@@ -76,11 +105,17 @@ func (d *DeepgramClient) Start(ctx context.Context, cfg DeepgramConfig) error {
 	query.Set("sample_rate", fmt.Sprintf("%d", cfg.SampleRate))
 	query.Set("channels", fmt.Sprintf("%d", cfg.Channels))
 	query.Set("interim_results", "true")
+
 	if cfg.Punctuate {
 		query.Set("punctuate", "true")
 	}
 	if cfg.Language != "" && !cfg.UseFlux {
 		query.Set("language", cfg.Language)
+	}
+
+	// Utterance detection - key for conversation flow
+	if cfg.UtteranceEndMs > 0 {
+		query.Set("utterance_end_ms", fmt.Sprintf("%d", cfg.UtteranceEndMs))
 	}
 
 	u := url.URL{
@@ -138,9 +173,9 @@ func (d *DeepgramClient) Start(ctx context.Context, cfg DeepgramConfig) error {
 	return nil
 }
 
-// keepAlive sends newline every 5 seconds to prevent timeout
+// keepAlive sends ping every 25 seconds to prevent timeout (Deepgram timeout is 30s)
 func (d *DeepgramClient) keepAlive() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(25 * time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -149,10 +184,11 @@ func (d *DeepgramClient) keepAlive() {
 			return
 		case <-ticker.C:
 			if d.conn != nil {
-				// Send newline which is valid JSON
-				if err := d.conn.WriteMessage(websocket.TextMessage, []byte("\n")); err != nil {
+				d.writeMu.Lock()
+				if err := d.conn.WriteJSON(map[string]interface{}{}); err != nil {
 					log.Printf("[Deepgram] KeepAlive error: %v", err)
 				}
+				d.writeMu.Unlock()
 			}
 		}
 	}
@@ -173,13 +209,25 @@ func (d *DeepgramClient) readMessages() {
 			return
 		}
 
+		// Read the raw message first to check if it's empty
+		rawData, err := io.ReadAll(reader)
+		if err != nil {
+			if !strings.Contains(err.Error(), "EOF") {
+				log.Printf("[Deepgram] Read error: %v", err)
+			}
+			continue
+		}
+
+		// Skip empty or whitespace-only messages (keepalive responses)
+		trimmed := strings.TrimSpace(string(rawData))
+		if len(trimmed) == 0 {
+			continue
+		}
+
 		// Decode JSON message
 		var msg deepgramMessage
-		if err := json.NewDecoder(reader).Decode(&msg); err != nil {
-			// Ignore EOF errors from keepalive messages
-			if !strings.Contains(err.Error(), "EOF") {
-				log.Printf("[Deepgram] Decode error: %v", err)
-			}
+		if err := json.Unmarshal(rawData, &msg); err != nil {
+			log.Printf("[Deepgram] Decode error: %v (raw: %s)", err, trimmed[:min(len(trimmed), 100)])
 			continue
 		}
 
@@ -187,21 +235,34 @@ func (d *DeepgramClient) readMessages() {
 		if msg.Type == "Results" && msg.Channel != nil && len(msg.Channel.Alternatives) > 0 {
 			alt := msg.Channel.Alternatives[0]
 			if alt.Transcript != "" {
+				// Parse words and detect dominant speaker
+				words := parseWords(alt.Words)
+				speaker := detectDominantSpeaker(alt.Words)
+
 				transcript := Transcript{
 					Text:       alt.Transcript,
 					Confidence: alt.Confidence,
 					IsFinal:    msg.IsFinal,
+					Speaker:    speaker,
+					Words:      words,
 				}
 				select {
 				case d.outCh <- transcript:
 				default:
 				}
-				log.Printf("[Deepgram] Transcript: %q (final=%v)", alt.Transcript, msg.IsFinal)
+
+				if msg.IsFinal {
+					log.Printf("[Deepgram] Transcript: %q (final=%v, speaker=%d)", alt.Transcript, msg.IsFinal, speaker)
+				}
 			}
 		} else if msg.Type == "SpeechStarted" {
 			log.Printf("[Deepgram] Speech started")
 		} else if msg.Type == "UtteranceEnd" {
 			log.Printf("[Deepgram] Utterance end")
+			select {
+			case d.utteranceEndCh <- struct{}{}:
+			default:
+			}
 		} else if msg.Type == "Error" && msg.Description != "" {
 			log.Printf("[Deepgram] Error: %s", msg.Description)
 		} else if msg.Type == "" && msg.Channel == nil {
@@ -215,6 +276,9 @@ func (d *DeepgramClient) Send(audio []byte) error {
 	if d.conn == nil {
 		return fmt.Errorf("not connected")
 	}
+
+	d.writeMu.Lock()
+	defer d.writeMu.Unlock()
 	return d.conn.WriteMessage(websocket.BinaryMessage, audio)
 }
 
@@ -223,6 +287,9 @@ func (d *DeepgramClient) SendFinalize() error {
 	if d.conn == nil {
 		return fmt.Errorf("not connected")
 	}
+
+	d.writeMu.Lock()
+	defer d.writeMu.Unlock()
 	return d.conn.WriteJSON(map[string]bool{"finalize": true})
 }
 
@@ -257,4 +324,59 @@ type channel struct {
 type alternative struct {
 	Transcript string  `json:"transcript"`
 	Confidence float64 `json:"confidence"`
+	Words      []word  `json:"words,omitempty"`
+}
+
+// word represents a single word from Deepgram.
+type word struct {
+	Word       string  `json:"word"`
+	Start      float64 `json:"start"`
+	End        float64 `json:"end"`
+	Confidence float64 `json:"confidence"`
+	Speaker    int     `json:"speaker"`
+}
+
+// parseWords converts Deepgram word format to our Word format.
+func parseWords(words []word) []Word {
+	if len(words) == 0 {
+		return nil
+	}
+
+	result := make([]Word, len(words))
+	for i, w := range words {
+		result[i] = Word{
+			Text:       w.Word,
+			Start:      w.Start,
+			End:        w.End,
+			Speaker:    w.Speaker,
+			Confidence: w.Confidence,
+		}
+	}
+	return result
+}
+
+// detectDominantSpeaker finds the most common speaker in the words.
+func detectDominantSpeaker(words []word) int {
+	if len(words) == 0 {
+		return 0
+	}
+
+	speakerCounts := make(map[int]int)
+	for _, w := range words {
+		if w.Speaker >= 0 {
+			speakerCounts[w.Speaker]++
+		}
+	}
+
+	// Find speaker with most words
+	maxCount := 0
+	dominantSpeaker := 0
+	for speaker, count := range speakerCounts {
+		if count > maxCount {
+			maxCount = count
+			dominantSpeaker = speaker
+		}
+	}
+
+	return dominantSpeaker
 }

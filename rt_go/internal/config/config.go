@@ -16,9 +16,10 @@ type Config struct {
 	DeepgramAPIKey string
 
 	// LLM
-	LLMAPIKey  string
-	LLMBaseURL string
-	LLMModel   string
+	LLMProvider string
+	LLMAPIKey   string
+	LLMBaseURL  string
+	LLMModel    string
 
 	// Overlay WebSocket
 	OverlayPort int
@@ -37,6 +38,8 @@ type Config struct {
 
 // Load reads configuration from environment variables and defaults.
 func Load() (*Config, error) {
+	provider := getEnv("LLM_PROVIDER", "openai")
+
 	cfg := &Config{
 		// Chrome CDP
 		ChromePort: getEnvInt("CHROME_PORT", 9222),
@@ -44,10 +47,11 @@ func Load() (*Config, error) {
 		// Deepgram
 		DeepgramAPIKey: getEnv("DEEPGRAM_API_KEY", ""),
 
-		// LLM
-		LLMAPIKey:  getEnv("LLM_API_KEY", ""),
-		LLMBaseURL: getEnv("LLM_BASE_URL", "https://open.bigmodel.cn/api/paas/v4"),
-		LLMModel:   getEnv("LLM_MODEL", "glm-4-flash"),
+		// LLM - defaults based on provider
+		LLMProvider: provider,
+		LLMAPIKey:   getEnv("LLM_API_KEY", ""),
+		LLMBaseURL:  getEnv("LLM_BASE_URL", getDefaultBaseURL(provider)),
+		LLMModel:    getEnv("LLM_MODEL", getDefaultModel(provider)),
 
 		// Overlay
 		OverlayPort: getEnvInt("OVERLAY_PORT", 8765),
@@ -72,6 +76,62 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
+func getDefaultBaseURL(provider string) string {
+	switch provider {
+	case "openai":
+		return "https://api.openai.com/v1"
+	case "opencode":
+		return "https://opencode.ai/zen/v1"
+	case "glm":
+		return "https://open.bigmodel.cn/api/paas/v4"
+	case "anthropic":
+		return "https://api.anthropic.com"
+	case "groq":
+		return "https://api.groq.com/openai/v1"
+	case "deepseek":
+		return "https://api.deepseek.com/v1"
+	case "mistral":
+		return "https://api.mistral.ai/v1"
+	case "ollama":
+		return "http://localhost:11434/v1"
+	case "ollamacloud":
+		return "https://ollama.com/api"
+	case "azure":
+		return "https://<resource>.openai.azure.com/openai/v1"
+	case "aws":
+		return "https://bedrock-runtime.us-east-1.amazonaws.com"
+	case "vertex":
+		return "https://us-central1-aiplatform.googleapis.com/v1"
+	default:
+		return "https://api.openai.com/v1"
+	}
+}
+
+func getDefaultModel(provider string) string {
+	switch provider {
+	case "openai":
+		return "gpt-4o-mini"
+	case "opencode":
+		return "gpt-4o-mini"
+	case "glm":
+		return "glm-4-flash"
+	case "anthropic":
+		return "claude-3-5-sonnet-20241022"
+	case "groq":
+		return "llama-3.1-70b-versatile"
+	case "deepseek":
+		return "deepseek-chat"
+	case "mistral":
+		return "mistral-small-latest"
+	case "ollama":
+		return "llama3.1"
+	case "ollamacloud":
+		return "glm-4.7"
+	default:
+		return "gpt-4o-mini"
+	}
+}
+
 // Validate checks that all required configuration is present.
 func (c *Config) Validate() error {
 	if c.DeepgramAPIKey == "" || c.DeepgramAPIKey == "your_deepgram_api_key_here" {
@@ -80,6 +140,19 @@ func (c *Config) Validate() error {
 	if c.LLMAPIKey == "" || c.LLMAPIKey == "your_llm_api_key_here" {
 		return fmt.Errorf("LLM_API_KEY is required. Set it in .env file")
 	}
+
+	validProviders := []string{"openai", "opencode", "glm", "anthropic", "groq", "deepseek", "mistral", "azure", "aws", "vertex", "ollama", "ollamacloud"}
+	valid := false
+	for _, p := range validProviders {
+		if c.LLMProvider == p {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("invalid LLM_PROVIDER: %s. Valid: %v", c.LLMProvider, validProviders)
+	}
+
 	return nil
 }
 

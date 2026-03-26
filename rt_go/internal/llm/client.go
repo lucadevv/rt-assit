@@ -8,17 +8,21 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/rtassist/rt_go/internal/ports"
 	"github.com/sashabaranov/go-openai"
 )
 
-// Token represents a single streaming token from the LLM.
-type Token struct {
-	Content string
-	Index   int
-	Done    bool
+type Token = ports.LLMToken
+
+type LLMConfig struct {
+	APIKey       string
+	BaseURL      string
+	Model        string
+	SystemPrompt string
+	MaxHistory   int
+	Provider     string
 }
 
-// LLMClient handles streaming LLM inference.
 type LLMClient struct {
 	apiKey       string
 	baseURL      string
@@ -28,31 +32,11 @@ type LLMClient struct {
 	ctx          context.Context
 	cancel       context.CancelFunc
 
-	// Conversation history
 	mu         sync.RWMutex
 	messages   []openai.ChatCompletionMessage
 	maxHistory int
 }
 
-// LLMConfig holds LLM client configuration.
-type LLMConfig struct {
-	APIKey       string
-	BaseURL      string
-	Model        string
-	SystemPrompt string
-	MaxHistory   int
-}
-
-// DefaultLLMConfig returns default configuration.
-func DefaultLLMConfig() LLMConfig {
-	return LLMConfig{
-		Model:        "glm-4-flash",
-		SystemPrompt: "You are a helpful assistant during video calls. Provide concise, relevant answers.",
-		MaxHistory:   20,
-	}
-}
-
-// NewLLMClient creates a new LLM client.
 func NewLLMClient(cfg LLMConfig) *LLMClient {
 	config := openai.DefaultConfig(cfg.APIKey)
 	if cfg.BaseURL != "" {
@@ -67,6 +51,14 @@ func NewLLMClient(cfg LLMConfig) *LLMClient {
 		client:       openai.NewClientWithConfig(config),
 		messages:     make([]openai.ChatCompletionMessage, 0),
 		maxHistory:   cfg.MaxHistory,
+	}
+}
+
+func DefaultLLMConfig() LLMConfig {
+	return LLMConfig{
+		Model:        "glm-4-flash",
+		SystemPrompt: "You are a helpful assistant during video calls. Provide concise, relevant answers.",
+		MaxHistory:   20,
 	}
 }
 
@@ -92,6 +84,10 @@ func (c *LLMClient) Stop() {
 	if c.cancel != nil {
 		c.cancel()
 	}
+}
+
+func (c *LLMClient) IsConnected() bool {
+	return c.client != nil
 }
 
 // ClearHistory clears the conversation history.
@@ -147,7 +143,6 @@ func (c *LLMClient) Send(ctx context.Context, transcript string, tokenCh chan<- 
 	defer stream.Close()
 
 	var fullResponse strings.Builder
-	tokenIndex := 0
 
 	for {
 		select {
@@ -178,22 +173,17 @@ func (c *LLMClient) Send(ctx context.Context, transcript string, tokenCh chan<- 
 
 		fullResponse.WriteString(content)
 
-		// Send token to channel
 		token := Token{
 			Content: content,
-			Index:   tokenIndex,
 			Done:    false,
 		}
-		tokenIndex++
 
 		select {
 		case tokenCh <- token:
 		default:
-			// Channel full, skip
 		}
 	}
 
-	// Send final token
 	select {
 	case tokenCh <- Token{Done: true}:
 	default:

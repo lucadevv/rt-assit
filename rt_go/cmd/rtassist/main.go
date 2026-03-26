@@ -87,6 +87,7 @@ func main() {
 		OverlayPort:   cfg.OverlayPort,
 		AudioRecvPort: cfg.AudioRecvPort,
 		DeepgramKey:   cfg.DeepgramAPIKey,
+		LLMProvider:   cfg.LLMProvider,
 		LLMKey:        cfg.LLMAPIKey,
 		LLMBaseURL:    cfg.LLMBaseURL,
 		LLMModel:      cfg.LLMModel,
@@ -104,7 +105,7 @@ func main() {
 	fmt.Printf("   Chrome CDP: localhost:%d\n", cfg.ChromePort)
 	fmt.Printf("   Overlay:    ws://localhost:%d\n", cfg.OverlayPort)
 	fmt.Printf("   AudioExt:   ws://localhost:%d (Chrome Extension)\n", cfg.AudioRecvPort)
-	fmt.Printf("   LLM:        %s\n", cfg.LLMModel)
+	fmt.Printf("   LLM:        %s (%s)\n", cfg.LLMModel, cfg.LLMProvider)
 	fmt.Println()
 	fmt.Println("📌 Open a Meet/Teams/Zoom call in Chrome")
 	fmt.Println("   The assistant will help with technical/behavioral questions")

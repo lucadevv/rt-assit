@@ -21,6 +21,7 @@ type Message struct {
 	Type    MessageType `json:"type"`
 	Content string      `json:"content"`
 	Ms      int64       `json:"ms"`
+	Speaker int         `json:"speaker,omitempty"` // Speaker ID (0 = unknown)
 }
 
 // Client represents a connected UI client.
@@ -110,6 +111,16 @@ func (h *Hub) BroadcastTranscript(text string) {
 	h.Broadcast(Message{
 		Type:    MessageTypeTranscript,
 		Content: text,
+		Ms:      time.Now().UnixMilli(),
+	})
+}
+
+// BroadcastTranscriptWithSpeaker sends a transcript with speaker info.
+func (h *Hub) BroadcastTranscriptWithSpeaker(text string, speaker int) {
+	h.Broadcast(Message{
+		Type:    MessageTypeTranscript,
+		Content: text,
+		Speaker: speaker,
 		Ms:      time.Now().UnixMilli(),
 	})
 }
