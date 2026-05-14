@@ -9,19 +9,10 @@ import (
 
 // Config holds all configuration for rtassist.
 type Config struct {
-	// Chrome CDP
-	ChromePort int
-
 	// Deepgram STT
 	DeepgramAPIKey string
 
-	// LLM
-	LLMProvider string
-	LLMAPIKey   string
-	LLMBaseURL  string
-	LLMModel    string
-
-	// Overlay WebSocket
+	// Overlay WebSocket (for clients - macOS app)
 	OverlayPort int
 
 	// Audio Receiver from Chrome Extension
@@ -31,41 +22,24 @@ type Config struct {
 	VADThreshold    float64
 	VADSilenceMs    int
 	MaxUtteranceSec int
-
-	// System
-	SystemPrompt string
 }
 
 // Load reads configuration from environment variables and defaults.
 func Load() (*Config, error) {
-	provider := getEnv("LLM_PROVIDER", "openai")
-
 	cfg := &Config{
-		// Chrome CDP
-		ChromePort: getEnvInt("CHROME_PORT", 9222),
-
 		// Deepgram
 		DeepgramAPIKey: getEnv("DEEPGRAM_API_KEY", ""),
 
-		// LLM - defaults based on provider
-		LLMProvider: provider,
-		LLMAPIKey:   getEnv("LLM_API_KEY", ""),
-		LLMBaseURL:  getEnv("LLM_BASE_URL", getDefaultBaseURL(provider)),
-		LLMModel:    getEnv("LLM_MODEL", getDefaultModel(provider)),
-
-		// Overlay
+		// Overlay WebSocket (for clients)
 		OverlayPort: getEnvInt("OVERLAY_PORT", 8765),
 
 		// Audio Receiver (for Chrome Extension)
 		AudioRecvPort: getEnvInt("AUDIO_RECV_PORT", 8766),
 
-		// Audio
+		// Audio Processing
 		VADThreshold:    getEnvFloat("VAD_THRESHOLD", 0.03),
 		VADSilenceMs:    getEnvInt("VAD_SILENCE_MS", 600),
 		MaxUtteranceSec: getEnvInt("MAX_UTTERANCE_SEC", 10),
-
-		// System
-		SystemPrompt: getEnv("SYSTEM_PROMPT", DefaultSystemPrompt),
 	}
 
 	// Validate required fields
@@ -137,22 +111,6 @@ func (c *Config) Validate() error {
 	if c.DeepgramAPIKey == "" || c.DeepgramAPIKey == "your_deepgram_api_key_here" {
 		return fmt.Errorf("DEEPGRAM_API_KEY is required. Set it in .env file")
 	}
-	if c.LLMAPIKey == "" || c.LLMAPIKey == "your_llm_api_key_here" {
-		return fmt.Errorf("LLM_API_KEY is required. Set it in .env file")
-	}
-
-	validProviders := []string{"openai", "opencode", "glm", "anthropic", "groq", "deepseek", "mistral", "azure", "aws", "vertex", "ollama", "ollamacloud"}
-	valid := false
-	for _, p := range validProviders {
-		if c.LLMProvider == p {
-			valid = true
-			break
-		}
-	}
-	if !valid {
-		return fmt.Errorf("invalid LLM_PROVIDER: %s. Valid: %v", c.LLMProvider, validProviders)
-	}
-
 	return nil
 }
 
@@ -171,12 +129,9 @@ REGLAS ABSOLUTAS:
 // String returns a safe string representation (without secrets).
 func (c *Config) String() string {
 	return fmt.Sprintf(
-		"Config{ChromePort: %d, OverlayPort: %d, AudioRecvPort: %d, LLMModel: %s, LLMBaseURL: %s}",
-		c.ChromePort,
+		"Config{OverlayPort: %d, AudioRecvPort: %d}",
 		c.OverlayPort,
 		c.AudioRecvPort,
-		c.LLMModel,
-		c.LLMBaseURL,
 	)
 }
 

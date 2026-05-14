@@ -21,6 +21,7 @@ type Message struct {
 	Type    MessageType `json:"type"`
 	Content string      `json:"content"`
 	Ms      int64       `json:"ms"`
+	IsFinal bool        `json:"is_final"`
 	Speaker int         `json:"speaker,omitempty"` // Speaker ID (0 = unknown)
 }
 
@@ -107,19 +108,13 @@ func (h *Hub) BroadcastToken(content string) {
 }
 
 // BroadcastTranscript sends a transcript to all clients.
-func (h *Hub) BroadcastTranscript(text string) {
+// isFinal=false means an interim update (replaces previous interim on the client);
+// isFinal=true means a committed utterance.
+func (h *Hub) BroadcastTranscript(text string, isFinal bool, speaker int) {
 	h.Broadcast(Message{
 		Type:    MessageTypeTranscript,
 		Content: text,
-		Ms:      time.Now().UnixMilli(),
-	})
-}
-
-// BroadcastTranscriptWithSpeaker sends a transcript with speaker info.
-func (h *Hub) BroadcastTranscriptWithSpeaker(text string, speaker int) {
-	h.Broadcast(Message{
-		Type:    MessageTypeTranscript,
-		Content: text,
+		IsFinal: isFinal,
 		Speaker: speaker,
 		Ms:      time.Now().UnixMilli(),
 	})

@@ -8,7 +8,7 @@ type UIMessage struct {
 
 type OverlayPort interface {
 	Broadcast(UIMessage)
-	BroadcastTranscript(text string)
+	BroadcastTranscript(text string, isFinal bool, speaker int)
 	BroadcastToken(token string)
 	BroadcastThinking()
 	BroadcastError(err string)

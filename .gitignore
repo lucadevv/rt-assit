@@ -1,0 +1,6 @@
+web_legacy_pre_auri/
+
+# Secrets — never commit. docker-compose reads them at runtime.
+.env
+.env.local
+.env.*.local

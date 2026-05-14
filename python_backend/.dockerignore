@@ -1,0 +1,36 @@
+# Local secrets — never copy into image.
+.env
+.env.*
+!.env.example
+
+# Virtualenvs & caches.
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Egg/build metadata.
+*.egg-info/
+build/
+dist/
+
+# Persisted data (mounted at runtime).
+data/
+
+# Tests not needed at runtime.
+tests/
+
+# Editor / OS noise.
+.idea/
+.vscode/
+.DS_Store
+
+# VCS.
+.git/
+.gitignore
+
+# Docs.
+*.md

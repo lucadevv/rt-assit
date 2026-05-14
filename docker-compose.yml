@@ -1,0 +1,177 @@
+# rtassist — full stack for F0 spike (web/spike + rt_go gateway + python_backend).
+# Single command to start everything: `docker compose up --build`.
+
+services:
+  rt_go:
+    build:
+      context: ./rt_go
+      dockerfile: Dockerfile
+    container_name: rtassist-rtgo
+    ports:
+      - "8765:8765"   # overlay clients (browser → rt_go)
+      - "8766:8766"   # audio ingest (browser PCM → rt_go)
+    env_file:
+      - ./rt_go/.env
+    environment:
+      # Override BACKEND_URL so rt_go reaches python_backend via Docker DNS,
+      # regardless of what the host's .env points to (likely localhost).
+      - BACKEND_URL=ws://backend:8767/ws/rt-go
+      # Disable Flux (English-only) so STT falls back to nova-2, which supports
+      # es-419 (Spanish LATAM) per DefaultDeepgramConfig. Override pattern keeps
+      # rt_go/.env intact for local non-Docker dev.
+      - USE_FLUX=false
+      # Force EagerEOT threshold to 0 so the Deepgram adapter routes to
+      # /v1/listen (nova-2 endpoint). cmd/rtassist defaults to 0.6 even when
+      # USE_FLUX=false, and any value > 0 forces the /v2/listen Flux endpoint
+      # which rejects nova-2 with HTTP 400.
+      - EAGER_EOT_THRESHOLD=0
+    networks:
+      - rtassist-net
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./python_backend
+      dockerfile: Dockerfile
+    container_name: rtassist-backend
+    ports:
+      - "8767:8767"
+    env_file:
+      - ./python_backend/.env
+    environment:
+      # Groq comes from the SHELL env or root-level .env (next to docker-compose.yml),
+      # NOT python_backend/.env. Empty default so docker compose doesn't error if unset.
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      # Override LLM_MODEL from python_backend/.env to use gpt-oss:120b-cloud on Ollama Cloud.
+      # MiniMax M2.5 had instruction-following issues with multi-section prompts (PROHIBIDO + few-shots);
+      # gpt-oss:120b handles them better. No code/provider changes — same Ollama Cloud abstraction.
+      - "LLM_MODEL=${LLM_MODEL:-gpt-oss:120b-cloud}"
+      # Provider switch. Empty default preserves legacy credential-presence
+      # detection (Groq if GROQ_API_KEY set, else Ollama Cloud) so existing
+      # deploys are unaffected. Set to "glm" / "groq" / "ollama_cloud" /
+      # "failover" in the root .env to force a specific provider.
+      - LLM_PROVIDER=${LLM_PROVIDER:-}
+      # Failover mode: when LLM_PROVIDER=failover, primary is tried first;
+      # on transient error (timeout / 5xx / 429) we switch to the fallback.
+      # Both must resolve to different provider names from the set
+      # {ollama_cloud, glm, groq}.
+      - LLM_PRIMARY=${LLM_PRIMARY:-ollama_cloud}
+      - LLM_FAILOVER=${LLM_FAILOVER:-glm}
+      # GLM (Z.ai) provider — selectable via LLM_PROVIDER=glm. Default
+      # stays ollama_cloud so existing deploys are unaffected. The free
+      # tier (glm-4.5-flash) is the only model that works with most keys
+      # without a paid plan.
+      - Z_AI_API_KEY=${Z_AI_API_KEY:-}
+      - GLM_MODEL=${GLM_MODEL:-glm-4.5-flash}
+      - GLM_BASE_URL=${GLM_BASE_URL:-https://api.z.ai/api/paas/v4}
+      # Candidate profile + scenario for the interview agent. Long string MUST stay on one line
+      # (KEY=value form does not support YAML line folding). Override by adding CANDIDATE_PROFILE
+      # to a root-level .env (next to docker-compose.yml).
+      - "CANDIDATE_PROFILE=${CANDIDATE_PROFILE:-Desarrollador móvil con 4 años de experiencia. Stack: Flutter, Dart, Kotlin. CI/CD. Proyectos notables en GitHub. Español nativo, inglés escrito (lee/entiende, no necesariamente fluido hablado).}"
+      - "SCENARIO=${SCENARIO:-interview_dev}"
+      # B0 — Auth foundation. AUTH_MODE=dev (default) synthesises a ``dev_default`` user;
+      # AUTH_MODE=clerk validates Clerk JWTs (CLERK_JWKS_URL required).
+      - AUTH_MODE=${AUTH_MODE:-dev}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-}
+      - CLERK_JWKS_URL=${CLERK_JWKS_URL:-}
+      - CLERK_AUDIENCE=${CLERK_AUDIENCE:-}
+      - CLERK_ISSUER=${CLERK_ISSUER:-}
+      # Service-to-service WS auth (rt_go gateway + mac native app).
+      # Skipped entirely when AUTH_MODE=dev. In prod (AUTH_MODE=clerk),
+      # clients must connect with ?service_token=<value> matching the env
+      # value below. Set both sides to the same secret. The defaults are
+      # dev-only placeholders — generate a strong random token for prod.
+      - RT_GO_SERVICE_TOKEN=${RT_GO_SERVICE_TOKEN:-dev-rtgo-token}
+      - MAC_SERVICE_TOKEN=${MAC_SERVICE_TOKEN:-dev-mac-token}
+      # CORS. Comma-separated list of allowed browser origins. Default
+      # covers the Vite (5173) + Next (3000) dev servers. In prod set this
+      # to the exact public origin(s) — NEVER use "*" with credentials.
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      # B5 — Billing & email & cron. BILLING_MODE=dev uses a mock provider
+      # (no LS credentials needed). EMAIL_MODE=dev writes /tmp/auri_emails/.
+      # CRON_ENABLED=false registers jobs but doesn't auto-fire — use
+      # /api/admin/cron/run/{job_name} to trigger manually in dev.
+      - BILLING_MODE=${BILLING_MODE:-dev}
+      - LEMON_SQUEEZY_API_KEY=${LEMON_SQUEEZY_API_KEY:-}
+      - LEMON_SQUEEZY_STORE_ID=${LEMON_SQUEEZY_STORE_ID:-}
+      - LEMON_SQUEEZY_WEBHOOK_SECRET=${LEMON_SQUEEZY_WEBHOOK_SECRET:-}
+      - EMAIL_MODE=${EMAIL_MODE:-dev}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - AURI_FROM_EMAIL=${AURI_FROM_EMAIL:-noreply@auri.local}
+      - CRON_ENABLED=${CRON_ENABLED:-false}
+      - CHECKOUT_REDIRECT_BASE=${CHECKOUT_REDIRECT_BASE:-http://localhost:5173}
+      - DEV_BILLING_BASE=${DEV_BILLING_BASE:-http://localhost:8767}
+      # B6 — Recording storage. STORAGE_MODE=local writes to LOCAL_STORAGE_DIR
+      # and signs URLs via HMAC; STORAGE_MODE=s3 uses boto3 + presigned URLs
+      # (compatible with both AWS S3 and MinIO via S3_ENDPOINT_URL).
+      - STORAGE_MODE=${STORAGE_MODE:-local}
+      - LOCAL_STORAGE_DIR=${LOCAL_STORAGE_DIR:-/app/data/recordings}
+      - LOCAL_STORAGE_SECRET=${LOCAL_STORAGE_SECRET:-dev-storage-secret}
+      - LOCAL_STORAGE_PUBLIC_URL=${LOCAL_STORAGE_PUBLIC_URL:-http://localhost:8767}
+      - S3_BUCKET=${S3_BUCKET:-}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      - S3_ENDPOINT_URL=${S3_ENDPOINT_URL:-}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-}
+      # B7 — Share Links (Premium). Public URL base where the frontend renders
+      # the /shared/:id page. Backend only generates the URL string; the
+      # frontend owns the actual rendering route.
+      - SHARE_PUBLIC_BASE_URL=${SHARE_PUBLIC_BASE_URL:-http://localhost:5173/shared}
+      # B8 — Cross-cutting. AURI_MASTER_KEY is base64url(32 bytes) used to
+      # AES-256-GCM encrypt BYOK API keys at rest. In dev we fall back to
+      # a deterministic zero-byte key (NEVER use in production). RATE_LIMIT_*
+      # are sliding-window quotas (per minute) for authed/public traffic.
+      # CIRCUIT_BREAKER_* tune the failure-threshold + cooldown for the
+      # in-memory breaker around LLM/STT/email providers.
+      - AURI_MASTER_KEY=${AURI_MASTER_KEY:-}
+      - RATE_LIMIT_PER_MIN=${RATE_LIMIT_PER_MIN:-100}
+      - RATE_LIMIT_PUBLIC_PER_MIN=${RATE_LIMIT_PUBLIC_PER_MIN:-30}
+      - CIRCUIT_BREAKER_THRESHOLD=${CIRCUIT_BREAKER_THRESHOLD:-5}
+      - CIRCUIT_BREAKER_COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN:-300}
+    volumes:
+      # Persist Chroma vector store + recordings across container restarts.
+      - ./python_backend/data:/app/data
+    networks:
+      - rtassist-net
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: rtassist-web
+    ports:
+      - "5173:3000"            # keep host port 5173 for consistency with prior tests
+    volumes:
+      - ./web:/app             # bind mount source for hot reload
+      - /app/node_modules      # anonymous volume to avoid host shadowing
+      - /app/.next             # anonymous volume for build cache
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true # required on macOS bind mounts for fs events
+      # F1 — App Shell + Auth.
+      # NEXT_PUBLIC_AUTH_MODE=dev (default) uses DevAuthAdapter and skips
+      # mounting ClerkProvider. =clerk mounts Clerk and validates JWTs.
+      # Both modes share NEXT_PUBLIC_API_BASE_URL — the FetchApiClient adds
+      # a Bearer token only when the auth port supplies one (Clerk only).
+      - NEXT_PUBLIC_AUTH_MODE=${NEXT_PUBLIC_AUTH_MODE:-dev}
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8767}
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-}
+      # F9 — Observability. Both vars are optional; absent values cause the
+      # browser-side adapters to no-op (NoopAnalyticsAdapter + Sentry skip).
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+      - NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY:-}
+      - NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST:-}
+    networks:
+      - rtassist-net
+    depends_on:
+      - rt_go
+    restart: unless-stopped
+
+networks:
+  rtassist-net:
+    driver: bridge

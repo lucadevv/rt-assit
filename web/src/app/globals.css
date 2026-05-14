@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+/* -------------------------------------------------------------------------
+   Auri design tokens — Tailwind v4 @theme block
+   These declarations register tokens as both CSS variables AND Tailwind utilities
+   (e.g. bg-lime, text-cyan-ink, border-border).
+   ------------------------------------------------------------------------- */
+@theme {
+  --color-hero-h0: oklch(24% 0.18 290);
+  --color-hero-h1: oklch(36% 0.22 285);
+  --color-hero-h2: oklch(48% 0.24 280);
+
+  --color-lime: oklch(82% 0.24 130);
+  --color-lime-ink: oklch(22% 0.12 130);
+
+  --color-cyan: oklch(86% 0.11 205);
+  --color-cyan-ink: oklch(28% 0.10 220);
+
+  --color-amber: oklch(82% 0.16 75);
+  --color-amber-ink: oklch(28% 0.13 70);
+
+  --color-lavender: oklch(80% 0.12 295);
+  --color-lavender-ink: oklch(28% 0.14 295);
+
+  --color-bg-soft: oklch(96% 0.02 295);
+  --color-bg-warm: oklch(97% 0.012 80);
+  --color-black: oklch(14% 0.01 285);
+  --color-border: oklch(91% 0.012 290);
+  --color-text: oklch(16% 0.012 285);
+  --color-text-mid: oklch(46% 0.018 285);
+  --color-text-dim: oklch(64% 0.014 285);
+
+  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* -------------------------------------------------------------------------
+   Theme runtime — light (default) vs dark via [data-theme] attribute
+   Setting CSS vars directly so tokens registered in @theme stay generic and
+   can be re-pointed per theme.
+   ------------------------------------------------------------------------- */
+:root {
+  --color-bg: #ffffff;
+  --color-bg-soft: oklch(96% 0.02 295);
+  --color-bg-warm: oklch(97% 0.012 80);
+  --color-border: oklch(91% 0.012 290);
+  --color-text: oklch(16% 0.012 285);
+  --color-text-mid: oklch(46% 0.018 285);
+  --color-text-dim: oklch(64% 0.014 285);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --color-bg: oklch(13% 0.02 285);
+  --color-bg-soft: oklch(15% 0.022 285);
+  --color-bg-warm: oklch(18% 0.025 285);
+  --color-border: oklch(24% 0.04 285);
+  --color-text: oklch(96% 0.01 285);
+  --color-text-mid: oklch(68% 0.02 285);
+  --color-text-dim: oklch(48% 0.02 285);
+  color-scheme: dark;
+}
+
+/* -------------------------------------------------------------------------
+   Base reset & defaults
+   ------------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-dm-sans, var(--font-sans));
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+.mono,
+code,
+pre {
+  font-family: var(--font-jetbrains, var(--font-mono));
+}
+
+/* -------------------------------------------------------------------------
+   Auri micro-interactions
+   ------------------------------------------------------------------------- */
+.auri-btn {
+  -webkit-tap-highlight-color: transparent;
+}
+.auri-btn:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+.auri-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.auri-btn:focus-visible,
+.auri-input:focus-visible,
+.auri-select:focus-visible,
+.auri-toggle:focus-visible,
+.auri-pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px oklch(82% 0.24 130 / 0.4);
+}
+
+@keyframes auri-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auri-spin {
+  animation: auri-spin 0.85s linear infinite;
+}
+
+@keyframes auri-rec-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.55;
+  }
+}
+
+/* AgentPhaseIndicator — soft pulse used by listening / thinking /
+   responding dots. The animation duration is set inline per phase so
+   each state has its own cadence. */
+@keyframes auri-phase-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+/* Photo placeholder — diagonal stripes (Auri visual brief) */
+.auri-photo-placeholder {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-border) 0,
+    var(--color-border) 6px,
+    transparent 6px,
+    transparent 14px
+  );
+  background-color: var(--color-bg-soft);
+  border: 1px solid var(--color-border);
+}
+
+/* Hero gradient background utility */
+.auri-hero-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-hero-h0) 0%,
+    var(--color-hero-h1) 55%,
+    var(--color-hero-h2) 100%
+  );
+  color: #ffffff;
+}
+
+/* -------------------------------------------------------------------------
+   A11Y — respect reduced motion (WCAG 2.1 AA)
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   A11Y — keyboard focus indicator (WCAG 2.4.7)
+   Distinct lime outline only on keyboard focus (`:focus-visible` excludes
+   mouse clicks). Honors color-contrast budget against bg+bg-soft tokens.
+   ------------------------------------------------------------------------- */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

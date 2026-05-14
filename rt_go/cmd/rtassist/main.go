@@ -1,4 +1,4 @@
-// Package main is the entry point for rtassist.
+// Package main is the entry point for rtassist transcription service.
 package main
 
 import (
@@ -8,50 +8,19 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 
-	"github.com/rtassist/rt_go/internal/config"
 	"github.com/rtassist/rt_go/internal/pipeline"
 )
 
-// loadDotEnv loads .env file from the same directory
-func loadDotEnv() {
-	exe, err := os.Executable()
-	if err != nil {
-		return
-	}
-	envPath := filepath.Join(filepath.Dir(exe), ".env")
-	if _, err := os.Stat(envPath); os.IsNotExist(err) {
-		// Try current directory
-		envPath = ".env"
-	}
-
-	data, err := os.ReadFile(envPath)
-	if err != nil {
-		return
-	}
-
-	for _, line := range strings.Split(string(data), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) == 2 {
-			os.Setenv(parts[0], parts[1])
-		}
-	}
-}
-
-// Build info (set via ldflags)
 var (
 	version   = "dev"
 	buildDate = "unknown"
 )
 
 func main() {
-	// CLI flags
 	showVersion := flag.Bool("version", false, "Show version info")
 	flag.Parse()
 
@@ -60,38 +29,43 @@ func main() {
 		return
 	}
 
-	// Load .env file directly
-	loadDotEnv()
-
-	// Debug: show what was loaded
-	if key := os.Getenv("DEEPGRAM_API_KEY"); len(key) > 8 {
-		log.Printf("DEBUG: DEEPGRAM_API_KEY loaded: %s...", key[:8])
-	} else {
-		log.Printf("DEBUG: DEEPGRAM_API_KEY NOT loaded or empty!")
-	}
-
-	// Print banner
 	printBanner()
 
-	// Load configuration
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("❌ Configuration error: %v\n\n   Run: make env-setup\n   Then edit .env with your API keys", err)
+	// Load .env file
+	loadDotEnv()
+
+	// Get configuration
+	deepgramKey := os.Getenv("DEEPGRAM_API_KEY")
+	if deepgramKey == "" {
+		log.Fatal("❌ DEEPGRAM_API_KEY is required")
 	}
 
-	log.Printf("Configuration: %s", cfg.String())
+	overlayPort := getEnvInt("OVERLAY_PORT", 8765)
+	audioRecvPort := getEnvInt("AUDIO_RECV_PORT", 8766)
+	backendURL := os.Getenv("BACKEND_URL")
+
+	// Flux / Eager End of Turn configuration
+	useFlux := os.Getenv("USE_FLUX") == "true"
+	eagerEOTThreshold := 0.6 // Default threshold
+	if eotStr := os.Getenv("EAGER_EOT_THRESHOLD"); eotStr != "" {
+		if eot, err := strconv.ParseFloat(eotStr, 64); err == nil {
+			eagerEOTThreshold = eot
+		}
+	}
+
+	log.Printf("Starting with Deepgram key: %s...", deepgramKey[:min(8, len(deepgramKey))])
+	if useFlux {
+		log.Printf("Using Flux with EagerEOT threshold: %.1f", eagerEOTThreshold)
+	}
 
 	// Create pipeline
 	p := pipeline.New(pipeline.Config{
-		ChromePort:    cfg.ChromePort,
-		OverlayPort:   cfg.OverlayPort,
-		AudioRecvPort: cfg.AudioRecvPort,
-		DeepgramKey:   cfg.DeepgramAPIKey,
-		LLMProvider:   cfg.LLMProvider,
-		LLMKey:        cfg.LLMAPIKey,
-		LLMBaseURL:    cfg.LLMBaseURL,
-		LLMModel:      cfg.LLMModel,
-		SystemPrompt:  cfg.SystemPrompt,
+		OverlayPort:       overlayPort,
+		AudioRecvPort:     audioRecvPort,
+		DeepgramKey:       deepgramKey,
+		BackendURL:        backendURL,
+		UseFlux:           useFlux,
+		EagerEOTThreshold: eagerEOTThreshold,
 	})
 
 	// Start pipeline
@@ -99,39 +73,68 @@ func main() {
 		log.Fatalf("❌ Pipeline error: %v", err)
 	}
 
-	// Print startup info
 	fmt.Println()
-	fmt.Println("✅ rtassist is running!")
-	fmt.Printf("   Chrome CDP: localhost:%d\n", cfg.ChromePort)
-	fmt.Printf("   Overlay:    ws://localhost:%d\n", cfg.OverlayPort)
-	fmt.Printf("   AudioExt:   ws://localhost:%d (Chrome Extension)\n", cfg.AudioRecvPort)
-	fmt.Printf("   LLM:        %s (%s)\n", cfg.LLMModel, cfg.LLMProvider)
+	fmt.Println("✅ rtassist transcription service is running!")
+	fmt.Printf("   WebSocket (for clients): ws://localhost:%d\n", overlayPort)
+	fmt.Printf("   Audio from Extension: ws://localhost:%d\n", audioRecvPort)
 	fmt.Println()
 	fmt.Println("📌 Open a Meet/Teams/Zoom call in Chrome")
-	fmt.Println("   The assistant will help with technical/behavioral questions")
 	fmt.Println()
 	fmt.Println("   Press Ctrl+C to stop")
 	fmt.Println()
 
-	// Handle shutdown signals
+	// Wait for shutdown
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-
-	// Wait for shutdown signal
 	<-sigCh
+
 	fmt.Println("\n⏹️  Shutting down...")
-
-	// Graceful shutdown
 	p.Stop()
-
 	fmt.Println("👋 Goodbye")
 }
 
 func printBanner() {
 	fmt.Println()
 	fmt.Println("╔══════════════════════════════════════╗")
-	fmt.Println("║        rtassist - Interview Helper   ║")
-	fmt.Println("║         Deepgram + GLM-4-Flash       ║")
-	fmt.Printf("║         Version: %-10s            ║\n", version)
+	fmt.Println("║     rtassist - Transcription       ║")
+	fmt.Println("║          Service v%s             ║", version)
 	fmt.Println("╚══════════════════════════════════════╝")
+}
+
+func loadDotEnv() {
+	envPath := ".env"
+	if exe, err := os.Executable(); err == nil {
+		if p := filepath.Join(filepath.Dir(exe), ".env"); fileExists(p) {
+			envPath = p
+		}
+	}
+
+	if !fileExists(envPath) {
+		return
+	}
+
+	data, _ := os.ReadFile(envPath)
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if parts := strings.SplitN(line, "=", 2); len(parts) == 2 {
+			os.Setenv(parts[0], parts[1])
+		}
+	}
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func getEnvInt(key string, defaultValue int) int {
+	if v := os.Getenv(key); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
+	}
+	return defaultValue
 }

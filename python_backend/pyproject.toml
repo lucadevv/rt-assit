@@ -7,7 +7,7 @@ dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
     "websockets>=14.0",
-    "langgraph>=0.2.0",
+    "langgraph>=0.2,<1.0",
     "langchain-core>=0.3.0",
     "langchain-ollama>=0.1.0",
     "chromadb>=0.5.0",
@@ -16,6 +16,17 @@ dependencies = [
     "pydantic-settings>=2.5.0",
     "python-dotenv>=1.0.0",
     "sse-starlette>=2.0.0",
+    "python-multipart>=0.0.12",
+    "pypdf>=5.0",
+    "python-docx>=1.1",
+    "mistune>=3.0",
+    "trafilatura>=1.12",
+    "pyjwt[crypto]>=2.10",
+    "cryptography>=43",
+    "reportlab>=4.2",
+    "apscheduler>=3.10",
+    "resend>=2.5",
+    "boto3>=1.35",
 ]
 
 [project.optional-dependencies]

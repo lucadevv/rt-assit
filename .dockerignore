@@ -1,0 +1,20 @@
+# Repo-root ignores. Per-service contexts have their own .dockerignore too.
+.git/
+.gitignore
+.DS_Store
+.idea/
+.vscode/
+.atl/
+
+# Other apps not part of compose.
+extension/
+rtassistinterview/
+
+# Top-level secrets / build outputs.
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules/
+**/__pycache__/
+**/.venv/
+**/bin/
