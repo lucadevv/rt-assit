@@ -1,5 +1,6 @@
 # Binaries
 bin/
+rtassist
 *.exe
 *.exe~
 *.dll
