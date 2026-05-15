@@ -37,6 +37,7 @@ import { PipLayout } from "@/presentation/components/live/PipLayout";
 import { SidebarLayout } from "@/presentation/components/live/SidebarLayout";
 import { TweaksPanel } from "@/presentation/components/live/TweaksPanel";
 import { EndedState } from "@/presentation/components/live/EndedState";
+import { MeetingInfoCard } from "@/presentation/components/live/MeetingInfoCard";
 import { Button, Card } from "@/design-system/primitives";
 import { ArrowRightIcon, MicIcon } from "@/design-system/icons";
 
@@ -138,6 +139,12 @@ export default function LivePage(): JSX.Element {
           onStart={() => void start()}
           onStop={() => void stop()}
         />
+        {session && session.meetingUrl ? (
+          <MeetingInfoCard
+            meetingUrl={session.meetingUrl}
+            meetingCode={session.meetingCode}
+          />
+        ) : null}
         {showEnded && session ? (
           <EndedState session={session} />
         ) : showEmpty ? (

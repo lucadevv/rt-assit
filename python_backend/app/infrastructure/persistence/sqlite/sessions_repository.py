@@ -30,6 +30,7 @@ class SQLiteSessionsRepository(SessionsRepository):
         title: Optional[str],
         metadata: Optional[dict[str, Any]] = None,
         mode: SessionMode = "agent",
+        meeting_id: Optional[str] = None,
     ) -> Session:
         # Defensive boundary check: any value outside the SessionMode
         # literal collapses to the safe default ``"agent"`` rather than
@@ -41,8 +42,8 @@ class SQLiteSessionsRepository(SessionsRepository):
             conn.execute(
                 """INSERT INTO sessions
                    (id, user_id, scenario, title, my_language, other_language,
-                    is_recording, action_items, metadata, mode)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    is_recording, action_items, metadata, mode, meeting_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     session_id,
                     user_id,
@@ -54,6 +55,7 @@ class SQLiteSessionsRepository(SessionsRepository):
                     json.dumps([]),
                     json.dumps(metadata or {}),
                     safe_mode,
+                    meeting_id,
                 ),
             )
             conn.commit()
@@ -246,6 +248,13 @@ def _row_to_session(row: sqlite3.Row) -> Session:
     except (IndexError, KeyError):
         raw_mode = None
     mode: SessionMode = raw_mode if raw_mode in ("agent", "scribe") else "agent"
+    # ``meeting_id`` column was added by the Sprint 1.5 migration. Defensive
+    # try/except so an older raw row without the column degrades to ``None``
+    # rather than raising — same pattern as ``mode`` above.
+    try:
+        raw_meeting_id = row["meeting_id"]
+    except (IndexError, KeyError):
+        raw_meeting_id = None
     return Session(
         id=row["id"],
         user_id=row["user_id"],
@@ -262,6 +271,7 @@ def _row_to_session(row: sqlite3.Row) -> Session:
         metadata=json.loads(raw_metadata) if raw_metadata else {},
         deleted_at=_parse_dt(row["deleted_at"]),
         mode=mode,
+        meeting_id=raw_meeting_id if isinstance(raw_meeting_id, str) else None,
     )
 
 

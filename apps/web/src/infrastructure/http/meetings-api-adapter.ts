@@ -2,7 +2,9 @@
  * MeetingsApiAdapter — concrete `MeetingsApiPort` impl backed by `ApiClient`.
  *
  * Backend reference (`python_backend/app/presentation/api/meetings_router.py`):
- *   POST /api/meetings/meet/create  → CreateMeetResponse
+ *   POST   /api/meetings/meet/create  → CreateMeetResponse  (Sprint 1)
+ *   GET    /api/meetings              → MeetingResponse[]   (Sprint 1.5)
+ *   DELETE /api/meetings/{id}         → DeleteMeetingResponse (Sprint 1.5)
  *
  * Responsibilities:
  *  - snake_case ↔ camelCase mapping for the response.
@@ -28,7 +30,22 @@ interface CreateMeetResponseRaw {
   created_at: number; // epoch ms
 }
 
-function mapMeeting(raw: CreateMeetResponseRaw): Meeting {
+interface MeetingResponseRaw {
+  id: string;
+  provider: MeetingProviderId;
+  join_url: string;
+  title: string | null;
+  created_at: number; // epoch ms
+  provider_meeting_id: string;
+}
+
+interface DeleteMeetingResponseRaw {
+  deleted: boolean;
+}
+
+function mapMeeting(
+  raw: CreateMeetResponseRaw | MeetingResponseRaw,
+): Meeting {
   const base: Meeting = {
     id: raw.id,
     providerId: raw.provider,
@@ -54,6 +71,18 @@ export class MeetingsApiAdapter implements MeetingsApiPort {
       body,
     );
     return mapMeeting(raw);
+  }
+
+  async listMyMeetings(): Promise<Meeting[]> {
+    const raw = await this.api.get<MeetingResponseRaw[]>("/api/meetings");
+    return raw.map(mapMeeting);
+  }
+
+  async deleteMeeting(meetingId: string): Promise<boolean> {
+    const raw = await this.api.delete<DeleteMeetingResponseRaw>(
+      `/api/meetings/${encodeURIComponent(meetingId)}`,
+    );
+    return raw.deleted === true;
   }
 }
 

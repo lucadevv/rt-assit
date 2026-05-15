@@ -40,4 +40,21 @@ export interface Session {
   actionItems: string[];
   status: SessionStatus;
   mode: SessionMode;
+  /**
+   * Sprint 1.5 — optional FK to a Meeting row. When set, the live UI
+   * renders a MeetingInfoCard at the top of /app/live with the join URL
+   * and quick actions (Open in Meet / Copy link).
+   */
+  meetingId: string | null;
+  /**
+   * Sprint 1.5 — join URL of the associated meeting. Populated by the
+   * backend on the SessionDetail response only. ``null`` when no meeting
+   * is linked OR when the lookup failed (e.g. the meeting was deleted).
+   */
+  meetingUrl: string | null;
+  /**
+   * Sprint 1.5 — human-readable code of the associated meeting (e.g.
+   * ``abc-defg-hij`` for Google Meet). Derived backend-side from the URL.
+   */
+  meetingCode: string | null;
 }

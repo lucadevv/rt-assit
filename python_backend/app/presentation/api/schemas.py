@@ -214,6 +214,10 @@ class CreateSessionRequest(BaseModel):
     """Session behaviour — ``agent`` (1st-person responses, default) vs
     ``scribe`` (3rd-person structured notes). Orthogonal to scenario:
     same scenario can run as either mode."""
+    meeting_id: Optional[str] = Field(default=None, max_length=64)
+    """Sprint 1.5 — optional FK to a previously-created Meeting row.
+    When set, the backend verifies the meeting belongs to the same user
+    before persisting the link."""
 
 
 class UpdateSessionRequest(BaseModel):
@@ -239,6 +243,16 @@ class SessionResponse(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
     status: str
     mode: Literal["agent", "scribe"] = "agent"
+    meeting_id: Optional[str] = None
+    """Sprint 1.5 — optional id of the associated Meeting row."""
+    meeting_url: Optional[str] = None
+    """Sprint 1.5 — join URL of the associated meeting. Populated by the
+    GET /api/sessions/{id} endpoint via a side lookup on the meetings repo
+    so the live UI can render a MeetingInfoCard without a second round-trip."""
+    meeting_code: Optional[str] = None
+    """Sprint 1.5 — the meeting's human-readable code (e.g. ``abc-defg-hij``
+    for Google Meet). Derived from ``join_url`` so the live UI doesn't have
+    to parse the URL."""
 
     @classmethod
     def from_domain(cls, session: Session) -> "SessionResponse":
@@ -258,6 +272,7 @@ class SessionResponse(BaseModel):
             metadata=dict(session.metadata),
             status=session.status,
             mode=session.mode,
+            meeting_id=session.meeting_id,
         )
 
 

@@ -63,6 +63,7 @@ import { useDocuments } from "@/presentation/hooks/use-documents";
 import { usePersonas } from "@/presentation/hooks/use-personas";
 import { useCurrentUser } from "@/presentation/hooks/use-current-user";
 import { useMeet } from "@/presentation/hooks/use-meet";
+import { useIntegrations } from "@/presentation/hooks/use-integrations";
 import { useContainer } from "@/infrastructure/di/container";
 import { useSessionStore } from "@/application/stores/session.store";
 import { useAgentStore } from "@/application/stores/agent.store";
@@ -176,6 +177,13 @@ export function NewSessionModal({
   const [materialDrafts, setMaterialDrafts] = useState<
     ReadonlyArray<CreateSessionMaterialInput>
   >([]);
+  // Sprint 1.5 — meeting created from the optional MeetMeetingSection.
+  // When set, we forward its id as `meetingId` on the create-session
+  // payload so the backend persists the FK.
+  const [createdMeeting, setCreatedMeeting] = useState<{
+    id: string;
+    joinUrl: string;
+  } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -219,6 +227,7 @@ export function NewSessionModal({
     setSubmitting(false);
     setError(null);
     setMaterialDrafts([]);
+    setCreatedMeeting(null);
   }, [open]);
 
   // ---------- Escape + body scroll lock + focus trap ----------
@@ -360,6 +369,9 @@ export function NewSessionModal({
         title: resolvedName,
         documentIds,
         mode,
+        // Sprint 1.5 — forward the optional Meeting FK so /app/live can
+        // surface the join URL.
+        ...(createdMeeting ? { meetingId: createdMeeting.id } : {}),
         ...(Object.keys(sessionMetadata).length > 0
           ? { metadata: sessionMetadata }
           : {}),
@@ -573,14 +585,19 @@ export function NewSessionModal({
 
           {/* --- Reunión asociada (Sprint 1 — Meet only) ---
             * Opcional. Crea un Google Meet usando el OAuth conectado, copia
-            * el link al portapapeles y muestra confirmación. NO bloquea la
-            * creación de la sesión — es un value-add para compartir el
-            * link con asistentes externos. */}
+            * el link al portapapeles y muestra confirmación. Sprint 1.5
+            * adds: readonly URL display, Open/Copy/Invite buttons, Google-
+            * connected gating, and the link-back into the session payload
+            * via the `meetingId` prop. */}
           <Field
             label="Reunión asociada (opcional)"
             hint="Generá un Google Meet y copiamos el link al portapapeles."
           >
-            <MeetMeetingSection sessionTitle={name.trim()} />
+            <MeetMeetingSection
+              sessionTitle={name.trim()}
+              createdMeeting={createdMeeting}
+              onMeetingCreated={(m) => setCreatedMeeting(m)}
+            />
           </Field>
 
           {/* --- Idioma --- */}
@@ -1696,26 +1713,43 @@ function MaterialDraftsSection({
 // ---------------------------------------------------------------------
 // MeetMeetingSection — optional "Crear reunión de Meet" button.
 //
-// On success: copies `join_url` to the clipboard and shows a green
-// confirmation badge. On error: surfaces a contextual Spanish message
-// for 412 (not connected) / 401 (refresh failed), or the raw message
-// for anything else.
+// Sprint 1 (legacy):
+//   - One button.
+//   - On success: copies `join_url` + green confirmation badge.
+//   - On error: contextual Spanish for 412 (not connected) / 401 (refresh
+//     failed), or the raw message for anything else.
 //
-// This section is COMPLETELY independent of session creation — the
-// user can still create the session without ever clicking the button.
+// Sprint 1.5 additions:
+//   - Disable the create button when Google is NOT connected (via
+//     `useIntegrations()`). Show an inline message pointing to
+//     `/app/settings#reuniones`.
+//   - After successful creation, display the FULL URL in a readonly text
+//     field + 3 action buttons (Abrir en Meet / Copiar link / Invitar por
+//     email).
+//   - Lift the created meeting id up to the modal via `onMeetingCreated`
+//     so the session create payload can carry the `meetingId` FK.
+//   - Small info line about expiration + tab-share.
+//
+// This section is COMPLETELY independent of session creation — the user
+// can still create the session without ever clicking the button.
 // ---------------------------------------------------------------------
 
 function MeetMeetingSection({
   sessionTitle,
+  createdMeeting,
+  onMeetingCreated,
 }: {
   sessionTitle: string;
+  createdMeeting: { id: string; joinUrl: string } | null;
+  onMeetingCreated: (meeting: { id: string; joinUrl: string }) => void;
 }): JSX.Element {
   const { createMeeting, loading } = useMeet();
-  const [success, setSuccess] = useState<string | null>(null);
+  const { integrations, hasFetched: integrationsFetched } = useIntegrations();
+  const googleConnected = integrations.some((i) => i.provider === "google");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleCreate = async (): Promise<void> => {
-    setSuccess(null);
     setLocalError(null);
     try {
       const title = sessionTitle.length > 0 ? sessionTitle : undefined;
@@ -1725,19 +1759,16 @@ function MeetMeetingSection({
           await navigator.clipboard.writeText(meeting.joinUrl);
         }
       } catch {
-        // Clipboard write can fail in non-secure contexts. Still treat
-        // creation as a success; we surface the link in the badge.
+        // Clipboard write can fail in non-secure contexts.
       }
-      setSuccess(
-        `Reunión creada — link copiado al portapapeles (${meeting.joinUrl})`,
-      );
+      onMeetingCreated({ id: meeting.id, joinUrl: meeting.joinUrl });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       // FetchApiClient surfaces "API 412 /path: detail" — pattern-match
       // the status code from there.
       if (/\bAPI 412\b/.test(msg)) {
         setLocalError(
-          'Conectá tu cuenta Google en Configuración → Reuniones primero.',
+          "Conectá tu cuenta Google en Configuración → Reuniones primero.",
         );
       } else if (/\bAPI 401\b/.test(msg)) {
         setLocalError("Tu sesión Google expiró. Reconectá tu cuenta.");
@@ -1751,23 +1782,123 @@ function MeetMeetingSection({
     }
   };
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => {
-          void handleCreate();
-        }}
-        disabled={loading}
-        style={{ alignSelf: "flex-start" }}
-      >
-        {loading ? "Creando reunión…" : "Crear reunión de Meet"}
-      </Button>
+  const handleCopy = async (): Promise<void> => {
+    if (!createdMeeting) return;
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(createdMeeting.joinUrl);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1500);
+      }
+    } catch {
+      // Silent — URL is visible in the readonly input.
+    }
+  };
 
-      {success ? (
+  const handleOpen = (): void => {
+    if (typeof window === "undefined" || !createdMeeting) return;
+    window.open(createdMeeting.joinUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleInvite = (): void => {
+    if (typeof window === "undefined" || !createdMeeting) return;
+    const subject = encodeURIComponent("Invitación a reunión");
+    const body = encodeURIComponent(
+      `Te invito a una reunión: ${createdMeeting.joinUrl}`,
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  // Gating: we wait for the integrations list to settle before deciding —
+  // otherwise the button briefly flickers from disabled to enabled on
+  // mount. While `integrationsFetched` is false, we render the button
+  // enabled-but-checking-state (loading prop already covers that path).
+  const createDisabled = loading || (integrationsFetched && !googleConnected);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {createdMeeting ? (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            padding: 12,
+            background: "var(--color-bg-soft)",
+            border: "1px solid var(--color-border)",
+            borderRadius: 12,
+          }}
+        >
+          <span
+            className="mono"
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.6px",
+              textTransform: "uppercase",
+              color: "var(--color-text-mid)",
+            }}
+          >
+            Link de la reunión
+          </span>
+          <Input
+            value={createdMeeting.joinUrl}
+            readOnly
+            aria-label="URL de la reunión creada"
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <Button variant="primary" size="sm" onClick={handleOpen}>
+              Abrir en Meet
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                void handleCopy();
+              }}
+            >
+              {copied ? "¡Copiado!" : "Copiar link"}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleInvite}>
+              Invitar por email
+            </Button>
+          </div>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 11,
+              color: "var(--color-text-mid)",
+              lineHeight: 1.4,
+            }}
+          >
+            El link expira si nadie se une por 1 hora. Susurra escucha vía
+            tab-share una vez que abras la reunión.
+          </p>
+        </div>
+      ) : (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            void handleCreate();
+          }}
+          disabled={createDisabled}
+          style={{ alignSelf: "flex-start" }}
+        >
+          {loading ? "Creando reunión…" : "Crear reunión de Meet"}
+        </Button>
+      )}
+
+      {!createdMeeting && integrationsFetched && !googleConnected ? (
         <Card
-          variant="soft"
+          variant="warm"
           style={{
             color: "var(--color-text)",
             fontSize: 13,
@@ -1775,7 +1906,17 @@ function MeetMeetingSection({
             padding: "10px 12px",
           }}
         >
-          {success}
+          Conectá tu cuenta Google en{" "}
+          <a
+            href="/app/settings#reuniones"
+            style={{
+              color: "var(--color-coral, oklch(70% 0.18 25))",
+              textDecoration: "underline",
+            }}
+          >
+            Configuración → Reuniones
+          </a>{" "}
+          para poder crear reuniones.
         </Card>
       ) : null}
 

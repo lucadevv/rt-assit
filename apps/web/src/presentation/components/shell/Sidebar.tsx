@@ -24,6 +24,7 @@ import {
   FilmIcon,
   HomeIcon,
   LiveIcon,
+  MonitorIcon,
   SettingsIcon,
   UserIcon,
 } from "@/design-system/icons";
@@ -44,6 +45,7 @@ const NAV_ITEMS: readonly NavItem[] = [
   { href: "/app/live", label: "Live", icon: <LiveIcon size={18} /> },
   { href: "/app/knowledge", label: "Knowledge", icon: <BookIcon size={18} /> },
   { href: "/app/personas", label: "Personas", icon: <UserIcon size={18} /> },
+  { href: "/app/meetings", label: "Reuniones", icon: <MonitorIcon size={18} /> },
   { href: "/app/recordings", label: "Grabaciones", icon: <FilmIcon size={18} /> },
   { href: "/app/settings", label: "Configuración", icon: <SettingsIcon size={18} /> },
   { href: "/app/billing", label: "Facturación", icon: <CardIcon size={18} /> },

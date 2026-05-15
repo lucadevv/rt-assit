@@ -51,6 +51,11 @@ class Session:
     created before scribe mode existed and for code paths that don't supply
     a mode (most tests, legacy callers). The DB migration also defaults
     existing rows to ``'agent'``."""
+    meeting_id: Optional[str] = None
+    """Optional FK to ``meetings.id``. Sprint 1.5 wires the session ↔
+    meeting association so /app/live can surface the join URL alongside
+    the live controls. Nullable: sessions without an associated Meet
+    invite (the default) keep ``None`` and the UI hides the meeting card."""
 
     @property
     def status(self) -> SessionStatus:

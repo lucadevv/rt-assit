@@ -39,6 +39,12 @@ export interface CreateSessionInput {
    * camel → snake mapping is identity (`mode`).
    */
   mode?: SessionMode;
+  /**
+   * Sprint 1.5 — optional id of a previously-created Meeting row. The
+   * adapter forwards this as `meeting_id` (snake) and the backend verifies
+   * ownership before persisting the FK.
+   */
+  meetingId?: string | null;
 }
 
 export interface SessionDetail {

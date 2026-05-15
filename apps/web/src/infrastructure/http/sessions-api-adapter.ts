@@ -39,6 +39,12 @@ interface SessionResponseRaw {
    * non-nullable.
    */
   mode?: string | null;
+  /** Sprint 1.5 — optional FK to a Meeting row. */
+  meeting_id?: string | null;
+  /** Sprint 1.5 — only populated by /api/sessions/{id} (SessionDetail). */
+  meeting_url?: string | null;
+  /** Sprint 1.5 — only populated by /api/sessions/{id} (SessionDetail). */
+  meeting_code?: string | null;
 }
 
 interface TranscriptResponseRaw {
@@ -123,6 +129,9 @@ function mapSession(raw: SessionResponseRaw): Session {
     actionItems: [...raw.action_items],
     status: normaliseStatus(raw.status),
     mode: normaliseMode(raw.mode),
+    meetingId: raw.meeting_id ?? null,
+    meetingUrl: raw.meeting_url ?? null,
+    meetingCode: raw.meeting_code ?? null,
   };
 }
 
@@ -175,6 +184,11 @@ export class SessionsApiAdapter implements SessionsApiPort {
     // `mode` is a single word so camel → snake is identity. Old backends
     // (pre-I1) silently ignore unknown body keys, so it's safe to ship.
     if (input.mode !== undefined) body["mode"] = input.mode;
+    // Sprint 1.5 — forward the optional meeting FK. The backend verifies
+    // ownership before persisting; older backends silently ignore the key.
+    if (input.meetingId !== undefined && input.meetingId !== null) {
+      body["meeting_id"] = input.meetingId;
+    }
     // Merge documentIds into metadata so we ship a single bag — backend
     // ignores unknown keys, but a future endpoint update can pick them up
     // without an additional REST contract.

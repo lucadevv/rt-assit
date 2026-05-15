@@ -152,6 +152,7 @@ async def create_session(
             title=body.title,
             metadata=body.metadata,
             mode=body.mode,
+            meeting_id=body.meeting_id,
         )
     except ValidationError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -323,8 +324,36 @@ async def get_session(
         raise HTTPException(status_code=404, detail=str(e)) from e
 
     scenario_id = detail.session.scenario
+
+    # Sprint 1.5 — enrich the session response with meeting metadata when
+    # the row has an associated Meeting. A side fetch against the meetings
+    # repo keeps this concern out of GetSessionUseCase (which doesn't take
+    # a meetings_repo); the cost is one extra SQL read, only when the FK is
+    # set. Failures here degrade silently — the session shape stays valid
+    # without the meeting fields.
+    session_payload = SessionResponse.from_domain(detail.session)
+    if detail.session.meeting_id:
+        try:
+            from app.presentation.deps import get_meetings_repository
+
+            meetings_repo = get_meetings_repository()
+            meeting = meetings_repo.get(detail.session.meeting_id)
+            if meeting is not None and meeting.user_id == user.id:
+                session_payload = session_payload.model_copy(
+                    update={
+                        "meeting_url": meeting.join_url,
+                        "meeting_code": _extract_meeting_code(meeting.join_url),
+                    }
+                )
+        except Exception as e:  # noqa: BLE001 — never block detail on enrichment
+            logger.warning(
+                "[Sessions] meeting enrichment failed for session=%s: %s",
+                detail.session.id,
+                e,
+            )
+
     return SessionDetailResponse(
-        session=SessionResponse.from_domain(detail.session),
+        session=session_payload,
         transcripts=[TranscriptResponse.from_domain(t) for t in detail.transcripts],
         hints=[HintResponse.from_domain(h) for h in detail.hints],
         speakers=[
@@ -333,6 +362,23 @@ async def get_session(
         ],
         tags=list(detail.tags),
     )
+
+
+def _extract_meeting_code(join_url: str) -> Optional[str]:
+    """Return the human-readable code from a meeting URL.
+
+    For Google Meet, ``https://meet.google.com/abc-defg-hij`` -> ``abc-defg-hij``.
+    Falls back to ``None`` if the URL doesn't match the expected shape. Used by
+    the SessionDetail enrichment so the live UI can render the code without
+    re-parsing the URL on the client."""
+    try:
+        from urllib.parse import urlparse
+
+        parsed = urlparse(join_url)
+        path = (parsed.path or "").strip("/")
+        return path if path else None
+    except Exception:  # noqa: BLE001
+        return None
 
 
 @router.patch("/api/sessions/{session_id}", response_model=SessionResponse)

@@ -21,7 +21,7 @@ from app.domain.entities.user import User
 from app.infrastructure.meet.google_meet_client import MeetApiError
 from app.presentation.api.meetings_router import router as meetings_router_module
 from app.presentation.auth.middleware import get_current_user
-from app.presentation.deps import get_meet_provider
+from app.presentation.deps import get_meet_provider, get_meetings_repository
 
 
 # ---------------------------------------------------------------------------
@@ -71,6 +71,29 @@ class _FakeMeetProvider:
         return self.next_result
 
 
+class _FakeMeetingsRepository:
+    """In-memory MeetingsRepository — sufficient for the list/delete tests."""
+
+    def __init__(self) -> None:
+        self.meetings: dict[str, Meeting] = {}
+        self.deleted_ids: list[str] = []
+
+    def save(self, meeting: Meeting) -> None:
+        self.meetings[meeting.id] = meeting
+
+    def get(self, meeting_id: str) -> Meeting | None:
+        return self.meetings.get(meeting_id)
+
+    def list_for_user(self, user_id: str, limit: int = 50) -> list[Meeting]:
+        rows = [m for m in self.meetings.values() if m.user_id == user_id]
+        rows.sort(key=lambda m: m.created_at, reverse=True)
+        return rows[:limit]
+
+    def delete(self, meeting_id: str) -> None:
+        self.deleted_ids.append(meeting_id)
+        self.meetings.pop(meeting_id, None)
+
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -82,12 +105,23 @@ def fake_provider() -> _FakeMeetProvider:
 
 
 @pytest.fixture()
-def app(fake_provider: _FakeMeetProvider) -> FastAPI:
+def fake_meetings_repo() -> _FakeMeetingsRepository:
+    return _FakeMeetingsRepository()
+
+
+@pytest.fixture()
+def app(
+    fake_provider: _FakeMeetProvider,
+    fake_meetings_repo: _FakeMeetingsRepository,
+) -> FastAPI:
     fastapi_app = FastAPI()
     fastapi_app.include_router(meetings_router_module)
 
     fastapi_app.dependency_overrides[get_current_user] = lambda: _make_user()
     fastapi_app.dependency_overrides[get_meet_provider] = lambda: fake_provider
+    fastapi_app.dependency_overrides[get_meetings_repository] = (
+        lambda: fake_meetings_repo
+    )
     return fastapi_app
 
 
@@ -157,3 +191,92 @@ def test_create_meet_when_meet_api_fails_returns_502(
     detail = resp.json()["detail"]
     assert "meet_api_error" in detail
     assert "500" in detail
+
+
+# ---------------------------------------------------------------------------
+# Sprint 1.5 — list + delete
+# ---------------------------------------------------------------------------
+
+
+def _make_meeting(
+    meeting_id: str,
+    user_id: str = "user-test-1",
+    created_at: int = 1_700_000_000_000,
+    title: str | None = None,
+) -> Meeting:
+    return Meeting(
+        id=meeting_id,
+        user_id=user_id,
+        provider="meet",
+        join_url=f"https://meet.google.com/{meeting_id}",
+        provider_meeting_id=f"spaces/{meeting_id}",
+        title=title,
+        created_at=created_at,
+    )
+
+
+def test_list_my_meetings_returns_only_owner_meetings(
+    client: TestClient, fake_meetings_repo: _FakeMeetingsRepository
+) -> None:
+    # The auth dep injects user-test-1 — seed two of theirs + one foreign.
+    fake_meetings_repo.save(
+        _make_meeting("abc-defg-hij", created_at=1_700_000_100_000, title="first")
+    )
+    fake_meetings_repo.save(
+        _make_meeting("xyz-pqrs-tuv", created_at=1_700_000_200_000, title="second")
+    )
+    fake_meetings_repo.save(
+        _make_meeting("foreign-mtg", user_id="someone-else", title="not mine")
+    )
+
+    resp = client.get("/api/meetings")
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert isinstance(body, list)
+    # 2 owned meetings, newest-first.
+    assert len(body) == 2
+    assert body[0]["id"] == "xyz-pqrs-tuv"
+    assert body[1]["id"] == "abc-defg-hij"
+    assert body[0]["provider"] == "meet"
+    assert body[0]["join_url"].startswith("https://meet.google.com/")
+    assert "provider_meeting_id" in body[0]
+
+
+def test_list_my_meetings_empty(
+    client: TestClient,
+) -> None:
+    resp = client.get("/api/meetings")
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+def test_delete_meeting_removes_owned_row(
+    client: TestClient, fake_meetings_repo: _FakeMeetingsRepository
+) -> None:
+    fake_meetings_repo.save(_make_meeting("to-be-removed"))
+
+    resp = client.delete("/api/meetings/to-be-removed")
+    assert resp.status_code == 200, resp.text
+    assert resp.json() == {"deleted": True}
+    assert fake_meetings_repo.deleted_ids == ["to-be-removed"]
+    assert "to-be-removed" not in fake_meetings_repo.meetings
+
+
+def test_delete_meeting_returns_404_when_missing(
+    client: TestClient,
+) -> None:
+    resp = client.delete("/api/meetings/does-not-exist")
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "meeting_not_found"
+
+
+def test_delete_meeting_returns_404_for_other_user_meeting(
+    client: TestClient, fake_meetings_repo: _FakeMeetingsRepository
+) -> None:
+    fake_meetings_repo.save(_make_meeting("foreign", user_id="someone-else"))
+
+    resp = client.delete("/api/meetings/foreign")
+    assert resp.status_code == 404
+    # Repo MUST NOT have been touched — we don't leak cross-user existence.
+    assert fake_meetings_repo.deleted_ids == []
+    assert "foreign" in fake_meetings_repo.meetings

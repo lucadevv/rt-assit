@@ -615,7 +615,9 @@ def get_session_tags_repository() -> SessionTagsRepository:
 def get_create_session_use_case(
     repo: SessionsRepository = Depends(get_sessions_repository),
 ) -> CreateSessionUseCase:
-    return CreateSessionUseCase(repo)
+    # Sprint 1.5: wire the meetings repo so the use case can verify
+    # meeting ownership when a session is created with `meeting_id`.
+    return CreateSessionUseCase(repo, meetings_repo=get_meetings_repository())
 
 
 def get_get_session_use_case(

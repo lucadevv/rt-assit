@@ -607,6 +607,18 @@ def init_db() -> None:
                 "ALTER TABLE sessions ADD COLUMN mode TEXT NOT NULL DEFAULT 'agent'"
             )
 
+        # Sprint 1.5 — session ↔ meeting association (idempotent). Adds
+        # ``meeting_id`` to ``sessions`` so a row can optionally point at a
+        # provider-agnostic Meeting created via /api/meetings/meet/create.
+        # NULL-safe (nullable column) so every pre-existing session row
+        # keeps working with no associated meeting. The link is purely a
+        # value-add — the live UI surfaces the join URL on /app/live so the
+        # user can open Meet and Susurra listens via tab-share.
+        if not _column_exists(cursor, "sessions", "meeting_id"):
+            cursor.execute(
+                "ALTER TABLE sessions ADD COLUMN meeting_id TEXT"
+            )
+
         # B0 migration (idempotent): seed dev_default user + remap legacy
         # documents.user_id='default' -> 'dev_default'.
         conn.execute(

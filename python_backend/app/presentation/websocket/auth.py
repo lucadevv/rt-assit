@@ -130,6 +130,11 @@ async def authenticate_service_websocket(
         websocket: The incoming WebSocket connection.
         expected_token_env_var: Name of the env var holding the expected
             shared token (e.g. ``"RT_GO_SERVICE_TOKEN"``).
+
+    Future: a Chrome extension and a desktop app will both stream PCM
+    via the same rt_go ingress. The auth model (service_token + user JWT)
+    is already provider-agnostic — no backend changes are needed when
+    those clients ship. See AudioCaptureStrategy port docs (frontend).
     """
     if is_dev_mode():
         return True

@@ -85,6 +85,8 @@ import { ListConnectedIntegrationsUseCase } from "@/application/use-cases/list-c
 import { StartOAuthConnectUseCase } from "@/application/use-cases/start-oauth-connect";
 import { DisconnectOAuthProviderUseCase } from "@/application/use-cases/disconnect-oauth-provider";
 import { CreateMeetMeetingUseCase } from "@/application/use-cases/create-meet-meeting";
+import { ListMyMeetingsUseCase } from "@/application/use-cases/list-my-meetings";
+import { DeleteMeetingUseCase } from "@/application/use-cases/delete-meeting";
 import { BillingApiAdapter } from "@/infrastructure/http/billing-api-adapter";
 import { ListPlansUseCase } from "@/application/use-cases/list-plans";
 import { GetSubscriptionUseCase } from "@/application/use-cases/get-subscription";
@@ -224,6 +226,9 @@ export interface SusurraContainer {
   // Meeting Frame — Meeting creation (Sprint 1: Meet only)
   meetingsApi: MeetingsApiPort;
   createMeetMeeting: CreateMeetMeetingUseCase;
+  // Meeting Frame — Sprint 1.5: list + delete (provider-agnostic)
+  listMyMeetings: ListMyMeetingsUseCase;
+  deleteMeeting: DeleteMeetingUseCase;
 
   // F7 — Billing
   billingApi: BillingApiPort;
@@ -285,6 +290,16 @@ export function useContainer(): SusurraContainer {
     const recordingsApi = new RecordingsApiAdapter(apiClient);
     const shareApi = new ShareApiAdapter(apiClient);
 
+    // AudioCaptureStrategy selection (currently hard-coded to tab-share).
+    //
+    // Sprint 2 plan: read `tweaksStore.audioStrategy` ('tab-share' |
+    // 'chrome-extension' | 'recall-ai') and instantiate accordingly. Users
+    // will pick their preferred strategy from Settings → Reuniones.
+    //
+    // For now, only TabShareAudioStrategy is functional. The other strategy
+    // classes (ChromeExtensionAudioStrategy, RecallAiAudioStrategy) exist as
+    // placeholders under `infrastructure/meeting/audio-strategies/` to make
+    // the Strategy Pattern visible in the codebase structure.
     const audioCapture = new TabShareAudioStrategy();
     const transcriptsStream = new TranscriptsStreamWS({ url: TRANSCRIPTS_WS_URL });
     const pipOverlay = new DocumentPipAdapter();
@@ -373,6 +388,8 @@ export function useContainer(): SusurraContainer {
 
       meetingsApi,
       createMeetMeeting: new CreateMeetMeetingUseCase(meetingsApi),
+      listMyMeetings: new ListMyMeetingsUseCase(meetingsApi),
+      deleteMeeting: new DeleteMeetingUseCase(meetingsApi),
 
       billingApi,
       listPlans: new ListPlansUseCase(billingApi),
