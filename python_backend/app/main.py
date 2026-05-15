@@ -33,6 +33,7 @@ from app.presentation.api import (
     documents_router,
     health_router,
     me_router,
+    meetings_router,
     notifications_router,
     oauth_router,
     personas_router,
@@ -290,6 +291,7 @@ def create_app() -> FastAPI:
     app.include_router(api_keys_router.router, tags=["api-keys"])
     app.include_router(admin_router.router, tags=["admin"])
     app.include_router(oauth_router.router, tags=["oauth"])
+    app.include_router(meetings_router.router, tags=["meetings"])
     app.include_router(personas_router.router, tags=["personas"])
     app.include_router(
         session_materials_router.router, tags=["session-materials"]

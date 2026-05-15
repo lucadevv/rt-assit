@@ -552,6 +552,23 @@ def init_db() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_oauth_user_provider
                 ON oauth_credentials(user_id, provider);
+
+            -- Meeting Frame Sprint 1+: persisted meetings ------------------
+            -- Provider-agnostic. ``provider_meeting_id`` stores the
+            -- provider's native identifier (e.g. "spaces/abc123" for
+            -- Google Meet) so we can later operate on the meeting via the
+            -- provider API without parsing ``join_url``.
+            CREATE TABLE IF NOT EXISTS meetings (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                provider TEXT NOT NULL,
+                join_url TEXT NOT NULL,
+                provider_meeting_id TEXT NOT NULL,
+                title TEXT,
+                created_at INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_meetings_user
+                ON meetings(user_id, created_at DESC);
             """
         )
 

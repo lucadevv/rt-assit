@@ -62,6 +62,7 @@ import { useScenarios } from "@/presentation/hooks/use-scenarios";
 import { useDocuments } from "@/presentation/hooks/use-documents";
 import { usePersonas } from "@/presentation/hooks/use-personas";
 import { useCurrentUser } from "@/presentation/hooks/use-current-user";
+import { useMeet } from "@/presentation/hooks/use-meet";
 import { useContainer } from "@/infrastructure/di/container";
 import { useSessionStore } from "@/application/stores/session.store";
 import { useAgentStore } from "@/application/stores/agent.store";
@@ -568,6 +569,18 @@ export function NewSessionModal({
                 )
               }
             />
+          </Field>
+
+          {/* --- Reunión asociada (Sprint 1 — Meet only) ---
+            * Opcional. Crea un Google Meet usando el OAuth conectado, copia
+            * el link al portapapeles y muestra confirmación. NO bloquea la
+            * creación de la sesión — es un value-add para compartir el
+            * link con asistentes externos. */}
+          <Field
+            label="Reunión asociada (opcional)"
+            hint="Generá un Google Meet y copiamos el link al portapapeles."
+          >
+            <MeetMeetingSection sessionTitle={name.trim()} />
           </Field>
 
           {/* --- Idioma --- */}
@@ -1676,6 +1689,123 @@ function MaterialDraftsSection({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------
+// MeetMeetingSection — optional "Crear reunión de Meet" button.
+//
+// On success: copies `join_url` to the clipboard and shows a green
+// confirmation badge. On error: surfaces a contextual Spanish message
+// for 412 (not connected) / 401 (refresh failed), or the raw message
+// for anything else.
+//
+// This section is COMPLETELY independent of session creation — the
+// user can still create the session without ever clicking the button.
+// ---------------------------------------------------------------------
+
+function MeetMeetingSection({
+  sessionTitle,
+}: {
+  sessionTitle: string;
+}): JSX.Element {
+  const { createMeeting, loading } = useMeet();
+  const [success, setSuccess] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const handleCreate = async (): Promise<void> => {
+    setSuccess(null);
+    setLocalError(null);
+    try {
+      const title = sessionTitle.length > 0 ? sessionTitle : undefined;
+      const meeting = await createMeeting(title);
+      try {
+        if (typeof navigator !== "undefined" && navigator.clipboard) {
+          await navigator.clipboard.writeText(meeting.joinUrl);
+        }
+      } catch {
+        // Clipboard write can fail in non-secure contexts. Still treat
+        // creation as a success; we surface the link in the badge.
+      }
+      setSuccess(
+        `Reunión creada — link copiado al portapapeles (${meeting.joinUrl})`,
+      );
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      // FetchApiClient surfaces "API 412 /path: detail" — pattern-match
+      // the status code from there.
+      if (/\bAPI 412\b/.test(msg)) {
+        setLocalError(
+          'Conectá tu cuenta Google en Configuración → Reuniones primero.',
+        );
+      } else if (/\bAPI 401\b/.test(msg)) {
+        setLocalError("Tu sesión Google expiró. Reconectá tu cuenta.");
+      } else if (/\bAPI 502\b/.test(msg)) {
+        setLocalError(
+          "Google Meet no pudo crear la reunión. Probá de nuevo en un rato.",
+        );
+      } else {
+        setLocalError(msg);
+      }
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          void handleCreate();
+        }}
+        disabled={loading}
+        style={{ alignSelf: "flex-start" }}
+      >
+        {loading ? "Creando reunión…" : "Crear reunión de Meet"}
+      </Button>
+
+      {success ? (
+        <Card
+          variant="soft"
+          style={{
+            color: "var(--color-text)",
+            fontSize: 13,
+            fontWeight: 500,
+            padding: "10px 12px",
+          }}
+        >
+          {success}
+        </Card>
+      ) : null}
+
+      {localError ? (
+        <Card
+          variant="warm"
+          style={{
+            color: "oklch(58% 0.22 25)",
+            fontSize: 13,
+            fontWeight: 500,
+            padding: "10px 12px",
+          }}
+        >
+          {localError}
+          {localError.startsWith("Conectá tu cuenta Google") ? (
+            <>
+              {" "}
+              <a
+                href="/app/settings#reuniones"
+                style={{
+                  color: "var(--color-coral, oklch(70% 0.18 25))",
+                  textDecoration: "underline",
+                }}
+              >
+                Ir a Configuración
+              </a>
+            </>
+          ) : null}
+        </Card>
+      ) : null}
     </div>
   );
 }

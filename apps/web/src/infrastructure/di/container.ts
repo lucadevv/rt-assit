@@ -37,6 +37,7 @@ import { SessionMaterialsApiAdapter } from "@/infrastructure/http/session-materi
 import { PreferencesApiAdapter } from "@/infrastructure/http/preferences-api-adapter";
 import { IntegrationsApiAdapter } from "@/infrastructure/http/integrations-api-adapter";
 import { OAuthApiAdapter } from "@/infrastructure/http/oauth-api-adapter";
+import { MeetingsApiAdapter } from "@/infrastructure/http/meetings-api-adapter";
 import { UsersApiAdapter } from "@/infrastructure/http/users-api-adapter";
 import { TabShareAudioStrategy } from "@/infrastructure/meeting/audio-strategies/tab-share-audio.strategy";
 import { AudioUplinkWS } from "@/infrastructure/ws/audio-uplink-ws";
@@ -83,6 +84,7 @@ import { ListIntegrationsUseCase } from "@/application/use-cases/list-integratio
 import { ListConnectedIntegrationsUseCase } from "@/application/use-cases/list-connected-integrations";
 import { StartOAuthConnectUseCase } from "@/application/use-cases/start-oauth-connect";
 import { DisconnectOAuthProviderUseCase } from "@/application/use-cases/disconnect-oauth-provider";
+import { CreateMeetMeetingUseCase } from "@/application/use-cases/create-meet-meeting";
 import { BillingApiAdapter } from "@/infrastructure/http/billing-api-adapter";
 import { ListPlansUseCase } from "@/application/use-cases/list-plans";
 import { GetSubscriptionUseCase } from "@/application/use-cases/get-subscription";
@@ -114,6 +116,7 @@ import type { ShareApiPort } from "@/application/ports/share-api.port";
 import type { PreferencesApiPort } from "@/application/ports/preferences-api.port";
 import type { IntegrationsApiPort } from "@/application/ports/integrations-api.port";
 import type { OAuthApiPort } from "@/application/ports/oauth-api.port";
+import type { MeetingsApiPort } from "@/application/ports/meetings-api.port";
 import type { UsersApiPort } from "@/application/ports/users-api.port";
 import type { BillingApiPort } from "@/application/ports/billing-api.port";
 import type { PipOverlayPort } from "@/application/ports/pip-overlay.port";
@@ -218,6 +221,10 @@ export interface SusurraContainer {
   startOAuthConnect: StartOAuthConnectUseCase;
   disconnectOAuthProvider: DisconnectOAuthProviderUseCase;
 
+  // Meeting Frame — Meeting creation (Sprint 1: Meet only)
+  meetingsApi: MeetingsApiPort;
+  createMeetMeeting: CreateMeetMeetingUseCase;
+
   // F7 — Billing
   billingApi: BillingApiPort;
   listPlans: ListPlansUseCase;
@@ -272,6 +279,7 @@ export function useContainer(): SusurraContainer {
     const preferencesApi = new PreferencesApiAdapter(apiClient);
     const integrationsApi = new IntegrationsApiAdapter(apiClient);
     const oauthApi = new OAuthApiAdapter(apiClient);
+    const meetingsApi = new MeetingsApiAdapter(apiClient);
     const usersApi = new UsersApiAdapter(apiClient);
     const billingApi = new BillingApiAdapter(apiClient);
     const recordingsApi = new RecordingsApiAdapter(apiClient);
@@ -362,6 +370,9 @@ export function useContainer(): SusurraContainer {
       listConnectedIntegrations: new ListConnectedIntegrationsUseCase(oauthApi),
       startOAuthConnect: new StartOAuthConnectUseCase(oauthApi),
       disconnectOAuthProvider: new DisconnectOAuthProviderUseCase(oauthApi),
+
+      meetingsApi,
+      createMeetMeeting: new CreateMeetMeetingUseCase(meetingsApi),
 
       billingApi,
       listPlans: new ListPlansUseCase(billingApi),

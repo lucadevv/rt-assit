@@ -2070,3 +2070,46 @@ def get_google_oauth_client() -> "GoogleOAuthClient":  # noqa: F821
         client_secret=settings.google_client_secret,
         redirect_uri=settings.google_redirect_uri,
     )
+
+
+# ---------------------------------------------------------------------------
+# Meeting Frame — Meetings repository + Google Meet client + MeetProvider
+# ---------------------------------------------------------------------------
+
+
+@lru_cache(maxsize=1)
+def get_meetings_repository() -> "MeetingsRepository":  # noqa: F821
+    """SQLite-backed meetings repository (singleton — cheap to share)."""
+    from app.application.ports.meetings_repository import MeetingsRepository  # noqa: F401
+    from app.infrastructure.persistence.sqlite.meetings_repository import (
+        SqliteMeetingsRepository,
+    )
+
+    return SqliteMeetingsRepository(db_path=str(DB_PATH))
+
+
+def get_google_meet_client() -> "GoogleMeetClient":  # noqa: F821
+    """Stateless Meet REST API client. Constructed per request."""
+    from app.infrastructure.meet.google_meet_client import GoogleMeetClient
+
+    return GoogleMeetClient()
+
+
+def get_meet_provider(
+    oauth_repo: "OAuthTokenStorage" = Depends(get_oauth_repository),  # noqa: F821
+    meetings_repo: "MeetingsRepository" = Depends(get_meetings_repository),  # noqa: F821
+    google_oauth_client: "GoogleOAuthClient" = Depends(get_google_oauth_client),  # noqa: F821
+    google_meet_client: "GoogleMeetClient" = Depends(get_google_meet_client),  # noqa: F821
+) -> "MeetProvider":  # noqa: F821
+    """Wire the MeetProvider for the request scope.
+
+    Per-request construction is fine — all dependencies are either singletons
+    (oauth_repo, meetings_repo) or stateless objects (oauth/meet clients)."""
+    from app.application.services.meet_provider import MeetProvider
+
+    return MeetProvider(
+        oauth_repo=oauth_repo,
+        meetings_repo=meetings_repo,
+        google_oauth_client=google_oauth_client,
+        google_meet_client=google_meet_client,
+    )
