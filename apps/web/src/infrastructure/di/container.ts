@@ -36,6 +36,7 @@ import { PersonasApiAdapter } from "@/infrastructure/http/personas-api-adapter";
 import { SessionMaterialsApiAdapter } from "@/infrastructure/http/session-materials-api-adapter";
 import { PreferencesApiAdapter } from "@/infrastructure/http/preferences-api-adapter";
 import { IntegrationsApiAdapter } from "@/infrastructure/http/integrations-api-adapter";
+import { OAuthApiAdapter } from "@/infrastructure/http/oauth-api-adapter";
 import { UsersApiAdapter } from "@/infrastructure/http/users-api-adapter";
 import { TabShareAudioStrategy } from "@/infrastructure/meeting/audio-strategies/tab-share-audio.strategy";
 import { AudioUplinkWS } from "@/infrastructure/ws/audio-uplink-ws";
@@ -79,6 +80,9 @@ import { UpdatePreferencesUseCase } from "@/application/use-cases/update-prefere
 import { UpdateUserProfileUseCase } from "@/application/use-cases/update-user-profile";
 import { DeleteUserDataUseCase } from "@/application/use-cases/delete-user-data";
 import { ListIntegrationsUseCase } from "@/application/use-cases/list-integrations";
+import { ListConnectedIntegrationsUseCase } from "@/application/use-cases/list-connected-integrations";
+import { StartOAuthConnectUseCase } from "@/application/use-cases/start-oauth-connect";
+import { DisconnectOAuthProviderUseCase } from "@/application/use-cases/disconnect-oauth-provider";
 import { BillingApiAdapter } from "@/infrastructure/http/billing-api-adapter";
 import { ListPlansUseCase } from "@/application/use-cases/list-plans";
 import { GetSubscriptionUseCase } from "@/application/use-cases/get-subscription";
@@ -109,6 +113,7 @@ import type { RecordingsApiPort } from "@/application/ports/recordings-api.port"
 import type { ShareApiPort } from "@/application/ports/share-api.port";
 import type { PreferencesApiPort } from "@/application/ports/preferences-api.port";
 import type { IntegrationsApiPort } from "@/application/ports/integrations-api.port";
+import type { OAuthApiPort } from "@/application/ports/oauth-api.port";
 import type { UsersApiPort } from "@/application/ports/users-api.port";
 import type { BillingApiPort } from "@/application/ports/billing-api.port";
 import type { PipOverlayPort } from "@/application/ports/pip-overlay.port";
@@ -207,6 +212,12 @@ export interface SusurraContainer {
   deleteUserData: DeleteUserDataUseCase;
   listIntegrations: ListIntegrationsUseCase;
 
+  // Meeting Frame — OAuth (Sprint 1: Google; Sprints 2/3: Microsoft, Zoom)
+  oauthApi: OAuthApiPort;
+  listConnectedIntegrations: ListConnectedIntegrationsUseCase;
+  startOAuthConnect: StartOAuthConnectUseCase;
+  disconnectOAuthProvider: DisconnectOAuthProviderUseCase;
+
   // F7 — Billing
   billingApi: BillingApiPort;
   listPlans: ListPlansUseCase;
@@ -260,6 +271,7 @@ export function useContainer(): SusurraContainer {
     const sessionMaterialsApi = new SessionMaterialsApiAdapter(apiClient);
     const preferencesApi = new PreferencesApiAdapter(apiClient);
     const integrationsApi = new IntegrationsApiAdapter(apiClient);
+    const oauthApi = new OAuthApiAdapter(apiClient);
     const usersApi = new UsersApiAdapter(apiClient);
     const billingApi = new BillingApiAdapter(apiClient);
     const recordingsApi = new RecordingsApiAdapter(apiClient);
@@ -345,6 +357,11 @@ export function useContainer(): SusurraContainer {
       updateUserProfile: new UpdateUserProfileUseCase(usersApi),
       deleteUserData: new DeleteUserDataUseCase(usersApi),
       listIntegrations: new ListIntegrationsUseCase(integrationsApi),
+
+      oauthApi,
+      listConnectedIntegrations: new ListConnectedIntegrationsUseCase(oauthApi),
+      startOAuthConnect: new StartOAuthConnectUseCase(oauthApi),
+      disconnectOAuthProvider: new DisconnectOAuthProviderUseCase(oauthApi),
 
       billingApi,
       listPlans: new ListPlansUseCase(billingApi),

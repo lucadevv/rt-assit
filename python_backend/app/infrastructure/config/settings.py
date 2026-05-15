@@ -66,6 +66,11 @@ try:
             default="http://localhost:3000", alias="CORS_ALLOWED_ORIGINS"
         )
 
+        # Frontend (used by the OAuth popup redirect — Sprint 1) -------------
+        frontend_url: str = Field(
+            default="http://localhost:3006", alias="FRONTEND_URL"
+        )
+
         # Service tokens -----------------------------------------------------
         rt_go_service_token: Optional[str] = Field(
             default=None, alias="RT_GO_SERVICE_TOKEN"
@@ -143,6 +148,7 @@ except ModuleNotFoundError:  # pragma: no cover — fallback path
         log_level: str = "INFO"
         fernet_key: Optional[str] = None
         cors_allowed_origins: list[str] = field(default_factory=list)
+        frontend_url: str = "http://localhost:3006"
         rt_go_service_token: Optional[str] = None
         google_client_id: Optional[str] = None
         google_client_secret: Optional[str] = None
@@ -177,6 +183,7 @@ except ModuleNotFoundError:  # pragma: no cover — fallback path
                 cors_allowed_origins=_split_csv(
                     _env("CORS_ALLOWED_ORIGINS", "http://localhost:3000")
                 ),
+                frontend_url=_env("FRONTEND_URL", "http://localhost:3006"),
                 rt_go_service_token=_env_optional("RT_GO_SERVICE_TOKEN"),
                 google_client_id=_env_optional("GOOGLE_CLIENT_ID"),
                 google_client_secret=_env_optional("GOOGLE_CLIENT_SECRET"),

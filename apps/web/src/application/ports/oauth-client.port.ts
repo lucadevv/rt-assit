@@ -1,6 +1,16 @@
 // OAuth client contract for provider-specific authorization flows.
-export const OAUTH_PROVIDERS = ["google", "microsoft", "zoom"] as const;
-export type OAuthProviderId = (typeof OAUTH_PROVIDERS)[number];
+//
+// `OAuthProviderId` lives in `@/domain/entities/oauth-integration` as the
+// single source of truth (it's a domain primitive). This module re-exports
+// it for backward compatibility with existing consumers (e.g. the meeting
+// provider factory port).
+import {
+  OAUTH_PROVIDERS,
+  type OAuthProviderId,
+} from "@/domain/entities/oauth-integration";
+
+export { OAUTH_PROVIDERS };
+export type { OAuthProviderId };
 
 export interface OAuthTokens {
   accessToken: string;

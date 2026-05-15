@@ -196,25 +196,38 @@ def test_authorize_for_unknown_provider_returns_400(
 # ---------------------------------------------------------------------------
 
 
-def test_callback_with_invalid_state_returns_400(client: TestClient) -> None:
+def test_callback_with_invalid_state_redirects_to_frontend_with_error(
+    client: TestClient,
+) -> None:
+    """Sprint 1: callback now 303-redirects to the frontend popup landing
+    page so it can postMessage the opener. Errors carry `?status=error&error=...`."""
     resp = client.get(
         "/api/oauth/google/callback",
         params={"code": "abc", "state": "definitely-not-stored"},
+        follow_redirects=False,
     )
-    assert resp.status_code == 400
-    detail = resp.json()["detail"]
-    assert detail["detail"] == "invalid_state"
+    assert resp.status_code == 303, resp.text
+    location = resp.headers["location"]
+    assert "/oauth-callback" in location
+    assert "provider=google" in location
+    assert "status=error" in location
+    assert "error=invalid_state" in location
 
 
-def test_callback_with_error_param_returns_400(client: TestClient) -> None:
-    # Seed a valid state so we know the failure is the error param, not state.
+def test_callback_with_error_param_redirects_to_frontend_with_error(
+    client: TestClient,
+) -> None:
+    # Seed a valid state so we know the failure path is the error param.
     _oauth_state_store["S"] = ("user-test-1", time.time())
     resp = client.get(
         "/api/oauth/google/callback",
         params={"state": "S", "error": "access_denied"},
+        follow_redirects=False,
     )
-    assert resp.status_code == 400
-    assert resp.json()["detail"]["detail"] == "oauth_error"
+    assert resp.status_code == 303
+    location = resp.headers["location"]
+    assert "status=error" in location
+    assert "error=access_denied" in location
 
 
 def test_callback_happy_path_persists_credential(
@@ -229,12 +242,14 @@ def test_callback_happy_path_persists_credential(
     resp = client.get(
         "/api/oauth/google/callback",
         params={"code": "the-code", "state": state},
+        follow_redirects=False,
     )
-    assert resp.status_code == 200, resp.text
-    body = resp.json()
-    assert body["connected"] is True
-    assert body["provider"] == "google"
-    assert body["user_id"] == "user-test-1"
+    # Sprint 1: callback 303-redirects to the frontend popup landing page.
+    assert resp.status_code == 303, resp.text
+    location = resp.headers["location"]
+    assert "/oauth-callback" in location
+    assert "provider=google" in location
+    assert "status=success" in location
 
     # State was consumed.
     assert state not in _oauth_state_store

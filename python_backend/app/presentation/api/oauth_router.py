@@ -25,13 +25,16 @@ import secrets
 import time
 import uuid
 from typing import Any, get_args
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from app.application.ports.oauth_token_storage import OAuthTokenStorage
 from app.domain.entities.oauth_credential import OAuthCredential, OAuthProviderId
 from app.domain.entities.user import User
+from app.infrastructure.config.settings import get_settings
 from app.infrastructure.oauth.google_oauth_client import (
     GoogleOAuthClient,
     OAuthExchangeError,
@@ -91,12 +94,6 @@ class NotImplementedResponse(BaseModel):
 class AuthorizeResponse(BaseModel):
     authorization_url: str
     state: str
-
-
-class CallbackResponse(BaseModel):
-    connected: bool
-    provider: OAuthProviderId
-    user_id: str
 
 
 class RevokeResponse(BaseModel):
@@ -166,6 +163,32 @@ async def google_authorize(
     return AuthorizeResponse(authorization_url=url, state=state)
 
 
+def _callback_redirect(
+    *, provider: str, success: bool, error: str | None = None
+) -> RedirectResponse:
+    """Build the popup-landing redirect URL.
+
+    Returns a 303 redirect to ``{FRONTEND_URL}/oauth-callback?provider=...
+    &status=success|error[&error=<msg>]``. The frontend page reads the
+    params, postMessages the opener, and closes itself.
+
+    303 (See Other) is the correct status here: the original request was a
+    GET from Google's redirect, and 303 unambiguously instructs the browser
+    to follow with another GET (vs 307, which preserves the method).
+    """
+    settings = get_settings()
+    base = settings.frontend_url.rstrip("/")
+    if success:
+        url = f"{base}/oauth-callback?provider={provider}&status=success"
+    else:
+        err = error or "unknown_error"
+        url = (
+            f"{base}/oauth-callback?provider={provider}"
+            f"&status=error&error={quote(err)}"
+        )
+    return RedirectResponse(url=url, status_code=status.HTTP_303_SEE_OTHER)
+
+
 @router.get("/google/callback")
 async def google_callback(
     code: str | None = Query(default=None),
@@ -173,31 +196,31 @@ async def google_callback(
     error: str | None = Query(default=None),
     repo: OAuthTokenStorage = Depends(get_oauth_repository),
     client: GoogleOAuthClient = Depends(get_google_oauth_client),
-) -> CallbackResponse:
-    """Handle Google's redirect: validate state, exchange code, persist."""
+) -> RedirectResponse:
+    """Handle Google's redirect: validate state, exchange code, persist.
+
+    On success / failure this 303-redirects to the frontend
+    ``/oauth-callback`` page, which is what the popup is showing. That
+    page postMessages the opener and closes itself.
+    """
     if error:
         logger.warning("[oauth] /google/callback error=%s", error)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"detail": "oauth_error", "error": error},
-        )
+        return _callback_redirect(provider="google", success=False, error=error)
 
     if not state or state not in _oauth_state_store:
         logger.warning(
             "[oauth] /google/callback invalid_state state=%s",
             (state or "")[:8],
         )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"detail": "invalid_state"},
+        return _callback_redirect(
+            provider="google", success=False, error="invalid_state"
         )
 
     if not code:
         # State was valid but code missing — drop it so it can't be replayed.
         _oauth_state_store.pop(state, None)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"detail": "missing_code"},
+        return _callback_redirect(
+            provider="google", success=False, error="missing_code"
         )
 
     user_id, _ts = _oauth_state_store.pop(state)
@@ -210,18 +233,16 @@ async def google_callback(
             exc.status_code,
             exc.body,
         )
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail={"detail": "token_exchange_failed"},
-        ) from exc
+        return _callback_redirect(
+            provider="google", success=False, error="token_exchange_failed"
+        )
 
     access_token = tokens.get("access_token")
     refresh_token = tokens.get("refresh_token", "")
     expires_in = int(tokens.get("expires_in", 0))
     if not access_token:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail={"detail": "missing_access_token"},
+        return _callback_redirect(
+            provider="google", success=False, error="missing_access_token"
         )
 
     now_ms = int(time.time() * 1000)
@@ -243,7 +264,7 @@ async def google_callback(
         user_id,
         expires_in,
     )
-    return CallbackResponse(connected=True, provider="google", user_id=user_id)
+    return _callback_redirect(provider="google", success=True)
 
 
 @router.post("/google/revoke")
