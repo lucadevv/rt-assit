@@ -27,6 +27,8 @@ import { AudioSection } from "@/presentation/components/settings/AudioSection";
 import { PrivacySection } from "@/presentation/components/settings/PrivacySection";
 import { ShortcutsSection } from "@/presentation/components/settings/ShortcutsSection";
 import { IntegrationsSection } from "@/presentation/components/settings/IntegrationsSection";
+import { SettingsSection } from "@/presentation/components/settings/SettingsSection";
+import { IntegrationsList } from "@/presentation/components/settings/integrations/IntegrationsList";
 import { AccountSection } from "@/presentation/components/settings/AccountSection";
 
 export default function SettingsPage(): JSX.Element {
@@ -117,6 +119,12 @@ export default function SettingsPage(): JSX.Element {
         saving={saving}
       />
       <ShortcutsSection />
+      <SettingsSection
+        title="Reuniones"
+        description="Conectá tus cuentas para que Susurra se una a tus reuniones de Meet, Zoom o Teams."
+      >
+        <IntegrationsList />
+      </SettingsSection>
       <IntegrationsSection />
       <AccountSection user={user} />
     </div>

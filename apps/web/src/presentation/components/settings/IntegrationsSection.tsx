@@ -138,8 +138,8 @@ export function IntegrationsSection(): JSX.Element {
 
   return (
     <SettingsSection
-      title="Integraciones"
-      description="Conectá Susurra con tus herramientas. Vienen pronto."
+      title="Otras integraciones"
+      description="Calendar, chat y notas — próximamente."
       bare
     >
       <div
