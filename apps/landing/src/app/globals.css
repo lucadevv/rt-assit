@@ -1,1 +1,73 @@
 @import "tailwindcss";
+
+@theme {
+  /* Susurra brand colors */
+  --color-carbon: #1A1A24;
+  --color-carbon-smoke: #2C2A3A;
+  --color-coral: #FF7B5C;
+  --color-coral-deep: #E55A3F;
+  --color-ivory: #F5EFE6;
+  --color-ivory-warm: #F0E8D8;
+  --color-sand: #B8A89A;
+
+  /* Typography */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-instrument-serif);
+
+  /* Radii */
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+}
+
+/* Custom text opacity layers + ambient tokens */
+:root {
+  --line: rgba(26, 26, 36, 0.08);
+  --line-strong: rgba(26, 26, 36, 0.15);
+  --text-dim: rgba(26, 26, 36, 0.65);
+  --text-mute: rgba(26, 26, 36, 0.45);
+  --coral-soft: rgba(255, 123, 92, 0.12);
+}
+
+/* Smooth scrolling for anchor nav */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-ivory);
+  color: var(--color-carbon);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--color-coral);
+  color: white;
+}
+
+/* Floating chip animations from source */
+@keyframes floatA {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes floatB {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse-coral {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Utility-style animation classes (used by Hero floating chips and live dot) */
+.anim-float-a { animation: floatA 5s ease-in-out infinite; }
+.anim-float-b { animation: floatB 5s ease-in-out infinite; }
+.anim-float-a-rev { animation: floatA 6s ease-in-out infinite reverse; }
+.anim-pulse-coral { animation: pulse-coral 1.6s ease infinite; }
