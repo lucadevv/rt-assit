@@ -1,26 +1,24 @@
 {
-  "name": "susurra",
+  "name": "landing",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --port 3001",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 3001",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .next .turbo"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.3.3",
-    "@sentry/nextjs": "^10.52.0",
-    "clsx": "^2.1.0",
+    "@susurra/tokens": "workspace:*",
+    "@susurra/ui": "workspace:*",
     "next": "^15.0.0",
-    "posthog-js": "^1.372.10",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tesseract.js": "^7.0.0",
-    "zustand": "^5.0.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@susurra/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",

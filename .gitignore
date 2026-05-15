@@ -4,3 +4,17 @@ web_legacy_pre_auri/
 .env
 .env.local
 .env.*.local
+
+# Turborepo
+.turbo/
+
+# pnpm
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# IDE / OS
+.DS_Store
