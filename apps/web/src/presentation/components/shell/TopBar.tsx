@@ -8,7 +8,6 @@
  *  - REC badge (only visible when recording)
  *  - Spacer
  *  - Share button (placeholder action — F7/F8)
- *  - Theme toggle
  *  - User avatar with dropdown
  *
  * F1 props are minimal — `isRecording` is forwarded so F2 can flip the
@@ -23,7 +22,6 @@
 import type { JSX } from "react";
 import { Logo, Button } from "@/design-system/primitives";
 import { ShareIcon } from "@/design-system/icons";
-import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 import { RecBadge } from "./RecBadge";
 import { KbStatusIndicator } from "@/presentation/components/knowledge/KbStatusIndicator";
@@ -73,7 +71,6 @@ export function TopBar({ isRecording = false }: TopBarProps): JSX.Element {
         >
           Compartir
         </Button>
-        <ThemeToggle />
         <UserMenu />
       </div>
     </header>

@@ -67,7 +67,7 @@ export function HeroBanner({ userName, tier }: HeroBannerProps): JSX.Element {
           lineHeight: 1.05,
         }}
       >
-        Hola, {userName}
+        Hola, <span className="italic-accent">{userName}</span>
       </h1>
       <p
         style={{

@@ -1,27 +1,25 @@
 "use client";
 
 /**
- * AppearanceSection — switch theme between light / dark / system.
+ * AppearanceSection — Susurra is a light-only product (Camino C decision).
  *
- * Wires both:
- *  - ThemeProvider (immediate visual feedback + localStorage persistence)
- *  - PATCH /api/preferences {theme} (cross-device persistence)
+ * The previous light/dark/system toggle was removed when dark-mode
+ * infrastructure was retired. The component is kept as a section
+ * placeholder so the Settings page composition stays intact and so the
+ * door is open to add other appearance options (density, font size, etc.)
+ * without re-introducing the file.
  *
- * The page-level effect that reconciles ThemeProvider with the loaded
- * preference lives in `app/(app)/app/settings/page.tsx` (one-shot, on
- * first prefs load). Here we just write through both stores when the
- * user toggles a button.
+ * Props are preserved so the call-site in `settings/page.tsx` keeps
+ * compiling; `prefs.theme` is still on the wire (backend contract) but
+ * the user has no UI to change it — it stays whatever the backend
+ * defaults to.
  */
 
 import type { JSX } from "react";
-import { Button, Pill } from "@/design-system/primitives";
-import { MoonIcon, MonitorIcon, SunIcon } from "@/design-system/icons";
-import { useTheme } from "@/design-system/theme/useTheme";
 import type {
-  ThemeMode,
+  UpdateUserPreferences,
   UserPreferences,
 } from "@/domain/entities/user-preferences";
-import type { UpdateUserPreferences } from "@/domain/entities/user-preferences";
 import { SettingsSection } from "./SettingsSection";
 
 interface AppearanceSectionProps {
@@ -30,64 +28,22 @@ interface AppearanceSectionProps {
   saving: boolean;
 }
 
-const OPTIONS: readonly {
-  value: ThemeMode;
-  label: string;
-  icon: JSX.Element;
-}[] = [
-  { value: "light", label: "Claro", icon: <SunIcon size={16} /> },
-  { value: "dark", label: "Oscuro", icon: <MoonIcon size={16} /> },
-  { value: "system", label: "Sistema", icon: <MonitorIcon size={16} /> },
-];
-
-export function AppearanceSection({
-  prefs,
-  onUpdate,
-  saving,
-}: AppearanceSectionProps): JSX.Element {
-  const { theme: currentTheme, setTheme } = useTheme();
-
-  const handlePick = (next: ThemeMode): void => {
-    if (next === prefs.theme && next === currentTheme) return;
-    // Update ThemeProvider immediately so the user sees the change as soon
-    // as they click — backend write happens in parallel.
-    setTheme(next);
-    void onUpdate({ theme: next });
-  };
-
+export function AppearanceSection(_props: AppearanceSectionProps): JSX.Element {
   return (
     <SettingsSection
       title="Apariencia"
-      description="Elegí el tema que más te guste. «Sistema» sigue la preferencia del sistema operativo."
-      trailing={saving ? <Pill variant="ghost">Guardando…</Pill> : null}
+      description="Susurra usa un único tema claro, diseñado para sentirse cálido y enfocado en lo que estás conversando."
     >
-      <div
-        role="radiogroup"
-        aria-label="Tema"
+      <p
         style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 8,
+          margin: 0,
+          color: "var(--color-text-mid)",
+          fontSize: 14,
+          lineHeight: 1.5,
         }}
       >
-        {OPTIONS.map((opt) => {
-          const active = prefs.theme === opt.value;
-          return (
-            <Button
-              key={opt.value}
-              variant={active ? "primary" : "ghost"}
-              size="sm"
-              leadingIcon={opt.icon}
-              role="radio"
-              aria-checked={active}
-              onClick={() => handlePick(opt.value)}
-              disabled={saving}
-            >
-              {opt.label}
-            </Button>
-          );
-        })}
-      </div>
+        Otras opciones (densidad, tamaño de fuente) próximamente.
+      </p>
     </SettingsSection>
   );
 }

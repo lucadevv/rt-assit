@@ -1,68 +1,96 @@
 @import "tailwindcss";
 
 /* -------------------------------------------------------------------------
-   Susurra design tokens — Tailwind v4 @theme block
-   These declarations register tokens as both CSS variables AND Tailwind utilities
-   (e.g. bg-lime, text-cyan-ink, border-border).
+   Susurra brand tokens — Tailwind v4 @theme block
+   Light-only product decision. These declarations register tokens as both
+   CSS variables AND Tailwind utilities (e.g. bg-coral, text-carbon,
+   border-sand).
    ------------------------------------------------------------------------- */
 @theme {
-  --color-hero-h0: oklch(24% 0.18 290);
-  --color-hero-h1: oklch(36% 0.22 285);
-  --color-hero-h2: oklch(48% 0.24 280);
+  /* Susurra brand colors — LIGHT mode only */
+  --color-carbon: #1a1a24; /* primary text */
+  --color-carbon-smoke: #2c2a3a; /* elevation / dim layers */
+  --color-coral: #ff7b5c; /* accent / CTAs */
+  --color-coral-deep: #e55a3f; /* hover / pressed */
+  --color-coral-soft: rgba(255, 123, 92, 0.1); /* subtle backgrounds */
+  --color-ivory: #f5efe6; /* dominant background */
+  --color-ivory-warm: #faf6ef; /* elevated surfaces (cards) */
+  --color-sand: #b8a89a; /* bridge tone / borders */
 
-  --color-lime: oklch(82% 0.24 130);
-  --color-lime-ink: oklch(22% 0.12 130);
+  /* Semantic aliases */
+  --color-background: var(--color-ivory);
+  --color-foreground: var(--color-carbon);
+  --color-muted: rgba(26, 26, 36, 0.65);
+  --color-subtle: rgba(26, 26, 36, 0.45);
+  --color-border-strong: rgba(26, 26, 36, 0.16);
 
-  --color-cyan: oklch(86% 0.11 205);
-  --color-cyan-ink: oklch(28% 0.10 220);
+  /* Legacy compatibility — scenario / hero / accent tokens preserved so
+     existing primitives keep working without per-component rewrites.
+     Values rebranded to harmonize with the Susurra palette. */
+  --color-hero-h0: #1a1a24;
+  --color-hero-h1: #2c2a3a;
+  --color-hero-h2: #3a3548;
 
-  --color-amber: oklch(82% 0.16 75);
-  --color-amber-ink: oklch(28% 0.13 70);
+  --color-lime: #ff7b5c; /* now coral — keeps lime-named callsites alive */
+  --color-lime-ink: #ffffff;
 
-  --color-lavender: oklch(80% 0.12 295);
-  --color-lavender-ink: oklch(28% 0.14 295);
+  --color-cyan: #e9dfd1;
+  --color-cyan-ink: #2c2a3a;
 
-  --color-bg-soft: oklch(96% 0.02 295);
-  --color-bg-warm: oklch(97% 0.012 80);
-  --color-black: oklch(14% 0.01 285);
-  --color-border: oklch(91% 0.012 290);
-  --color-text: oklch(16% 0.012 285);
-  --color-text-mid: oklch(46% 0.018 285);
-  --color-text-dim: oklch(64% 0.014 285);
+  --color-amber: #ffe1d6;
+  --color-amber-ink: #7a2a14;
 
-  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+  --color-lavender: #efe6dd;
+  --color-lavender-ink: #2c2a3a;
+
+  /* Typography */
+  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia,
+    serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-soft: 0 6px 20px -6px rgba(26, 26, 36, 0.15);
+  --shadow-glow-coral: 0 0 80px -20px rgba(255, 123, 92, 0.4);
 }
 
 /* -------------------------------------------------------------------------
-   Theme runtime — light (default) vs dark via [data-theme] attribute
-   Setting CSS vars directly so tokens registered in @theme stay generic and
-   can be re-pointed per theme.
+   Compatibility shims — map OLD token names to NEW Susurra tokens so
+   existing components (Card, Button, Pill, Sidebar, TopBar, etc.) keep
+   working without per-file rewrites. Light-only.
    ------------------------------------------------------------------------- */
 :root {
-  --color-bg: #ffffff;
-  --color-bg-soft: oklch(96% 0.02 295);
-  --color-bg-warm: oklch(97% 0.012 80);
-  --color-border: oklch(91% 0.012 290);
-  --color-text: oklch(16% 0.012 285);
-  --color-text-mid: oklch(46% 0.018 285);
-  --color-text-dim: oklch(64% 0.014 285);
+  /* Surfaces */
+  --color-bg: var(--color-ivory);
+  --color-bg-soft: var(--color-ivory-warm);
+  --color-bg-warm: var(--color-ivory-warm);
+  --color-surface: var(--color-ivory-warm);
+
+  /* Borders + neutrals */
+  --color-border: rgba(26, 26, 36, 0.08);
+  --color-black: var(--color-carbon);
+
+  /* Text scale */
+  --color-text: var(--color-carbon);
+  --color-text-mid: var(--color-muted);
+  --color-text-dim: var(--color-subtle);
+  --color-text-mute: var(--color-subtle);
+
+  /* Accent aliases for legacy primitives */
+  --color-primary: var(--color-coral);
+  --color-primary-hover: var(--color-coral-deep);
+
   color-scheme: light;
 }
 
-[data-theme="dark"] {
-  --color-bg: oklch(13% 0.02 285);
-  --color-bg-soft: oklch(15% 0.022 285);
-  --color-bg-warm: oklch(18% 0.025 285);
-  --color-border: oklch(24% 0.04 285);
-  --color-text: oklch(96% 0.01 285);
-  --color-text-mid: oklch(68% 0.02 285);
-  --color-text-dim: oklch(48% 0.02 285);
-  color-scheme: dark;
-}
-
 /* -------------------------------------------------------------------------
-   Base reset & defaults
+   Base reset & defaults — LIGHT only
    ------------------------------------------------------------------------- */
 * {
   box-sizing: border-box;
@@ -72,11 +100,12 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-dm-sans, var(--font-sans));
-  background: var(--color-bg);
-  color: var(--color-text);
+  font-family: var(--font-sans);
+  background: var(--color-ivory);
+  color: var(--color-carbon);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv11";
 }
 
 a {
@@ -91,7 +120,23 @@ button {
 .mono,
 code,
 pre {
-  font-family: var(--font-jetbrains, var(--font-mono));
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--color-coral);
+  color: #ffffff;
+}
+
+/* h1 accent treatment: any explicit `.font-serif italic` span inside an h1
+   uses the Susurra signature italic. Default h1 stays in Inter. */
+h1 .font-serif,
+h1 .italic-accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-coral);
+  letter-spacing: -0.01em;
 }
 
 /* -------------------------------------------------------------------------
@@ -112,7 +157,7 @@ pre {
 .susurra-toggle:focus-visible,
 .susurra-pill:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px oklch(82% 0.24 130 / 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 123, 92, 0.35);
 }
 
 @keyframes susurra-spin {
@@ -164,7 +209,7 @@ pre {
     transparent 6px,
     transparent 14px
   );
-  background-color: var(--color-bg-soft);
+  background-color: var(--color-ivory-warm);
   border: 1px solid var(--color-border);
 }
 
@@ -195,8 +240,8 @@ pre {
 
 /* -------------------------------------------------------------------------
    A11Y — keyboard focus indicator (WCAG 2.4.7)
-   Distinct lime outline only on keyboard focus (`:focus-visible` excludes
-   mouse clicks). Honors color-contrast budget against bg+bg-soft tokens.
+   Distinct coral outline only on keyboard focus (`:focus-visible` excludes
+   mouse clicks). Honors color-contrast budget against ivory + ivory-warm.
    ------------------------------------------------------------------------- */
 button:focus-visible,
 a:focus-visible,
@@ -205,7 +250,7 @@ select:focus-visible,
 textarea:focus-visible,
 summary:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--color-lime);
+  outline: 2px solid var(--color-coral);
   outline-offset: 2px;
   border-radius: 4px;
 }

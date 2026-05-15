@@ -3,13 +3,16 @@
 /**
  * /dev/design-system — Susurra Design System showcase.
  *
- * Renders ALL primitives in light + dark contexts. Used by:
+ * Renders ALL primitives in the light Susurra brand context. Used by:
  *  - Designers/devs to verify visual tokens compile correctly
  *  - QA to check WCAG AA contrast ratios
  *  - Reviewers to confirm primitive coverage before consuming them in F1+
  *
  * Always accessible (no NODE_ENV gate) — keeps the URL stable in any env so
  * stakeholders can ping it.
+ *
+ * NOTE: Camino C dropped dark mode. Susurra is light-only — the dark/light
+ * toggle that used to live in the header was removed.
  */
 
 import {
@@ -38,7 +41,6 @@ import {
   SparkleIcon,
   SunIcon,
 } from "@/design-system/icons";
-import { useTheme } from "@/design-system/theme/ThemeProvider";
 import { useState, type JSX } from "react";
 
 const swatchPalette = [
@@ -103,7 +105,6 @@ function Section({
 }
 
 export default function DesignSystemPage(): JSX.Element {
-  const { resolved, toggle } = useTheme();
   const [toggleA, setToggleA] = useState(true);
   const [toggleB, setToggleB] = useState(false);
 
@@ -146,14 +147,17 @@ export default function DesignSystemPage(): JSX.Element {
               Design System · F0 Foundation
             </span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            leadingIcon={resolved === "dark" ? <SunIcon size={16} /> : <MoonIcon size={16} />}
-            onClick={toggle}
+          <span
+            className="mono"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.6px",
+              textTransform: "uppercase",
+              color: "var(--color-text-dim)",
+            }}
           >
-            {resolved === "dark" ? "Light mode" : "Dark mode"}
-          </Button>
+            Light only
+          </span>
         </header>
 
         {/* HERO */}
@@ -578,7 +582,7 @@ export default function DesignSystemPage(): JSX.Element {
             color: "var(--color-text-dim)",
           }}
         >
-          Susurra Design System · F0 · {resolved.toUpperCase()} mode
+          Susurra Design System · F0 · LIGHT mode
         </footer>
       </div>
     </main>

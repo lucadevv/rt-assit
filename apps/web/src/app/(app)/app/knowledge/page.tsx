@@ -117,7 +117,7 @@ export default function KnowledgePage(): JSX.Element {
             margin: "8px 0 0",
           }}
         >
-          Conocimiento
+          Tu <span className="italic-accent">conocimiento</span>
         </h1>
         <p
           style={{

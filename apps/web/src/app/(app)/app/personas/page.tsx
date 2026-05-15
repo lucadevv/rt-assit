@@ -182,7 +182,7 @@ export default function PersonasPage(): JSX.Element {
                 margin: 0,
               }}
             >
-              Personas
+              Tus <span className="italic-accent">personas</span>
             </h1>
             <p
               style={{

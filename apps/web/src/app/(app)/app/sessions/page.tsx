@@ -170,7 +170,7 @@ export default function SessionsPage(): JSX.Element {
             margin: "12px 0 8px",
           }}
         >
-          Sesiones
+          Tus <span className="italic-accent">sesiones</span>
         </h1>
         <p
           style={{
