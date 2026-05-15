@@ -89,7 +89,7 @@ services:
       # CORS. Comma-separated list of allowed browser origins. Default
       # covers the Vite (5173) + Next (3000) dev servers. In prod set this
       # to the exact public origin(s) — NEVER use "*" with credentials.
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3006,http://localhost:3007,http://localhost:4000,http://localhost:4001}
       # B5 — Billing & email & cron. BILLING_MODE=dev uses a mock provider
       # (no LS credentials needed). EMAIL_MODE=dev writes /tmp/susurra_emails/.
       # CRON_ENABLED=false registers jobs but doesn't auto-fire — use
@@ -139,19 +139,30 @@ services:
     restart: unless-stopped
 
   web:
+    # Build context = monorepo root so pnpm can see the workspace.
+    # NOTE: host ports 3001/3002 were occupied by non-Susurra containers
+    # (sendio-dev-*) so we shifted to 3006/3007. Container port stays 3000.
     build:
-      context: ./web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
     container_name: rtassist-web
     ports:
-      - "5173:3000"            # keep host port 5173 for consistency with prior tests
+      - "3006:3000"            # host 3006 → container 3000 (was 3001 in spec; 3001 taken on host)
     volumes:
-      - ./web:/app             # bind mount source for hot reload
-      - /app/node_modules      # anonymous volume to avoid host shadowing
-      - /app/.next             # anonymous volume for build cache
+      # Bind mount the whole monorepo so HMR sees host edits.
+      - ./:/repo
+      # Anonymous volumes shield container-installed node_modules + .next from the host.
+      # Without these, the host's node_modules (built for darwin/arm64) would
+      # shadow the container's (built for linux), breaking native bindings.
+      - /repo/node_modules
+      - /repo/apps/web/node_modules
+      - /repo/apps/web/.next
+      - /repo/apps/landing/node_modules
+      - /repo/apps/landing/.next
     environment:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true # required on macOS bind mounts for fs events
+      - CHOKIDAR_USEPOLLING=true
       # F1 — App Shell + Auth.
       # NEXT_PUBLIC_AUTH_MODE=dev (default) uses DevAuthAdapter and skips
       # mounting ClerkProvider. =clerk mounts Clerk and validates JWTs.
@@ -159,6 +170,9 @@ services:
       # a Bearer token only when the auth port supplies one (Clerk only).
       - NEXT_PUBLIC_AUTH_MODE=${NEXT_PUBLIC_AUTH_MODE:-dev}
       - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8767}
+      - NEXT_PUBLIC_AUDIO_WS_URL=${NEXT_PUBLIC_AUDIO_WS_URL:-ws://localhost:8766/audio}
+      - NEXT_PUBLIC_TRANSCRIPTS_WS_URL=${NEXT_PUBLIC_TRANSCRIPTS_WS_URL:-ws://localhost:8765/transcripts}
+      - NEXT_PUBLIC_AGENT_WS_URL=${NEXT_PUBLIC_AGENT_WS_URL:-ws://localhost:8767/ws/agent}
       - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
       - CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-}
       # F9 — Observability. Both vars are optional; absent values cause the
@@ -169,7 +183,32 @@ services:
     networks:
       - rtassist-net
     depends_on:
+      - backend
       - rt_go
+    restart: unless-stopped
+
+  landing:
+    # Marketing site (apps/landing). Same monorepo build context as web.
+    # Host port 3007 (3002 was taken on host by sendio-dev-admin).
+    build:
+      context: .
+      dockerfile: apps/landing/Dockerfile
+    container_name: rtassist-landing
+    ports:
+      - "3007:3000"
+    volumes:
+      - ./:/repo
+      - /repo/node_modules
+      - /repo/apps/landing/node_modules
+      - /repo/apps/landing/.next
+      - /repo/apps/web/node_modules
+      - /repo/apps/web/.next
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - rtassist-net
     restart: unless-stopped
 
 networks:
