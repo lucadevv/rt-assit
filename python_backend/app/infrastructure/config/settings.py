@@ -117,7 +117,7 @@ try:
 
         # Database -----------------------------------------------------------
         database_url: str = Field(
-            default="sqlite:///./auri.db", alias="DATABASE_URL"
+            default="sqlite:///./susurra.db", alias="DATABASE_URL"
         )
 
         # ----- computed -----------------------------------------------------
@@ -163,7 +163,7 @@ except ModuleNotFoundError:  # pragma: no cover — fallback path
         )
         zoom_sdk_key: Optional[str] = None
         zoom_sdk_secret: Optional[str] = None
-        database_url: str = "sqlite:///./auri.db"
+        database_url: str = "sqlite:///./susurra.db"
 
         @classmethod
         def _from_env(cls) -> "Settings":
@@ -200,7 +200,7 @@ except ModuleNotFoundError:  # pragma: no cover — fallback path
                 ),
                 zoom_sdk_key=_env_optional("ZOOM_SDK_KEY"),
                 zoom_sdk_secret=_env_optional("ZOOM_SDK_SECRET"),
-                database_url=_env("DATABASE_URL", "sqlite:///./auri.db"),
+                database_url=_env("DATABASE_URL", "sqlite:///./susurra.db"),
             )
 
     _BACKEND = "dataclass-fallback"

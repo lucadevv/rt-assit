@@ -17,7 +17,7 @@ import type { User } from "@/domain/entities/user";
 
 const DEV_USER: User = {
   id: "dev_default",
-  email: "dev@auri.local",
+  email: "dev@susurra.local",
   name: "Dev User",
   avatarUrl: null,
   tier: "free",
@@ -42,7 +42,7 @@ const DEV_AUTH_PORT: AuthPort = {
   getState: () => DEV_AUTH_STATE,
   async signOut() {
     // eslint-disable-next-line no-console -- intentional debug breadcrumb
-    console.info("[auri/dev-auth] signOut() ignored (dev mode)");
+    console.info("[susurra/dev-auth] signOut() ignored (dev mode)");
   },
 };
 

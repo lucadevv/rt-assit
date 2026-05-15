@@ -37,7 +37,7 @@ function Lines({
               display: "flex",
               flexDirection: "column",
               gap: 8,
-              animation: "auri-karaoke-fade-in 200ms ease-out",
+              animation: "susurra-karaoke-fade-in 200ms ease-out",
             }}
           >
             {speaker ? <SpeakerLabel speaker={speaker} size="sm" /> : null}
@@ -96,7 +96,7 @@ export function TranscriptKaraoke(): JSX.Element {
       }}
     >
       <div style={{ flex: 1 }}>
-        <style>{`@keyframes auri-karaoke-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+        <style>{`@keyframes susurra-karaoke-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <Lines list={visible} speakers={speakers} />
       </div>
     </div>

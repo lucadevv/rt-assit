@@ -61,4 +61,4 @@ class ResendEmailSender(EmailSender):
 
 
 def from_env_default() -> str:
-    return os.getenv("AURI_FROM_EMAIL", "noreply@auri.local")
+    return os.getenv("SUSURRA_FROM_EMAIL", "noreply@susurra.local")

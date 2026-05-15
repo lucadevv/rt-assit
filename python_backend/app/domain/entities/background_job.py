@@ -45,7 +45,7 @@ VALID_JOB_TYPES: set[str] = {
 @dataclass
 class BackgroundJob:
     """Track-only entity. Execution still lives on the existing
-    AuriScheduler / FastAPI BackgroundTasks pipelines — this row is
+    SusurraScheduler / FastAPI BackgroundTasks pipelines — this row is
     written by callers that want observability + retry support."""
 
     id: str

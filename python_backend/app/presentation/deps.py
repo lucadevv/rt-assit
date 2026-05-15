@@ -898,7 +898,7 @@ from app.infrastructure.email.email_factory import (
     create_email_sender,
     create_template_renderer,
 )
-from app.infrastructure.jobs.scheduler import AuriScheduler
+from app.infrastructure.jobs.scheduler import SusurraScheduler
 from app.infrastructure.persistence.sqlite.billing_audit_log_repository import (
     SQLiteBillingAuditLogRepository,
 )
@@ -1009,8 +1009,8 @@ def get_template_renderer():
 
 
 @lru_cache(maxsize=1)
-def get_scheduler() -> AuriScheduler:
-    return AuriScheduler()
+def get_scheduler() -> SusurraScheduler:
+    return SusurraScheduler()
 
 
 def is_dev_billing() -> bool:

@@ -5,7 +5,7 @@
  * /app/onboarding.
  *
  * Sources of truth:
- *   1. localStorage flag `auri-onboarding-completed` (sticky once set).
+ *   1. localStorage flag `susurra-onboarding-completed` (sticky once set).
  *   2. `useDocuments().hasCv` — first-time users by definition have no CV.
  *
  * The flag wins: if the user explicitly skipped or finished onboarding,
@@ -17,7 +17,7 @@
 import { useEffect, useState } from "react";
 import { useDocuments } from "./use-documents";
 
-const ONBOARDING_FLAG_KEY = "auri-onboarding-completed";
+const ONBOARDING_FLAG_KEY = "susurra-onboarding-completed";
 
 interface UseOnboardingStatusResult {
   loading: boolean;

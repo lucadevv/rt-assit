@@ -12,8 +12,8 @@ SessionStatus = Literal["active", "ended", "abandoned"]
 SessionMode = Literal["agent", "scribe"]
 """Session mode — orthogonal to scenario.
 
-- ``agent`` (default): Auri responds in the user's voice (1st-person).
-- ``scribe``: Auri observes silently and produces structured notes
+- ``agent`` (default): Susurra responds in the user's voice (1st-person).
+- ``scribe``: Susurra observes silently and produces structured notes
   (3rd-person).
 
 The scenario picks the DOMAIN (legal / interview / business / etc), the mode

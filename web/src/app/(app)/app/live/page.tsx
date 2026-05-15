@@ -42,7 +42,7 @@ import { ArrowRightIcon, MicIcon } from "@/design-system/icons";
 
 export default function LivePage(): JSX.Element {
   // eslint-disable-next-line no-console
-  console.info(`[auri/diag] LivePage render`);
+  console.info(`[susurra/diag] LivePage render`);
   // Global keyboard shortcuts — Cmd+Shift+H (peek-dim) and Cmd+Shift+P
   // (force-regenerate). Mounted at the top so they're active for the
   // entire lifetime of the live page, regardless of the active layout.

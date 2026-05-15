@@ -1,5 +1,5 @@
 /**
- * Auri color palette — OKLCH for perceptual uniformity.
+ * Susurra color palette — OKLCH for perceptual uniformity.
  * All colors scoped by theme (light/dark) and semantic role.
  *
  * Backend ScenarioColor mapping (B3):

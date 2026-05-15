@@ -44,7 +44,7 @@ export function ThemeToggle(): JSX.Element {
       onClick={onClick}
       title={`Tema: ${THEME_LABEL[theme]} — click para cambiar`}
       aria-label={`Cambiar tema (actual: ${THEME_LABEL[theme]})`}
-      className="auri-btn"
+      className="susurra-btn"
       style={{
         display: "inline-flex",
         alignItems: "center",

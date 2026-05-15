@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * StatsRow — three Auri StatCards summarising the user's month.
+ * StatsRow — three Susurra StatCards summarising the user's month.
  *
  * Cards (left → right):
  *   1. Sesiones del mes (cyan)

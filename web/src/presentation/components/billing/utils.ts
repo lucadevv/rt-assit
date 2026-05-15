@@ -54,7 +54,7 @@ export function formatDateShort(iso: string | null | undefined): string {
   }
 }
 
-/** Brand color mapping for plan codes (matches Auri visual brief). */
+/** Brand color mapping for plan codes (matches Susurra visual brief). */
 export function planPillVariant(code: PlanCode): PillVariant {
   switch (code) {
     case "free":

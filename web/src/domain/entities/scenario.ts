@@ -49,7 +49,7 @@ const SCENARIO_COLORS: ReadonlySet<ScenarioColor> = new Set([
 ]);
 
 /**
- * Map a scenario id to its Auri brand color (B3 convention).
+ * Map a scenario id to its Susurra brand color (B3 convention).
  *
  * If the scenario object exposes `color` (Wave 1A backend), we trust it.
  * Otherwise we fall back to the legacy heuristic by id.

@@ -15,85 +15,85 @@ from typing import Any
 
 
 WELCOME = {
-    "subject": "Bienvenido a Auri",
+    "subject": "Bienvenido a Susurra",
     "html": (
         "<h1>Hola {name}!</h1>"
         "<p>Acabás de empezar tu trial gratis de 14 días en Pro. ¡Disfrutalo!</p>"
-        "<p>— El equipo de Auri</p>"
+        "<p>— El equipo de Susurra</p>"
     ),
     "text": (
         "Hola {name}!\n\n"
         "Acabás de empezar tu trial gratis de 14 días en Pro. ¡Disfrutalo!\n\n"
-        "— El equipo de Auri"
+        "— El equipo de Susurra"
     ),
 }
 
 TRIAL_EXPIRING = {
-    "subject": "Tu trial de Auri Pro expira pronto",
+    "subject": "Tu trial de Susurra Pro expira pronto",
     "html": (
         "<h1>Hola {name}</h1>"
         "<p>Tu trial gratis termina en {hours_left} horas. Si querés mantener "
         "acceso a las features Pro, podés suscribirte cuando quieras.</p>"
-        "<p>— El equipo de Auri</p>"
+        "<p>— El equipo de Susurra</p>"
     ),
     "text": (
         "Hola {name}\n\n"
         "Tu trial gratis termina en {hours_left} horas. Si querés mantener "
         "acceso a las features Pro, podés suscribirte cuando quieras.\n\n"
-        "— El equipo de Auri"
+        "— El equipo de Susurra"
     ),
 }
 
 INVOICE_PAID = {
-    "subject": "Recibo de pago — Auri",
+    "subject": "Recibo de pago — Susurra",
     "html": (
         "<h1>Pago confirmado</h1>"
         "<p>Recibimos tu pago de <strong>{amount} {currency}</strong>. "
-        "Gracias por confiar en Auri.</p>"
+        "Gracias por confiar en Susurra.</p>"
         "<p><a href='{invoice_url}'>Ver factura</a></p>"
-        "<p>— El equipo de Auri</p>"
+        "<p>— El equipo de Susurra</p>"
     ),
     "text": (
         "Pago confirmado\n\n"
-        "Recibimos tu pago de {amount} {currency}. Gracias por confiar en Auri.\n"
+        "Recibimos tu pago de {amount} {currency}. Gracias por confiar en Susurra.\n"
         "Factura: {invoice_url}\n\n"
-        "— El equipo de Auri"
+        "— El equipo de Susurra"
     ),
 }
 
 PAYMENT_FAILED = {
-    "subject": "Problema con tu pago — Auri",
+    "subject": "Problema con tu pago — Susurra",
     "html": (
         "<h1>No pudimos procesar tu pago</h1>"
         "<p>Hubo un problema con tu pago. Tenés 7 días para regularizarlo "
         "antes de que la suscripción se desactive.</p>"
         "<p><a href='{retry_url}'>Reintentar pago</a></p>"
-        "<p>— El equipo de Auri</p>"
+        "<p>— El equipo de Susurra</p>"
     ),
     "text": (
         "No pudimos procesar tu pago\n\n"
         "Hubo un problema con tu pago. Tenés 7 días para regularizarlo "
         "antes de que la suscripción se desactive.\n"
         "Reintentar: {retry_url}\n\n"
-        "— El equipo de Auri"
+        "— El equipo de Susurra"
     ),
 }
 
 DUNNING = {
-    "subject": "Recordatorio de pago — Auri",
+    "subject": "Recordatorio de pago — Susurra",
     "html": (
         "<h1>Recordatorio de pago (intento {attempt})</h1>"
         "<p>Te enviamos este recordatorio porque tu pago aún no fue procesado. "
         "Para mantener tu plan Pro activo, regularizalo lo antes posible.</p>"
         "<p><a href='{retry_url}'>Regularizar ahora</a></p>"
-        "<p>— El equipo de Auri</p>"
+        "<p>— El equipo de Susurra</p>"
     ),
     "text": (
         "Recordatorio de pago (intento {attempt})\n\n"
         "Te enviamos este recordatorio porque tu pago aún no fue procesado. "
         "Para mantener tu plan Pro activo, regularizalo lo antes posible.\n"
         "Regularizar: {retry_url}\n\n"
-        "— El equipo de Auri"
+        "— El equipo de Susurra"
     ),
 }
 
@@ -103,13 +103,13 @@ USAGE_WARNING = {
         "<h1>Hola {name}</h1>"
         "<p>Llegaste al {percent}% de tu límite de <strong>{limit_name}</strong> "
         "para este mes. Si necesitás más, podés pasar a Pro cuando quieras.</p>"
-        "<p>— El equipo de Auri</p>"
+        "<p>— El equipo de Susurra</p>"
     ),
     "text": (
         "Hola {name}\n\n"
         "Llegaste al {percent}% de tu límite de {limit_name} para este mes. "
         "Si necesitás más, podés pasar a Pro cuando quieras.\n\n"
-        "— El equipo de Auri"
+        "— El equipo de Susurra"
     ),
 }
 

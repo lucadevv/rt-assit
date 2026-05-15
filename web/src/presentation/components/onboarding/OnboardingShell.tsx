@@ -4,7 +4,7 @@
  * OnboardingShell — outer chrome of the /app/onboarding flow.
  *
  * Owns:
- *  - Auri header (logo + skip link).
+ *  - Susurra header (logo + skip link).
  *  - Step indicator (1 · 2 · 3 with active highlight).
  *  - Centered content slot for the active step.
  *

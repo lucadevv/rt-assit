@@ -1,9 +1,9 @@
 /**
- * Auri logo — "A" estilizada con silueta + travesaño.
+ * Susurra logo — "A" estilizada con silueta + travesaño.
  *
  * Variants:
  *  - mark: solo el símbolo "A"
- *  - wordmark: símbolo + "Auri"
+ *  - wordmark: símbolo + "Susurra"
  *
  * Modes:
  *  - boxed=true (default): cuadrado negro, A en lima
@@ -30,7 +30,7 @@ export function Logo({
   variant = "wordmark",
   boxed = true,
   className,
-  ariaLabel = "Auri",
+  ariaLabel = "Susurra",
 }: LogoProps): JSX.Element {
   const radius = Math.round(size * 0.28);
   const bg = boxed ? colors.light.black : colors.lime;
@@ -87,7 +87,7 @@ export function Logo({
           lineHeight: 1,
         }}
       >
-        Auri
+        Susurra
       </span>
     </span>
   );

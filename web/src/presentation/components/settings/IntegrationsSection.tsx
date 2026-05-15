@@ -27,7 +27,7 @@ const PROVIDERS: readonly ProviderMeta[] = [
   {
     id: "google_calendar",
     label: "Google Calendar",
-    description: "Importá tus reuniones y dejá que Auri se prepare con vos.",
+    description: "Importá tus reuniones y dejá que Susurra se prepare con vos.",
     glyph: "📅",
   },
   {
@@ -129,7 +129,7 @@ export function IntegrationsSection(): JSX.Element {
       .then(setItems)
       .catch((err: unknown) => {
         // eslint-disable-next-line no-console -- diagnostic only
-        console.error("[auri] failed to GET /api/integrations:", err);
+        console.error("[susurra] failed to GET /api/integrations:", err);
       });
   }, [listIntegrations]);
 
@@ -139,7 +139,7 @@ export function IntegrationsSection(): JSX.Element {
   return (
     <SettingsSection
       title="Integraciones"
-      description="Conectá Auri con tus herramientas. Vienen pronto."
+      description="Conectá Susurra con tus herramientas. Vienen pronto."
       bare
     >
       <div

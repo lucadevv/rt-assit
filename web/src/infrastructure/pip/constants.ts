@@ -14,7 +14,7 @@
 
 import type { ScenarioColor } from "@/domain/entities/scenario";
 
-export const OVERLAY_CHANNEL = "auri-pip-overlay";
+export const OVERLAY_CHANNEL = "susurra-pip-overlay";
 
 export interface OverlayTranscriptSnapshot {
   content: string;

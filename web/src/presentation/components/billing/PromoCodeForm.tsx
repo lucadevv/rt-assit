@@ -38,7 +38,7 @@ export function PromoCodeForm(): JSX.Element {
       const msg =
         err instanceof Error ? err.message : "No pudimos validar el código.";
       // eslint-disable-next-line no-console -- dev surface
-      console.error("[auri] validatePromo failed:", err);
+      console.error("[susurra] validatePromo failed:", err);
       setError(msg);
     } finally {
       setValidating(false);
@@ -176,7 +176,7 @@ export function PromoCodeForm(): JSX.Element {
               id="promo-code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="EJ: AURI10"
+              placeholder="EJ: SUSURRA10"
               autoComplete="off"
               spellCheck={false}
               disabled={validating}

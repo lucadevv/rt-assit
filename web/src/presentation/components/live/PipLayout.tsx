@@ -13,7 +13,7 @@
  *   - `pipOpacity` — outer container opacity, slider in TweaksPanel.
  *   - `isHidden`   — peek-dim flag toggled via Cmd+Shift+H.
  *     When true we force opacity to 0.1 regardless of the slider, so
- *     the user gets a faint reminder Auri is still there but the layout
+ *     the user gets a faint reminder Susurra is still there but the layout
  *     is essentially invisible. Pointer events are disabled while
  *     hidden so it doesn't intercept clicks.
  *   - `pipMode`    — `expanded` shows StandaloneLayout fallback,
@@ -136,7 +136,7 @@ export function PipLayout(): JSX.Element {
             }}
           >
             {isSupported
-              ? "Auri abre una ventana flotante encima de tu reunión. Funciona con Meet, Zoom, Teams o cualquier app — incluso fullscreen."
+              ? "Susurra abre una ventana flotante encima de tu reunión. Funciona con Meet, Zoom, Teams o cualquier app — incluso fullscreen."
               : "Tu navegador no soporta Document Picture-in-Picture. Usá Chrome 116+ o Edge para activarlo."}
           </p>
         </div>

@@ -1,6 +1,6 @@
 /**
- * Auri spacing scale (px).
- * 4px base step, follows the visual system in the Auri brief.
+ * Susurra spacing scale (px).
+ * 4px base step, follows the visual system in the Susurra brief.
  */
 
 export const spacing = {

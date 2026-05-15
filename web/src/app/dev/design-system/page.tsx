@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /dev/design-system — Auri Design System showcase.
+ * /dev/design-system — Susurra Design System showcase.
  *
  * Renders ALL primitives in light + dark contexts. Used by:
  *  - Designers/devs to verify visual tokens compile correctly
@@ -159,7 +159,7 @@ export default function DesignSystemPage(): JSX.Element {
         {/* HERO */}
         <Section title="Display + Hero" caption="DM Sans 800, letter-spacing -2.2px, line-height 1.04.">
           <div
-            className="auri-hero-gradient"
+            className="susurra-hero-gradient"
             style={{
               borderRadius: 28,
               padding: "56px 48px",
@@ -168,7 +168,7 @@ export default function DesignSystemPage(): JSX.Element {
               gap: 16,
             }}
           >
-            <Pill variant="lime">Auri · Live AI Copilot</Pill>
+            <Pill variant="lime">Susurra · Live AI Copilot</Pill>
             <h1
               style={{
                 fontSize: 54,
@@ -246,7 +246,7 @@ export default function DesignSystemPage(): JSX.Element {
                   Body 16
                 </span>
                 <p style={{ fontSize: 16, lineHeight: 1.5, margin: "4px 0 0" }}>
-                  Auri te asiste en tiempo real durante entrevistas, reuniones, exámenes orales
+                  Susurra te asiste en tiempo real durante entrevistas, reuniones, exámenes orales
                   y llamadas con clientes — sin que nadie sepa que está ahí.
                 </p>
               </div>
@@ -266,7 +266,7 @@ export default function DesignSystemPage(): JSX.Element {
                   className="mono"
                   style={{ fontSize: 13, letterSpacing: "1.2px", margin: "4px 0 0" }}
                 >
-                  AURI / V0.1.0 / OKLCH
+                  SUSURRA / V0.1.0 / OKLCH
                 </p>
               </div>
             </div>
@@ -385,7 +385,7 @@ export default function DesignSystemPage(): JSX.Element {
             <Card variant="dark" bordered={false}>
               <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Dark</h3>
               <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
-                Negro Auri sobre claro.
+                Negro Susurra sobre claro.
               </p>
             </Card>
             <Card variant="filled" bordered={false}>
@@ -454,7 +454,7 @@ export default function DesignSystemPage(): JSX.Element {
                 <label style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 6 }}>
                   Email
                 </label>
-                <Input placeholder="hola@auri.app" />
+                <Input placeholder="hola@susurra.ai" />
               </div>
               <div>
                 <label style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 6 }}>
@@ -543,9 +543,9 @@ export default function DesignSystemPage(): JSX.Element {
         </Section>
 
         {/* PHOTO PLACEHOLDER */}
-        <Section title="Photo placeholder" caption="Stripes diagonales 45deg + label mono — Auri visual brief.">
+        <Section title="Photo placeholder" caption="Stripes diagonales 45deg + label mono — Susurra visual brief.">
           <div
-            className="auri-photo-placeholder"
+            className="susurra-photo-placeholder"
             style={{
               borderRadius: 22,
               minHeight: 180,
@@ -578,7 +578,7 @@ export default function DesignSystemPage(): JSX.Element {
             color: "var(--color-text-dim)",
           }}
         >
-          Auri Design System · F0 · {resolved.toUpperCase()} mode
+          Susurra Design System · F0 · {resolved.toUpperCase()} mode
         </footer>
       </div>
     </main>

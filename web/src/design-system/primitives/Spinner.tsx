@@ -1,7 +1,7 @@
 /**
- * Auri Spinner — small loading indicator.
+ * Susurra Spinner — small loading indicator.
  *
- * Uses CSS keyframes injected once per page from globals.css (.auri-spin).
+ * Uses CSS keyframes injected once per page from globals.css (.susurra-spin).
  * Keeps DOM minimal and respects prefers-reduced-motion via globals.css.
  */
 
@@ -31,7 +31,7 @@ export function Spinner({
   };
   return (
     <span
-      className={clsx("auri-spin", className)}
+      className={clsx("susurra-spin", className)}
       role="status"
       aria-label="Cargando"
       style={style}

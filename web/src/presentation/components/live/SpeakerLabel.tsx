@@ -133,7 +133,7 @@ export function SpeakerLabel({
         letterSpacing: "0.4px",
         cursor: "pointer",
       }}
-      className="auri-btn"
+      className="susurra-btn"
     >
       {display}
     </button>

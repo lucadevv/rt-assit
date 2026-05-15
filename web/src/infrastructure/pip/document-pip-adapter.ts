@@ -13,7 +13,7 @@
  *   3. Inject a minimal CSS bundle so the React tree mounted inside has
  *      sane typography + scenario color tokens. We can NOT rely on the
  *      host's stylesheet — the PiP window has its own style scope.
- *   4. Plant a `#auri-pip-root` div and expose its Document/Window so the
+ *   4. Plant a `#susurra-pip-root` div and expose its Document/Window so the
  *      presentation hook can `createRoot(rootEl)` against it.
  *   5. Bridge the native `pagehide`/`unload` events into the
  *      `PipOverlayCallbacks.onClose` callback — fires exactly once.
@@ -45,40 +45,40 @@ declare global {
 const PIP_BASE_CSS = `
   :root {
     color-scheme: dark;
-    --auri-bg: oklch(13% 0.02 285);
-    --auri-bg-soft: oklch(15% 0.022 285);
-    --auri-text: oklch(96% 0.01 285);
-    --auri-text-mid: oklch(68% 0.02 285);
-    --auri-text-dim: oklch(48% 0.02 285);
-    --auri-border: oklch(24% 0.04 285);
-    --auri-lime: oklch(82% 0.24 130);
-    --auri-lime-ink: oklch(22% 0.12 130);
-    --auri-cyan: oklch(86% 0.11 205);
-    --auri-amber: oklch(82% 0.16 75);
-    --auri-lavender: oklch(80% 0.12 295);
+    --susurra-bg: oklch(13% 0.02 285);
+    --susurra-bg-soft: oklch(15% 0.022 285);
+    --susurra-text: oklch(96% 0.01 285);
+    --susurra-text-mid: oklch(68% 0.02 285);
+    --susurra-text-dim: oklch(48% 0.02 285);
+    --susurra-border: oklch(24% 0.04 285);
+    --susurra-lime: oklch(82% 0.24 130);
+    --susurra-lime-ink: oklch(22% 0.12 130);
+    --susurra-cyan: oklch(86% 0.11 205);
+    --susurra-amber: oklch(82% 0.16 75);
+    --susurra-lavender: oklch(80% 0.12 295);
   }
   *, *::before, *::after { box-sizing: border-box; }
   html, body {
     margin: 0;
     padding: 0;
     height: 100%;
-    background: var(--auri-bg);
-    color: var(--auri-text);
+    background: var(--susurra-bg);
+    color: var(--susurra-text);
     font-family: -apple-system, BlinkMacSystemFont, "DM Sans", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  #auri-pip-root {
+  #susurra-pip-root {
     height: 100%;
     display: flex;
     flex-direction: column;
   }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-thumb { background: var(--auri-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb { background: var(--susurra-border); border-radius: 3px; }
   button { font-family: inherit; }
 `;
 
-const PIP_ROOT_ID = "auri-pip-root";
+const PIP_ROOT_ID = "susurra-pip-root";
 
 export class DocumentPipAdapter implements PipOverlayPort {
   isSupported(): boolean {
@@ -100,7 +100,7 @@ export class DocumentPipAdapter implements PipOverlayPort {
     style.textContent = PIP_BASE_CSS;
     pipWindow.document.head.appendChild(style);
     pipWindow.document.documentElement.lang = "es";
-    pipWindow.document.title = "Auri";
+    pipWindow.document.title = "Susurra";
 
     // Plant the root div for createRoot().
     const root = pipWindow.document.createElement("div");

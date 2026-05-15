@@ -78,7 +78,7 @@ export default function HomePage(): JSX.Element {
       {docsFetched && !hasCv ? (
         <EmptyStateBanner
           variant="amber"
-          message="Subí tu CV para que Auri responda mejor en tu nombre."
+          message="Subí tu CV para que Susurra responda mejor en tu nombre."
           ctaLabel="Subir CV"
           onCta={() => router.push("/app/knowledge")}
         />

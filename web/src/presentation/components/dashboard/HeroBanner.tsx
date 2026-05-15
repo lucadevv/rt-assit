@@ -6,7 +6,7 @@
  * Big violet gradient card with the user's first name + tier label + CTA
  * "Empezar sesión" → opens the Modal Nueva Sesión (Wave 2B).
  *
- * Uses the global utility class `.auri-hero-gradient` defined in F0
+ * Uses the global utility class `.susurra-hero-gradient` defined in F0
  * (web/src/app/globals.css) so the gradient is consistent with the brand
  * tokens (--color-hero-h0/h1/h2). Theme dark/light is handled by those
  * vars themselves — no per-theme override here.
@@ -35,7 +35,7 @@ export function HeroBanner({ userName, tier }: HeroBannerProps): JSX.Element {
 
   return (
     <section
-      className="auri-hero-gradient"
+      className="susurra-hero-gradient"
       aria-label="Saludo y CTA principal"
       style={{
         borderRadius: 22,
@@ -78,7 +78,7 @@ export function HeroBanner({ userName, tier }: HeroBannerProps): JSX.Element {
           maxWidth: 540,
         }}
       >
-        Auri está listo para acompañarte. Iniciá una sesión cuando estés en
+        Susurra está listo para acompañarte. Iniciá una sesión cuando estés en
         una conversación importante.
       </p>
       <Button

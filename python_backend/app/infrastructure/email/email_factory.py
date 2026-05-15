@@ -1,6 +1,6 @@
 """Factory selecting the EmailSender by env var.
 
-EMAIL_MODE=dev (default)  -> DevEmailSender (logs to /tmp/auri_emails/)
+EMAIL_MODE=dev (default)  -> DevEmailSender (logs to /tmp/susurra_emails/)
 EMAIL_MODE=resend         -> ResendEmailSender (real API, RESEND_API_KEY required)
 """
 from __future__ import annotations

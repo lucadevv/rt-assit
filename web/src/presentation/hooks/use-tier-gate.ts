@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * useTierGate(feature) — the cornerstone of Auri's tier gating UI.
+ * useTierGate(feature) — the cornerstone of Susurra's tier gating UI.
  *
  * Returns whether `feature` is unlocked for the user's current plan,
  * along with `requiredTier` so the caller can render an upgrade banner

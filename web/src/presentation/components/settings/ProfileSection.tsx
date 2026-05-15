@@ -59,7 +59,7 @@ export function ProfileSection({ user }: ProfileSectionProps): JSX.Element {
   return (
     <SettingsSection
       title="Perfil"
-      description="Tu nombre y el idioma con el que Auri se comunica con vos."
+      description="Tu nombre y el idioma con el que Susurra se comunica con vos."
       trailing={
         savedAt && !dirty && !saving ? (
           <Pill variant="lime">
@@ -89,7 +89,7 @@ export function ProfileSection({ user }: ProfileSectionProps): JSX.Element {
       </SettingsRow>
       <SettingsRow
         label="Idioma preferido"
-        hint="Auri responde en este idioma cuando puede."
+        hint="Susurra responde en este idioma cuando puede."
         htmlFor="profile-lang"
       >
         <Select

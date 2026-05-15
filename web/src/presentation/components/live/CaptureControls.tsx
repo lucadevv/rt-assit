@@ -47,10 +47,10 @@ export function CaptureControls(): JSX.Element {
         variant={isPaused ? "primary" : "ghost"}
         onClick={togglePause}
         aria-label={
-          isPaused ? "Reanudar captura de Auri" : "Pausar captura de Auri"
+          isPaused ? "Reanudar captura de Susurra" : "Pausar captura de Susurra"
         }
       >
-        {isPaused ? "▶ Reanudar Auri" : "⏸ Pausar Auri"}
+        {isPaused ? "▶ Reanudar Susurra" : "⏸ Pausar Susurra"}
       </Button>
     </div>
   );

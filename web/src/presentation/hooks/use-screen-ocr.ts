@@ -99,14 +99,14 @@ export function useScreenOcr(stream: MediaStream | null): void {
                 sink(entry);
               } catch (sinkErr) {
                 // eslint-disable-next-line no-console
-                console.warn("[Auri OCR] sink emit failed", sinkErr);
+                console.warn("[Susurra OCR] sink emit failed", sinkErr);
               }
             }
           }
         }
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.warn("[Auri OCR] extraction failed", err);
+        console.warn("[Susurra OCR] extraction failed", err);
       }
     };
 

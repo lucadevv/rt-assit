@@ -1,6 +1,6 @@
 """AES-256-GCM implementation of APIKeyEncryptor (B8 — BYOK).
 
-Master key is sourced from the ``AURI_MASTER_KEY`` env var (base64url-
+Master key is sourced from the ``SUSURRA_MASTER_KEY`` env var (base64url-
 encoded 32 bytes). In dev mode (``AUTH_MODE=dev``) we fall back to a
 deterministic zero-byte key so the container boots without operator
 setup — that key MUST NEVER be used in production. The factory raises
@@ -52,17 +52,17 @@ class AESGCMEncryptor(APIKeyEncryptor):
 
 
 def create_encryptor() -> APIKeyEncryptor:
-    """Factory: AURI_MASTER_KEY or dev fallback (zero key)."""
-    key_b64 = os.getenv("AURI_MASTER_KEY", "").strip()
+    """Factory: SUSURRA_MASTER_KEY or dev fallback (zero key)."""
+    key_b64 = os.getenv("SUSURRA_MASTER_KEY", "").strip()
     if not key_b64:
         if os.getenv("AUTH_MODE", "dev").lower() == "dev":
             logger.warning(
-                "[Security] AURI_MASTER_KEY not set — using DEV zero key. "
+                "[Security] SUSURRA_MASTER_KEY not set — using DEV zero key. "
                 "DO NOT USE IN PRODUCTION."
             )
             return AESGCMEncryptor(b"\x00" * _KEY_BYTES)
         raise RuntimeError(
-            "AURI_MASTER_KEY env var is required in production "
+            "SUSURRA_MASTER_KEY env var is required in production "
             "(base64url-encoded 32 bytes)"
         )
 
@@ -70,12 +70,12 @@ def create_encryptor() -> APIKeyEncryptor:
         key = base64.urlsafe_b64decode(key_b64.encode("ascii"))
     except Exception as e:  # noqa: BLE001
         raise RuntimeError(
-            "AURI_MASTER_KEY must be base64url-encoded"
+            "SUSURRA_MASTER_KEY must be base64url-encoded"
         ) from e
 
     if len(key) != _KEY_BYTES:
         raise RuntimeError(
-            f"AURI_MASTER_KEY must decode to {_KEY_BYTES} bytes, "
+            f"SUSURRA_MASTER_KEY must decode to {_KEY_BYTES} bytes, "
             f"got {len(key)}"
         )
 

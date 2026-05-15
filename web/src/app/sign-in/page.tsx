@@ -77,7 +77,7 @@ export default function SignInPage(): JSX.Element {
           lineHeight: 1.5,
         }}
       >
-        Auri va a integrarse con Clerk para autenticación con email,
+        Susurra va a integrarse con Clerk para autenticación con email,
         Google y GitHub. Esta pantalla es un placeholder hasta F1.5
         cuando se finalicen las credenciales.
       </p>

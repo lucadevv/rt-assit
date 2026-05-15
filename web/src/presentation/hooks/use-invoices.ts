@@ -46,7 +46,7 @@ export function useInvoices(): UseInvoicesResult {
           ? err.message
           : "No pudimos cargar tus facturas.";
       // eslint-disable-next-line no-console -- dev surface
-      console.error("[auri] listInvoices failed:", err);
+      console.error("[susurra] listInvoices failed:", err);
       setError(msg);
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ export function useInvoices(): UseInvoicesResult {
           ? err.message
           : "No pudimos cargar más facturas.";
       // eslint-disable-next-line no-console -- dev surface
-      console.error("[auri] listInvoices loadMore failed:", err);
+      console.error("[susurra] listInvoices loadMore failed:", err);
       setError(msg);
     } finally {
       setLoading(false);

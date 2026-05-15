@@ -11,7 +11,7 @@
  * IMPORTANT: this component is rendered into a different `Document` than
  * the host page. Tailwind classes from the parent app DO NOT apply (the PiP
  * window has its own style scope). The adapter injects a minimal CSS bundle
- * that exposes `--auri-*` custom properties; everything here uses inline
+ * that exposes `--susurra-*` custom properties; everything here uses inline
  * styles + those vars. Do NOT add Tailwind utilities.
  */
 
@@ -26,10 +26,10 @@ interface Props {
 }
 
 const colorVarFor: Record<ScenarioColor, string> = {
-  cyan: "var(--auri-cyan)",
-  amber: "var(--auri-amber)",
-  lavender: "var(--auri-lavender)",
-  lime: "var(--auri-lime)",
+  cyan: "var(--susurra-cyan)",
+  amber: "var(--susurra-amber)",
+  lavender: "var(--susurra-lavender)",
+  lime: "var(--susurra-lime)",
 };
 
 export function PipOverlayContent({
@@ -67,13 +67,13 @@ function PipIdleState({ onStart }: { onStart: () => void }): JSX.Element {
           fontWeight: 800,
           letterSpacing: "1px",
           textTransform: "uppercase",
-          color: "var(--auri-text-mid)",
+          color: "var(--susurra-text-mid)",
           padding: "4px 10px",
-          border: "1px solid var(--auri-border)",
+          border: "1px solid var(--susurra-border)",
           borderRadius: 9999,
         }}
       >
-        Auri · idle
+        Susurra · idle
       </span>
       <h1
         style={{
@@ -81,7 +81,7 @@ function PipIdleState({ onStart }: { onStart: () => void }): JSX.Element {
           fontSize: 18,
           fontWeight: 700,
           letterSpacing: "-0.3px",
-          color: "var(--auri-text)",
+          color: "var(--susurra-text)",
         }}
       >
         Listo para escuchar
@@ -91,19 +91,19 @@ function PipIdleState({ onStart }: { onStart: () => void }): JSX.Element {
           margin: 0,
           fontSize: 13,
           lineHeight: 1.55,
-          color: "var(--auri-text-mid)",
+          color: "var(--susurra-text-mid)",
           maxWidth: 320,
         }}
       >
         Cuando inicies una sesión, vas a ver acá la transcripción y la
-        respuesta de Auri en vivo.
+        respuesta de Susurra en vivo.
       </p>
       <button
         type="button"
         onClick={onStart}
         style={{
-          background: "var(--auri-lime)",
-          color: "var(--auri-lime-ink)",
+          background: "var(--susurra-lime)",
+          color: "var(--susurra-lime-ink)",
           border: "none",
           padding: "11px 22px",
           borderRadius: 50,
@@ -140,7 +140,7 @@ function PipLiveState({
     border: `2px solid ${accent}`,
     borderRadius: 14,
     overflow: "hidden",
-    background: "var(--auri-bg)",
+    background: "var(--susurra-bg)",
     minHeight: 0,
   };
 
@@ -149,11 +149,11 @@ function PipLiveState({
       <header
         style={{
           padding: "8px 12px",
-          borderBottom: "1px solid var(--auri-border)",
+          borderBottom: "1px solid var(--susurra-border)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          background: "var(--auri-bg-soft)",
+          background: "var(--susurra-bg-soft)",
           gap: 8,
           flexShrink: 0,
         }}
@@ -188,8 +188,8 @@ function PipLiveState({
           onClick={onStop}
           style={{
             background: "transparent",
-            color: "var(--auri-text-mid)",
-            border: "1px solid var(--auri-border)",
+            color: "var(--susurra-text-mid)",
+            border: "1px solid var(--susurra-border)",
             padding: "4px 12px",
             borderRadius: 9999,
             fontSize: 11,
@@ -216,7 +216,7 @@ function PipLiveState({
             fontFamily: "ui-monospace, SFMono-Regular, monospace",
             fontSize: 9,
             fontWeight: 800,
-            color: "var(--auri-text-dim)",
+            color: "var(--susurra-text-dim)",
             textTransform: "uppercase",
             letterSpacing: "1px",
             marginBottom: 6,
@@ -230,8 +230,8 @@ function PipLiveState({
               fontSize: 13,
               lineHeight: 1.5,
               color: snapshot.transcript.isFinal
-                ? "var(--auri-text)"
-                : "var(--auri-text-mid)",
+                ? "var(--susurra-text)"
+                : "var(--susurra-text-mid)",
               fontStyle: snapshot.transcript.isFinal ? "normal" : "italic",
             }}
           >
@@ -255,7 +255,7 @@ function PipLiveState({
           <p
             style={{
               fontSize: 12,
-              color: "var(--auri-text-dim)",
+              color: "var(--susurra-text-dim)",
               margin: 0,
               fontStyle: "italic",
             }}
@@ -269,8 +269,8 @@ function PipLiveState({
       <section
         style={{
           padding: "12px 14px",
-          borderTop: "1px solid var(--auri-border)",
-          background: "var(--auri-bg-soft)",
+          borderTop: "1px solid var(--susurra-border)",
+          background: "var(--susurra-bg-soft)",
           flexShrink: 0,
           maxHeight: "45%",
           overflowY: "auto",
@@ -281,19 +281,19 @@ function PipLiveState({
             fontFamily: "ui-monospace, SFMono-Regular, monospace",
             fontSize: 9,
             fontWeight: 800,
-            color: "var(--auri-text-dim)",
+            color: "var(--susurra-text-dim)",
             textTransform: "uppercase",
             letterSpacing: "1px",
             marginBottom: 6,
           }}
         >
-          Auri
+          Susurra
         </div>
         {snapshot.isThinking && !snapshot.currentResponse ? (
           <p
             style={{
               fontSize: 13,
-              color: "var(--auri-text-mid)",
+              color: "var(--susurra-text-mid)",
               fontStyle: "italic",
               margin: 0,
             }}
@@ -305,7 +305,7 @@ function PipLiveState({
           <p
             style={{
               fontSize: 14,
-              color: "var(--auri-text)",
+              color: "var(--susurra-text)",
               margin: 0,
               lineHeight: 1.5,
             }}
@@ -319,7 +319,7 @@ function PipLiveState({
           <p
             style={{
               fontSize: 13,
-              color: "var(--auri-text-mid)",
+              color: "var(--susurra-text-mid)",
               margin: 0,
               opacity: 0.85,
               lineHeight: 1.5,
@@ -334,7 +334,7 @@ function PipLiveState({
           <p
             style={{
               fontSize: 12,
-              color: "var(--auri-text-dim)",
+              color: "var(--susurra-text-dim)",
               margin: 0,
               fontStyle: "italic",
             }}

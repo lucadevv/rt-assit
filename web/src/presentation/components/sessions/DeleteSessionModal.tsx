@@ -3,7 +3,7 @@
 /**
  * DeleteSessionModal — confirmation modal for destructive session removal.
  *
- * Keeps the UX consistent with other destructive flows in Auri (the
+ * Keeps the UX consistent with other destructive flows in Susurra (the
  * recordings page uses a `window.confirm`, but a full modal feels more
  * appropriate for a session — there's typically more content at stake).
  *

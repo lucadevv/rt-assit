@@ -71,7 +71,7 @@ export function AgentPhaseIndicator(): JSX.Element | null {
     background: cfg.color,
     flex: "0 0 auto",
     animation: cfg.pulseMs
-      ? `auri-phase-pulse ${cfg.pulseMs}ms ease-in-out infinite`
+      ? `susurra-phase-pulse ${cfg.pulseMs}ms ease-in-out infinite`
       : "none",
   };
 

@@ -436,7 +436,7 @@ export default function SessionDetailPage({ params }: PageProps): JSX.Element {
       />
 
       <style>{`
-        @keyframes auri-blink {
+        @keyframes susurra-blink {
           0%, 60% { opacity: 1; }
           80% { opacity: 0.25; }
           100% { opacity: 1; }

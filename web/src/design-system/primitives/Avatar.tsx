@@ -1,5 +1,5 @@
 /**
- * Auri Avatar primitive — single avatar + pile (+N) variant.
+ * Susurra Avatar primitive — single avatar + pile (+N) variant.
  */
 
 import clsx from "clsx";
@@ -42,14 +42,14 @@ export function Avatar({
   };
   if (src) {
     return (
-      <span className={clsx("auri-avatar", className)} style={style}>
+      <span className={clsx("susurra-avatar", className)} style={style}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </span>
     );
   }
   return (
-    <span className={clsx("auri-avatar", className)} style={style} aria-label={alt}>
+    <span className={clsx("susurra-avatar", className)} style={style} aria-label={alt}>
       {initials?.slice(0, 2).toUpperCase() ?? ""}
     </span>
   );
@@ -80,7 +80,7 @@ export function AvatarPile({
   const overflow = items.length - visible.length;
   return (
     <span
-      className={clsx("auri-avatar-pile", className)}
+      className={clsx("susurra-avatar-pile", className)}
       style={{ display: "inline-flex", alignItems: "center" }}
     >
       {visible.map((item, idx) => (

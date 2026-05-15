@@ -1,5 +1,5 @@
 /**
- * Auri typography scale — DM Sans + JetBrains Mono.
+ * Susurra typography scale — DM Sans + JetBrains Mono.
  * Display 54 / H1 38 / H2 24 / Body 16 / Caption 13 / Pill 11 / Mono 13.
  */
 

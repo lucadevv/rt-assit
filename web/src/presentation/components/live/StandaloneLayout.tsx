@@ -111,7 +111,7 @@ export function StandaloneLayout(): JSX.Element {
               color: "var(--color-text-mid)",
             }}
           >
-            Auri
+            Susurra
           </span>
         </header>
         <div

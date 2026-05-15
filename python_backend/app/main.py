@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 
 
 def _register_cron_jobs() -> None:
-    """Register the B5 cron jobs with the AuriScheduler.
+    """Register the B5 cron jobs with the SusurraScheduler.
 
     In dev (CRON_ENABLED=false) the jobs are registered but the scheduler is
     NOT started — they can still be invoked manually via

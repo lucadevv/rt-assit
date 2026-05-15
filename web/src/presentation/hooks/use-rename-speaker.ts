@@ -51,7 +51,7 @@ export function useRenameSpeaker(): UseRenameSpeakerResult {
           state.upsertSpeaker(prev);
         }
         // eslint-disable-next-line no-console
-        console.error("[auri/live] rename speaker failed", err);
+        console.error("[susurra/live] rename speaker failed", err);
       }
     },
     [renameSpeaker, analytics],

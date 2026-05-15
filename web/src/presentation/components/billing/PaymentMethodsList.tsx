@@ -60,7 +60,7 @@ export function PaymentMethodsList({
           ? err.message
           : "No pudimos abrir el portal de pagos.";
       // eslint-disable-next-line no-console -- dev surface
-      console.error("[auri] getPortalUrl failed:", err);
+      console.error("[susurra] getPortalUrl failed:", err);
       setError(msg);
     } finally {
       setOpening(false);

@@ -67,7 +67,7 @@ export function CurrentPlanCard({
               lineHeight: 1.5,
             }}
           >
-            Probá Auri Pro durante 14 días sin tarjeta. Después podés
+            Probá Susurra Pro durante 14 días sin tarjeta. Después podés
             quedarte en Free o elegir el plan que mejor te quede.
           </p>
         </div>

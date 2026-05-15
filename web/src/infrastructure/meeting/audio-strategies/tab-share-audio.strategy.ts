@@ -68,12 +68,12 @@ export class TabShareAudioStrategy implements AudioCaptureStrategy {
   ): Promise<void> {
     // eslint-disable-next-line no-console
     console.info(
-      `[auri/diag] BrowserAudioCapture.start() called running=${this.running} paused=${this.paused}`,
+      `[susurra/diag] BrowserAudioCapture.start() called running=${this.running} paused=${this.paused}`,
     );
     if (this.running) {
       // eslint-disable-next-line no-console
       console.warn(
-        `[auri/diag] BrowserAudioCapture.start() EARLY-RETURN — already running`,
+        `[susurra/diag] BrowserAudioCapture.start() EARLY-RETURN — already running`,
       );
       callbacks.onLog("warn", "AudioCapture.start called while running; ignoring");
       return;
@@ -97,11 +97,11 @@ export class TabShareAudioStrategy implements AudioCaptureStrategy {
         preferCurrentTab: false,
       };
       // eslint-disable-next-line no-console
-      console.info(`[auri/diag] About to call getDisplayMedia`);
+      console.info(`[susurra/diag] About to call getDisplayMedia`);
       const stream = await navigator.mediaDevices.getDisplayMedia(constraints);
       // eslint-disable-next-line no-console
       console.info(
-        `[auri/diag] getDisplayMedia returned tracks=${stream.getTracks().length}`,
+        `[susurra/diag] getDisplayMedia returned tracks=${stream.getTracks().length}`,
       );
       this.stream = stream;
 
@@ -172,7 +172,7 @@ export class TabShareAudioStrategy implements AudioCaptureStrategy {
       callbacks.onLog("info", "AudioWorklet wired; emitting PCM Int16 48kHz mono");
 
       // eslint-disable-next-line no-console
-      console.info(`[auri/diag] About to set running=true`);
+      console.info(`[susurra/diag] About to set running=true`);
       this.running = true;
       this.setStatus("running");
       callbacks.onLog("info", "Capture running");
@@ -180,7 +180,7 @@ export class TabShareAudioStrategy implements AudioCaptureStrategy {
       // Notify late subscribers so they can attach <video>/AnalyserNode.
       try {
         // eslint-disable-next-line no-console
-        console.info(`[auri/diag] About to call callbacks.onStream`);
+        console.info(`[susurra/diag] About to call callbacks.onStream`);
         callbacks.onStream?.(stream);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -188,7 +188,7 @@ export class TabShareAudioStrategy implements AudioCaptureStrategy {
       }
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error(`[auri/diag] BrowserAudioCapture.start() CATCH:`, err);
+      console.error(`[susurra/diag] BrowserAudioCapture.start() CATCH:`, err);
       const message = err instanceof Error ? err.message : String(err);
       callbacks.onLog("error", `AudioCapture.start error: ${message}`);
       this.setStatus("error", message);
@@ -199,7 +199,7 @@ export class TabShareAudioStrategy implements AudioCaptureStrategy {
   async stop(): Promise<void> {
     // eslint-disable-next-line no-console
     console.warn(
-      `[auri/diag] BrowserAudioCapture.stop() called running=${this.running}`,
+      `[susurra/diag] BrowserAudioCapture.stop() called running=${this.running}`,
     );
     this.running = false;
     this.paused = false;

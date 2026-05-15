@@ -166,7 +166,7 @@ export function NewSessionModal({
     new Map(),
   );
   const [personaId, setPersonaId] = useState<number | null>(null);
-  // Auri mode — default "agent" preserves the pre-toggle UX (first-person
+  // Susurra mode — default "agent" preserves the pre-toggle UX (first-person
   // responses). "scribe" switches the backend prompt to structured
   // note-taking and the /app/live UI to markdown rendering.
   const [mode, setMode] = useState<SessionMode>("agent");
@@ -390,7 +390,7 @@ export function NewSessionModal({
         // with navigation. The user can re-add from the session row.
         // eslint-disable-next-line no-console
         console.warn(
-          `[auri] ${failed}/${materialDrafts.length} session materials failed to attach.`,
+          `[susurra] ${failed}/${materialDrafts.length} session materials failed to attach.`,
         );
       }
     }
@@ -507,7 +507,7 @@ export function NewSessionModal({
           {/* --- Escenario --- */}
           <Field
             label="Escenario"
-            hint="Elegí el contexto de la conversación para que Auri ajuste el estilo de respuesta."
+            hint="Elegí el contexto de la conversación para que Susurra ajuste el estilo de respuesta."
           >
             <ScenarioGrid
               scenarios={scenarios}
@@ -520,7 +520,7 @@ export function NewSessionModal({
           {selectedScenario && relevantDocTypes.size > 0 ? (
             <Field
               label="Documentos relevantes"
-              hint="Auri usa estos documentos como contexto en la sesión."
+              hint="Susurra usa estos documentos como contexto en la sesión."
             >
               <DocsSection
                 docsFetched={docsFetched}
@@ -534,7 +534,7 @@ export function NewSessionModal({
           {/* --- Persona (H3) --- */}
           <Field
             label="Persona"
-            hint="Auri usa la identidad de la persona elegida (tono, instrucciones, documentos)."
+            hint="Susurra usa la identidad de la persona elegida (tono, instrucciones, documentos)."
           >
             <PersonaSelector
               personas={personas}
@@ -544,10 +544,10 @@ export function NewSessionModal({
             />
           </Field>
 
-          {/* --- Modo de Auri --- */}
+          {/* --- Modo de Susurra --- */}
           <Field
-            label="Modo de Auri"
-            hint="Cambiá cómo te acompaña Auri durante la reunión. Una vez iniciada, no se puede cambiar."
+            label="Modo de Susurra"
+            hint="Cambiá cómo te acompaña Susurra durante la reunión. Una vez iniciada, no se puede cambiar."
           >
             <ModePicker value={mode} onChange={setMode} />
           </Field>
@@ -573,7 +573,7 @@ export function NewSessionModal({
           {/* --- Idioma --- */}
           <Field
             label="Idioma"
-            hint="Idioma principal de la conversación. Auri detecta otros idiomas automáticamente."
+            hint="Idioma principal de la conversación. Susurra detecta otros idiomas automáticamente."
           >
             <LanguagePicker value={language} onChange={setLanguage} />
           </Field>
@@ -672,7 +672,7 @@ function ModalHeader({
             color: "var(--color-text-mid)",
           }}
         >
-          Configurá cómo querés que Auri acompañe esta conversación.
+          Configurá cómo querés que Susurra acompañe esta conversación.
         </p>
       </div>
       <button
@@ -1116,13 +1116,13 @@ const MODE_OPTIONS: ReadonlyArray<ModeOption> = [
     value: "agent",
     icon: "⚡", // ⚡
     title: "Agente",
-    description: "Auri genera lo que vos decís durante la reunión.",
+    description: "Susurra genera lo que vos decís durante la reunión.",
   },
   {
     value: "scribe",
     icon: "\u{1F4DD}", // 📝
     title: "Asistente (Scribe)",
-    description: "Auri toma notas estructuradas mientras vos escuchás.",
+    description: "Susurra toma notas estructuradas mientras vos escuchás.",
   },
 ];
 
@@ -1141,7 +1141,7 @@ function ModePicker({
         gap: 10,
       }}
       role="radiogroup"
-      aria-label="Modo de Auri"
+      aria-label="Modo de Susurra"
     >
       {MODE_OPTIONS.map((opt) => {
         const selected = value === opt.value;

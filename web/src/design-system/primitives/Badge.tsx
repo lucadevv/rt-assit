@@ -1,5 +1,5 @@
 /**
- * Auri Badge — status indicator. Smaller and stricter than Pill.
+ * Susurra Badge — status indicator. Smaller and stricter than Pill.
  *
  * Used for: live state (recording, paused), tier markers (Free/Pro/Premium),
  * scenario tags inside lists.
@@ -52,7 +52,7 @@ export function Badge({
     lineHeight: 1.05,
   };
   return (
-    <span className={clsx("auri-badge", className)} style={style}>
+    <span className={clsx("susurra-badge", className)} style={style}>
       {dot ? (
         <span
           aria-hidden

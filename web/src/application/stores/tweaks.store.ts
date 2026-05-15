@@ -38,12 +38,12 @@ import {
   clampPipOpacity,
 } from "@/domain/entities/tweaks";
 
-const LAYOUT_KEY = "auri-layout";
-const HINT_KEY = "auri-hint-style";
-const TRANSCRIPT_KEY = "auri-transcript-style";
-const PIP_OPACITY_KEY = "auri-pip-opacity";
-const PIP_MODE_KEY = "auri-pip-mode";
-const PIP_THEME_KEY = "auri-pip-theme";
+const LAYOUT_KEY = "susurra-layout";
+const HINT_KEY = "susurra-hint-style";
+const TRANSCRIPT_KEY = "susurra-transcript-style";
+const PIP_OPACITY_KEY = "susurra-pip-opacity";
+const PIP_MODE_KEY = "susurra-pip-mode";
+const PIP_THEME_KEY = "susurra-pip-theme";
 
 function readStored<T extends string>(
   key: string,

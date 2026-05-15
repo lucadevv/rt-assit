@@ -87,7 +87,7 @@ export function RecentDocsPreview(): JSX.Element {
                 maxWidth: 480,
               }}
             >
-              Aún no subiste documentos. Subí tu CV para que Auri te conozca y
+              Aún no subiste documentos. Subí tu CV para que Susurra te conozca y
               responda mejor en tu nombre.
             </p>
             <Button

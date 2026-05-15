@@ -42,7 +42,7 @@ export function useCancelSubscription(): UseCancelSubscriptionResult {
           ? err.message
           : "No pudimos cancelar tu suscripción.";
       // eslint-disable-next-line no-console -- dev surface
-      console.error("[auri] cancelSubscription failed:", err);
+      console.error("[susurra] cancelSubscription failed:", err);
       setError(msg);
       return false;
     } finally {
@@ -63,7 +63,7 @@ export function useCancelSubscription(): UseCancelSubscriptionResult {
           ? err.message
           : "No pudimos reactivar tu suscripción.";
       // eslint-disable-next-line no-console -- dev surface
-      console.error("[auri] reactivateSubscription failed:", err);
+      console.error("[susurra] reactivateSubscription failed:", err);
       setError(msg);
       return false;
     } finally {

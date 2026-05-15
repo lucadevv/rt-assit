@@ -21,7 +21,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Auri — Tu copiloto en cualquier conversación",
+  title: "Susurra — Tu copiloto en cualquier conversación",
   description:
     "Asistente IA en tiempo real para entrevistas, reuniones y conversaciones importantes.",
 };

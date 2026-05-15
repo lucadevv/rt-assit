@@ -1,5 +1,5 @@
 /**
- * Auri Card — generic content container.
+ * Susurra Card — generic content container.
  *
  * Specs:
  *  - rounded-3xl (~22px)
@@ -43,7 +43,7 @@ export function Card({
     ...extraStyle,
   };
   return (
-    <div className={clsx("auri-card", className)} style={style} {...rest}>
+    <div className={clsx("susurra-card", className)} style={style} {...rest}>
       {children}
     </div>
   );

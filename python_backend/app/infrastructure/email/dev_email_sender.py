@@ -1,4 +1,4 @@
-"""Dev email sender — logs + writes to /tmp/auri_emails/.
+"""Dev email sender — logs + writes to /tmp/susurra_emails/.
 
 EMAIL_MODE=dev selects this. Never reaches the network. Useful for verifying
 template rendering and seeing what the user would receive."""
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class DevEmailSender(EmailSender):
     def __init__(
-        self, *, output_dir: str = "/tmp/auri_emails"
+        self, *, output_dir: str = "/tmp/susurra_emails"
     ) -> None:
         self.output_dir = Path(output_dir)
 
@@ -32,7 +32,7 @@ class DevEmailSender(EmailSender):
         from_email: Optional[str] = None,
     ) -> None:
         from_email = from_email or os.getenv(
-            "AURI_FROM_EMAIL", "noreply@auri.local"
+            "SUSURRA_FROM_EMAIL", "noreply@susurra.local"
         )
         try:
             self.output_dir.mkdir(parents=True, exist_ok=True)

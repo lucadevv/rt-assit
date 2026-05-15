@@ -1,7 +1,7 @@
 import type { DocType } from "@/domain/entities/document";
 
 /**
- * Map a doc type to a Pill variant (Auri brand colors). Keeps the visual
+ * Map a doc type to a Pill variant (Susurra brand colors). Keeps the visual
  * scenario-color convention consistent: cyan = interview, amber =
  * client/sales, lavender = oral/exam, lime = personal/global.
  */

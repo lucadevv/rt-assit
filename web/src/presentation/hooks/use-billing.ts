@@ -61,14 +61,14 @@ export function useBilling(): UseBillingResult {
         setPlans(plansResult.value);
       } else {
         // eslint-disable-next-line no-console -- dev surface
-        console.error("[auri] listPlans failed:", plansResult.reason);
+        console.error("[susurra] listPlans failed:", plansResult.reason);
       }
 
       if (subResult.status === "fulfilled") {
         setSubscription(subResult.value);
       } else {
         // eslint-disable-next-line no-console -- dev surface
-        console.error("[auri] getSubscription failed:", subResult.reason);
+        console.error("[susurra] getSubscription failed:", subResult.reason);
       }
 
       if (usageResult.status === "fulfilled") {
@@ -77,7 +77,7 @@ export function useBilling(): UseBillingResult {
         // Usage may transiently fail (e.g. period reset race) — log and
         // keep going. UI degrades gracefully (shows spinner / empty bars).
         // eslint-disable-next-line no-console -- dev surface
-        console.warn("[auri] getCurrentUsage failed:", usageResult.reason);
+        console.warn("[susurra] getCurrentUsage failed:", usageResult.reason);
       }
 
       const failures = [plansResult, subResult].filter(

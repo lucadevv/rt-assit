@@ -192,7 +192,7 @@ export default function PersonasPage(): JSX.Element {
                 margin: 0,
               }}
             >
-              Tus identidades para distintos escenarios. Auri usa la persona
+              Tus identidades para distintos escenarios. Susurra usa la persona
               que elijas para ajustar tono, lenguaje y prioridades en cada
               sesión.
             </p>

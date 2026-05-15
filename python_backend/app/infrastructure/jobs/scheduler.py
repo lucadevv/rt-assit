@@ -19,7 +19,7 @@ from typing import Any, Optional
 logger = logging.getLogger(__name__)
 
 
-class AuriScheduler:
+class SusurraScheduler:
     """Lightweight wrapper around APScheduler. Handles ImportError gracefully
     so dev-mode containers without the package still boot."""
 

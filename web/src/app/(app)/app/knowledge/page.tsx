@@ -128,7 +128,7 @@ export default function KnowledgePage(): JSX.Element {
           }}
         >
           Subí tu CV, ofertas de trabajo, briefs de reunión o material de
-          referencia para que Auri tenga el contexto justo durante tus
+          referencia para que Susurra tenga el contexto justo durante tus
           sesiones.
         </p>
       </header>

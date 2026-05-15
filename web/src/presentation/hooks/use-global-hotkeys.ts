@@ -8,9 +8,9 @@
  *       → toggle the `isHidden` peek-dim flag in the tweaks store.
  *         "Peek mode" — the PiP / Sidebar layouts drop to opacity ~0.1
  *         instead of full hide so the user still sees a faint reminder
- *         that Auri is there.
+ *         that Susurra is there.
  *   - Cmd+Shift+P  (Mac) / Ctrl+Shift+P  (Win/Linux)
- *       → dispatch a global `auri:force-regenerate` CustomEvent on
+ *       → dispatch a global `susurra:force-regenerate` CustomEvent on
  *         `window`. `useLiveSession` (mounted on /app/live) listens for
  *         it and, if there is a last transcript, re-routes it through
  *         the agent graph for a fresh response. No-op when no live
@@ -45,7 +45,7 @@ import { useEffect } from "react";
 import { useTweaksStore } from "@/application/stores/tweaks.store";
 
 /** Custom event name fired when the user wants to force a regenerate. */
-export const FORCE_REGENERATE_EVENT = "auri:force-regenerate";
+export const FORCE_REGENERATE_EVENT = "susurra:force-regenerate";
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;

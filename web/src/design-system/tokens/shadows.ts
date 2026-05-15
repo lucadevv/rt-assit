@@ -1,6 +1,6 @@
 /**
- * Auri elevation tokens.
- * Subtle elevation (Auri uses light shadows + borders, not heavy drop shadows).
+ * Susurra elevation tokens.
+ * Subtle elevation (Susurra uses light shadows + borders, not heavy drop shadows).
  */
 
 export const shadows = {

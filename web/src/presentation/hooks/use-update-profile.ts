@@ -41,7 +41,7 @@ export function useUpdateProfile(): UseUpdateProfileResult {
             ? err.message
             : "No pudimos actualizar tu perfil.";
         // eslint-disable-next-line no-console -- surfaced for dev debugging
-        console.error("[auri] PATCH /api/me failed:", err);
+        console.error("[susurra] PATCH /api/me failed:", err);
         setError(msg);
         return null;
       } finally {

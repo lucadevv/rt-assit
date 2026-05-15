@@ -53,7 +53,7 @@ export function ShortcutsSection(): JSX.Element {
   return (
     <SettingsSection
       title="Atajos de teclado"
-      description="Los atajos globales que ya están activos en Auri."
+      description="Los atajos globales que ya están activos en Susurra."
       trailing={<Pill variant="ghost">Pronto: editables</Pill>}
     >
       <ul

@@ -64,7 +64,7 @@ export function Step2UploadCV({
             lineHeight: 1.55,
           }}
         >
-          Auri usa tu CV para responder en tu nombre con tu experiencia
+          Susurra usa tu CV para responder en tu nombre con tu experiencia
           real, no con genérico. Aceptamos PDF, DOCX, Markdown o texto
           pegado. Podés saltarlo y subirlo más tarde desde Knowledge.
         </p>

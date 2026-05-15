@@ -1,7 +1,7 @@
 /**
- * Auri Button — primary action element.
+ * Susurra Button — primary action element.
  *
- * Specs (Auri visual system):
+ * Specs (Susurra visual system):
  *  - rounded-full (50px)
  *  - padding 13/26 (vertical/horizontal)
  *  - fontSize 14, weight 700
@@ -103,7 +103,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   };
 
   return (
-    <button ref={ref} type={type} className={clsx("auri-btn", className)} style={style} {...rest}>
+    <button ref={ref} type={type} className={clsx("susurra-btn", className)} style={style} {...rest}>
       {leadingIcon}
       <span>{children}</span>
       {trailingIcon}

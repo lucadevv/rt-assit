@@ -133,7 +133,7 @@ const TRANSCRIPTS_WS_URL =
 const AGENT_WS_URL =
   process.env.NEXT_PUBLIC_AGENT_WS_URL ?? "ws://localhost:8767/ws/web";
 
-export interface AuriContainer {
+export interface SusurraContainer {
   auth: AuthPort;
   apiClient: ApiClient;
 
@@ -240,10 +240,10 @@ export interface AuriContainer {
   trackAnalyticsEvent: TrackAnalyticsEventUseCase;
 }
 
-export function useContainer(): AuriContainer {
+export function useContainer(): SusurraContainer {
   const auth = useAuthAdapter();
 
-  return useMemo<AuriContainer>(() => {
+  return useMemo<SusurraContainer>(() => {
     const state = auth.getState();
     const getToken =
       state.status === "authenticated" ? state.getToken : undefined;

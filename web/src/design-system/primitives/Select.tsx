@@ -1,5 +1,5 @@
 /**
- * Auri Select — native <select> styled to match Auri inputs.
+ * Susurra Select — native <select> styled to match Susurra inputs.
  *
  * For F0 we use the native control to keep keyboard + a11y for free.
  * A custom Combobox can replace this in later phases when needed.
@@ -19,7 +19,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   return (
     <select
       ref={ref}
-      className={clsx("auri-select", className)}
+      className={clsx("susurra-select", className)}
       style={{
         fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
         fontSize: 14,

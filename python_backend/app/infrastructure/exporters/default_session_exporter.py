@@ -117,7 +117,7 @@ class DefaultSessionExporter(SessionExporter):
 
         styles = getSampleStyleSheet()
         h1 = ParagraphStyle(
-            "AuriH1",
+            "SusurraH1",
             parent=styles["Heading1"],
             fontSize=18,
             leading=22,
@@ -125,7 +125,7 @@ class DefaultSessionExporter(SessionExporter):
             textColor=colors.HexColor("#1f2937"),
         )
         h2 = ParagraphStyle(
-            "AuriH2",
+            "SusurraH2",
             parent=styles["Heading2"],
             fontSize=13,
             leading=16,
@@ -134,7 +134,7 @@ class DefaultSessionExporter(SessionExporter):
             textColor=colors.HexColor("#0f172a"),
         )
         body = ParagraphStyle(
-            "AuriBody",
+            "SusurraBody",
             parent=styles["BodyText"],
             fontSize=10,
             leading=14,
@@ -142,14 +142,14 @@ class DefaultSessionExporter(SessionExporter):
             spaceAfter=4,
         )
         meta = ParagraphStyle(
-            "AuriMeta",
+            "SusurraMeta",
             parent=body,
             textColor=colors.HexColor("#475569"),
             fontSize=9,
             leading=12,
         )
         speaker_style = ParagraphStyle(
-            "AuriSpeaker",
+            "SusurraSpeaker",
             parent=body,
             fontName="Helvetica-Bold",
             spaceAfter=2,
@@ -164,7 +164,7 @@ class DefaultSessionExporter(SessionExporter):
             topMargin=2 * cm,
             bottomMargin=2 * cm,
             title=title,
-            author="Auri",
+            author="Susurra",
         )
 
         story: list[object] = []

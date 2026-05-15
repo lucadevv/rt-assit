@@ -1,5 +1,5 @@
 /**
- * Auri Toggle — accessible on/off switch.
+ * Susurra Toggle — accessible on/off switch.
  */
 
 import clsx from "clsx";
@@ -52,7 +52,7 @@ export function Toggle({
       aria-label={ariaLabel}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={clsx("auri-toggle", className)}
+      className={clsx("susurra-toggle", className)}
       style={trackStyle}
     >
       <span style={thumbStyle} />

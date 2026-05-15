@@ -176,7 +176,7 @@ export function EndedState({ session }: EndedStateProps): JSX.Element {
             value={String(transcriptCount)}
           />
           <SummaryItem
-            label="Mensajes de Auri"
+            label="Mensajes de Susurra"
             value={String(agentCount)}
           />
         </div>

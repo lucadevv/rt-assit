@@ -127,7 +127,7 @@ function RadioGroup<T extends string>({
               role="radio"
               aria-checked={active}
               onClick={() => onChange(option)}
-              className="auri-btn"
+              className="susurra-btn"
               style={{
                 padding: "8px 14px",
                 borderRadius: 9999,
@@ -423,8 +423,8 @@ function OcrToggle({ enabled, onChange }: OcrToggleProps): JSX.Element {
       >
         Extrae texto visible en tu pantalla cada 5s. El procesamiento OCR
         ocurre en TU navegador, y solo el texto extraído (no la imagen) se
-        manda a Auri para enriquecer las respuestas. Desactivá esto si no
-        querés que Auri use lo que está en pantalla.
+        manda a Susurra para enriquecer las respuestas. Desactivá esto si no
+        querés que Susurra use lo que está en pantalla.
       </div>
       <label
         style={{

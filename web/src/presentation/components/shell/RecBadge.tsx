@@ -25,7 +25,7 @@ export function RecBadge({
   }
   return (
     <span
-      className="auri-rec-badge"
+      className="susurra-rec-badge"
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -51,7 +51,7 @@ export function RecBadge({
           height: 8,
           borderRadius: 9999,
           background: "var(--color-lime-ink)",
-          animation: "auri-rec-pulse 1.2s ease-in-out infinite",
+          animation: "susurra-rec-pulse 1.2s ease-in-out infinite",
         }}
       />
       {label}

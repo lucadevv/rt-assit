@@ -1,5 +1,5 @@
 /**
- * Auri Input — single-line text input with consistent shape across the app.
+ * Susurra Input — single-line text input with consistent shape across the app.
  */
 
 import clsx from "clsx";
@@ -16,7 +16,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <input
       ref={ref}
-      className={clsx("auri-input", className)}
+      className={clsx("susurra-input", className)}
       style={{
         fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
         fontSize: 14,

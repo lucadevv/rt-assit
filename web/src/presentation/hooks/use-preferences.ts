@@ -50,7 +50,7 @@ export function usePreferences(): UsePreferencesResult {
           ? err.message
           : "No pudimos cargar tus preferencias.";
       // eslint-disable-next-line no-console -- surfaced for dev debugging
-      console.error("[auri] failed to load /api/preferences:", err);
+      console.error("[susurra] failed to load /api/preferences:", err);
       setError(msg);
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ export function usePreferences(): UsePreferencesResult {
             ? err.message
             : "No pudimos guardar el cambio.";
         // eslint-disable-next-line no-console -- surfaced for dev debugging
-        console.error("[auri] failed to PATCH /api/preferences:", err);
+        console.error("[susurra] failed to PATCH /api/preferences:", err);
         setError(msg);
         return null;
       } finally {

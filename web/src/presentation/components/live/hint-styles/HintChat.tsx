@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * HintChat — chat-style stack of agent messages with a small "Auri" avatar.
+ * HintChat — chat-style stack of agent messages with a small "Susurra" avatar.
  * The in-flight response renders as the final bubble with a blinking cursor.
  */
 
@@ -13,7 +13,7 @@ import {
 } from "@/application/stores/agent.store";
 import { ScribeMarkdown } from "./ScribeMarkdown";
 
-function AuriAvatar(): JSX.Element {
+function SusurraAvatar(): JSX.Element {
   return (
     <div
       aria-hidden
@@ -58,8 +58,8 @@ export function HintChat(): JSX.Element {
         }}
       >
         {isScribe
-          ? "Auri va a tomar notas estructuradas durante la reunión."
-          : "Auri va a chatear con vos en tiempo real durante la conversación."}
+          ? "Susurra va a tomar notas estructuradas durante la reunión."
+          : "Susurra va a chatear con vos en tiempo real durante la conversación."}
       </div>
     );
   }
@@ -71,7 +71,7 @@ export function HintChat(): JSX.Element {
           key={hint.id ?? hint.timestampMs}
           style={{ display: "flex", gap: 10, alignItems: "flex-start" }}
         >
-          <AuriAvatar />
+          <SusurraAvatar />
           <div
             style={{
               padding: "10px 14px",
@@ -95,7 +95,7 @@ export function HintChat(): JSX.Element {
       ))}
       {currentResponse || isThinking ? (
         <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-          <AuriAvatar />
+          <SusurraAvatar />
           <div
             style={{
               padding: "10px 14px",
@@ -130,7 +130,7 @@ export function HintChat(): JSX.Element {
                   marginLeft: 4,
                   background: "currentColor",
                   verticalAlign: "text-bottom",
-                  animation: "auri-rec-pulse 0.9s steps(2) infinite",
+                  animation: "susurra-rec-pulse 0.9s steps(2) infinite",
                   opacity: 0.7,
                 }}
               />

@@ -67,7 +67,7 @@ export function useScenarios(): UseScenariosResult {
       })
       .catch((err: unknown) => {
         // eslint-disable-next-line no-console
-        console.error("[auri] failed to fetch /api/scenarios:", err);
+        console.error("[susurra] failed to fetch /api/scenarios:", err);
       });
   }, [available.length, current, listScenarios, setAvailable, setCurrent]);
 

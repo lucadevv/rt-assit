@@ -154,7 +154,7 @@ export function DocumentList({
           }}
         >
           Subí tu CV, una oferta de trabajo o cualquier material de
-          referencia para que Auri te ayude mejor en tus sesiones en vivo.
+          referencia para que Susurra te ayude mejor en tus sesiones en vivo.
         </p>
         {onScrollToUploader ? (
           <button
@@ -190,7 +190,7 @@ export function DocumentList({
         onDelete={onDelete}
         onTogglePrimary={onTogglePrimary}
         docs={groups.globals}
-        emptyHint="Subí al menos tu CV para que Auri lo use de contexto."
+        emptyHint="Subí al menos tu CV para que Susurra lo use de contexto."
       />
       <Section
         title={

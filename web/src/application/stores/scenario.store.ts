@@ -1,7 +1,7 @@
 /**
  * Scenario store (Zustand) — owns the available list + the user's current
  * pick. The current scenario id is persisted in localStorage under
- * `auri-scenario` so the TopBar selector stays sticky across page loads.
+ * `susurra-scenario` so the TopBar selector stays sticky across page loads.
  *
  * SSR caveat: localStorage access is guarded — Next.js SSR renders without
  * persistence touch, the F1 hook hydrates on mount.
@@ -10,7 +10,7 @@
 import { create } from "zustand";
 import type { Scenario, ScenarioId } from "@/domain/entities/scenario";
 
-const STORAGE_KEY = "auri-scenario";
+const STORAGE_KEY = "susurra-scenario";
 
 interface ScenarioStoreState {
   available: Scenario[];

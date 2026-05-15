@@ -598,7 +598,7 @@ def init_db() -> None:
                VALUES (?, ?, ?, ?, ?, ?)""",
             (
                 "dev_default",
-                "dev@auri.local",
+                "dev@susurra.local",
                 "Dev User",
                 None,
                 "free",
@@ -794,106 +794,106 @@ _EMAIL_TEMPLATE_SEEDS: list[tuple[str, str, str, str, str]] = [
     (
         "welcome",
         "es-419",
-        "Bienvenido a Auri",
+        "Bienvenido a Susurra",
         (
             "<h1>Hola {{name}}!</h1>"
             "<p>Acabás de empezar tu trial gratis de 14 días en Pro. ¡Disfrutalo!</p>"
-            "<p>— El equipo de Auri</p>"
+            "<p>— El equipo de Susurra</p>"
         ),
         (
             "Hola {{name}}!\n\n"
             "Acabás de empezar tu trial gratis de 14 días en Pro. ¡Disfrutalo!\n\n"
-            "— El equipo de Auri"
+            "— El equipo de Susurra"
         ),
     ),
     (
         "trial_expiring",
         "es-419",
-        "Tu trial de Auri Pro expira pronto",
+        "Tu trial de Susurra Pro expira pronto",
         (
             "<h1>Hola {{name}}</h1>"
             "<p>Tu trial gratis termina en {{hours_left}} horas. Si querés mantener "
             "acceso a las features Pro, podés suscribirte cuando quieras.</p>"
-            "<p>— El equipo de Auri</p>"
+            "<p>— El equipo de Susurra</p>"
         ),
         (
             "Hola {{name}}\n\n"
             "Tu trial gratis termina en {{hours_left}} horas. Si querés mantener "
             "acceso a las features Pro, podés suscribirte cuando quieras.\n\n"
-            "— El equipo de Auri"
+            "— El equipo de Susurra"
         ),
     ),
     (
         "trial_expiring_24h",
         "es-419",
-        "Tu trial de Auri Pro expira mañana",
+        "Tu trial de Susurra Pro expira mañana",
         (
             "<h1>Hola {{name}}</h1>"
             "<p>Tu trial gratis termina en menos de 24 horas. "
             "Suscribite para mantener tu acceso Pro sin interrupción.</p>"
-            "<p>— El equipo de Auri</p>"
+            "<p>— El equipo de Susurra</p>"
         ),
         (
             "Hola {{name}}\n\n"
             "Tu trial gratis termina en menos de 24 horas. "
             "Suscribite para mantener tu acceso Pro sin interrupción.\n\n"
-            "— El equipo de Auri"
+            "— El equipo de Susurra"
         ),
     ),
     (
         "invoice_paid",
         "es-419",
-        "Recibo de pago — Auri",
+        "Recibo de pago — Susurra",
         (
             "<h1>Pago confirmado</h1>"
             "<p>Recibimos tu pago de <strong>{{amount}} {{currency}}</strong>. "
-            "Gracias por confiar en Auri.</p>"
+            "Gracias por confiar en Susurra.</p>"
             "<p><a href='{{invoice_url}}'>Ver factura</a></p>"
-            "<p>— El equipo de Auri</p>"
+            "<p>— El equipo de Susurra</p>"
         ),
         (
             "Pago confirmado\n\n"
-            "Recibimos tu pago de {{amount}} {{currency}}. Gracias por confiar en Auri.\n"
+            "Recibimos tu pago de {{amount}} {{currency}}. Gracias por confiar en Susurra.\n"
             "Factura: {{invoice_url}}\n\n"
-            "— El equipo de Auri"
+            "— El equipo de Susurra"
         ),
     ),
     (
         "payment_failed",
         "es-419",
-        "Problema con tu pago — Auri",
+        "Problema con tu pago — Susurra",
         (
             "<h1>No pudimos procesar tu pago</h1>"
             "<p>Hubo un problema con tu pago. Tenés 7 días para regularizarlo "
             "antes de que la suscripción se desactive.</p>"
             "<p><a href='{{retry_url}}'>Reintentar pago</a></p>"
-            "<p>— El equipo de Auri</p>"
+            "<p>— El equipo de Susurra</p>"
         ),
         (
             "No pudimos procesar tu pago\n\n"
             "Hubo un problema con tu pago. Tenés 7 días para regularizarlo "
             "antes de que la suscripción se desactive.\n"
             "Reintentar: {{retry_url}}\n\n"
-            "— El equipo de Auri"
+            "— El equipo de Susurra"
         ),
     ),
     (
         "dunning",
         "es-419",
-        "Recordatorio de pago — Auri",
+        "Recordatorio de pago — Susurra",
         (
             "<h1>Recordatorio de pago (intento {{attempt}})</h1>"
             "<p>Te enviamos este recordatorio porque tu pago aún no fue procesado. "
             "Para mantener tu plan Pro activo, regularizalo lo antes posible.</p>"
             "<p><a href='{{retry_url}}'>Regularizar ahora</a></p>"
-            "<p>— El equipo de Auri</p>"
+            "<p>— El equipo de Susurra</p>"
         ),
         (
             "Recordatorio de pago (intento {{attempt}})\n\n"
             "Te enviamos este recordatorio porque tu pago aún no fue procesado. "
             "Para mantener tu plan Pro activo, regularizalo lo antes posible.\n"
             "Regularizar: {{retry_url}}\n\n"
-            "— El equipo de Auri"
+            "— El equipo de Susurra"
         ),
     ),
     (
@@ -905,13 +905,13 @@ _EMAIL_TEMPLATE_SEEDS: list[tuple[str, str, str, str, str]] = [
             "<p>Llegaste al {{percent}}% de tu límite de "
             "<strong>{{limit_name}}</strong> "
             "para este mes. Si necesitás más, podés pasar a Pro cuando quieras.</p>"
-            "<p>— El equipo de Auri</p>"
+            "<p>— El equipo de Susurra</p>"
         ),
         (
             "Hola {{name}}\n\n"
             "Llegaste al {{percent}}% de tu límite de {{limit_name}} para este mes. "
             "Si necesitás más, podés pasar a Pro cuando quieras.\n\n"
-            "— El equipo de Auri"
+            "— El equipo de Susurra"
         ),
     ),
     (
@@ -923,13 +923,13 @@ _EMAIL_TEMPLATE_SEEDS: list[tuple[str, str, str, str, str]] = [
             "<p>Hola {{name}}, ya podés ver el resumen + action items "
             "de tu sesión.</p>"
             "<p><a href='{{session_url}}'>Abrir resumen</a></p>"
-            "<p>— El equipo de Auri</p>"
+            "<p>— El equipo de Susurra</p>"
         ),
         (
             "Resumen de sesión disponible\n\n"
             "Hola {{name}}, ya podés ver el resumen + action items de tu sesión.\n"
             "Abrir: {{session_url}}\n\n"
-            "— El equipo de Auri"
+            "— El equipo de Susurra"
         ),
     ),
 ]

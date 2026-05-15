@@ -226,7 +226,7 @@ export function PersonaEditorModal({
                 color: "var(--color-text-mid)",
               }}
             >
-              Personalizá la identidad que Auri usa en tus sesiones.
+              Personalizá la identidad que Susurra usa en tus sesiones.
             </p>
           </div>
           <button
@@ -294,7 +294,7 @@ export function PersonaEditorModal({
 
           <Field
             label="Escenario preferido"
-            hint="Cuando seleccionás esta persona, Auri prioriza este escenario."
+            hint="Cuando seleccionás esta persona, Susurra prioriza este escenario."
           >
             <Select
               value={scenarioId ?? ""}
@@ -314,7 +314,7 @@ export function PersonaEditorModal({
 
           <Field
             label="Instrucciones personalizadas"
-            hint="Estilo, vocabulario, prioridades — Auri lo respeta en cada respuesta."
+            hint="Estilo, vocabulario, prioridades — Susurra lo respeta en cada respuesta."
           >
             <TextArea
               value={customInstructions}
@@ -326,7 +326,7 @@ export function PersonaEditorModal({
 
           <Field
             label="Documentos vinculados"
-            hint="Elegí cómo querés que Auri use cada documento al usar esta persona."
+            hint="Elegí cómo querés que Susurra use cada documento al usar esta persona."
           >
             <DocLinksSection
               documents={docList}

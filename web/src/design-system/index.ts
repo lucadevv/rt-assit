@@ -1,4 +1,4 @@
-// Auri Design System — public surface.
+// Susurra Design System — public surface.
 // All primitives, tokens, theme + icons re-exported from a single entrypoint
 // so consumers in higher layers (presentation/) can import via:
 //   import { Button, Pill, useTheme } from "@/design-system";

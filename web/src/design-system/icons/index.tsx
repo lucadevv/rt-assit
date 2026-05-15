@@ -1,5 +1,5 @@
 /**
- * Auri inline SVG icon set. Pure presentational components.
+ * Susurra inline SVG icon set. Pure presentational components.
  *
  * Why inline SVG:
  *  - No icon-library dependency (saves bundle size + tree-shaking issues)

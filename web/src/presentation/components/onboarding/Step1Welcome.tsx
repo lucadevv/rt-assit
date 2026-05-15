@@ -4,7 +4,7 @@
  * Step 1 — Welcome. Hero gradient card + single primary CTA.
  *
  * Copy intentionally short; this is the hook, not the manual. The
- * `auri-hero-gradient` utility (F0) gives us the brand palette on a tall
+ * `susurra-hero-gradient` utility (F0) gives us the brand palette on a tall
  * card without per-instance shaders.
  */
 
@@ -40,7 +40,7 @@ export function Step1Welcome({ onNext }: Step1WelcomeProps): JSX.Element {
           lineHeight: 1.1,
         }}
       >
-        Bienvenido a Auri.
+        Bienvenido a Susurra.
       </h1>
       <p
         style={{
@@ -51,7 +51,7 @@ export function Step1Welcome({ onNext }: Step1WelcomeProps): JSX.Element {
           maxWidth: 540,
         }}
       >
-        Auri es tu copiloto en cualquier conversación importante:
+        Susurra es tu copiloto en cualquier conversación importante:
         entrevistas, reuniones con clientes, exámenes orales o llamadas
         que querés repasar después. Te escuchamos en tiempo real y te
         damos hints accionables al instante.

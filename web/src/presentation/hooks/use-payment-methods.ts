@@ -37,7 +37,7 @@ export function usePaymentMethods(): UsePaymentMethodsResult {
           ? err.message
           : "No pudimos cargar tus métodos de pago.";
       // eslint-disable-next-line no-console -- dev surface
-      console.error("[auri] listPaymentMethods failed:", err);
+      console.error("[susurra] listPaymentMethods failed:", err);
       setError(msg);
     } finally {
       setLoading(false);

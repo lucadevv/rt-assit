@@ -14,7 +14,7 @@ import type { OcrPort, OcrResult } from "@/application/ports/ocr.port";
  * tesseract.js CDN on first use only.
  *
  * Languages: Spanish + English combined ("spa+eng"). Covers most
- * Auri users in Latam + bilingual interview/sales contexts.
+ * Susurra users in Latam + bilingual interview/sales contexts.
  */
 
 const TESSERACT_LANGS = "spa+eng";

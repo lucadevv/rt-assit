@@ -49,7 +49,7 @@ export function useDeleteAccount(): UseDeleteAccountResult {
           ? err.message
           : "No pudimos eliminar la cuenta.";
       // eslint-disable-next-line no-console -- surfaced for dev debugging
-      console.error("[auri] DELETE /api/me failed:", err);
+      console.error("[susurra] DELETE /api/me failed:", err);
       setError(msg);
       return false;
     } finally {

@@ -127,7 +127,7 @@ export function SidebarLayout(): JSX.Element {
           >
             En Pro, el modo sidebar muestra un preview en vivo de tu reunión
             (Meet, Zoom o Teams), un medidor de volumen y controles para
-            pausar Auri sin afectar la llamada.
+            pausar Susurra sin afectar la llamada.
           </p>
           <div style={{ width: "100%", maxWidth: 560 }}>
             <UpgradeBanner
@@ -194,7 +194,7 @@ export function SidebarLayout(): JSX.Element {
               borderColor: accentBorder,
             }}
           >
-            <header style={SECTION_HEADER_STYLE}>Auri</header>
+            <header style={SECTION_HEADER_STYLE}>Susurra</header>
             <div
               style={{
                 flex: 1,
@@ -284,7 +284,7 @@ export function SidebarLayout(): JSX.Element {
             borderColor: accentBorder,
           }}
         >
-          <header style={SECTION_HEADER_STYLE}>Auri</header>
+          <header style={SECTION_HEADER_STYLE}>Susurra</header>
           <div
             style={{
               flex: 1,

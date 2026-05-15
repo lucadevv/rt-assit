@@ -1,5 +1,5 @@
 /**
- * Auri border radius tokens.
+ * Susurra border radius tokens.
  * Cards rounded-3xl (~22px), pills rounded-full, buttons 50px (full pill).
  */
 

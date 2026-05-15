@@ -46,7 +46,7 @@ export function Step3FirstSession({
           maxWidth: 540,
         }}
       >
-        Cuando hagas click, Auri te va a pedir permiso para capturar el
+        Cuando hagas click, Susurra te va a pedir permiso para capturar el
         audio del sistema (la conversación que está pasando en tu
         navegador o reunión). Vas a ver la transcripción en tiempo real,
         los hints van a aparecer del lado derecho, y todo queda guardado

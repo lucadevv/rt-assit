@@ -6,7 +6,7 @@
  *
  * Why custom (vs <audio controls>):
  *  - We need fine-grained control of currentTime + speed for the synced
- *    transcript, and we want the design to match the rest of Auri.
+ *    transcript, and we want the design to match the rest of Susurra.
  *  - The native chrome differs across browsers — a custom UI is more
  *    consistent for marketing screenshots + design review.
  *

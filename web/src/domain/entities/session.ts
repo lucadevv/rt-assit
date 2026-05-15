@@ -14,9 +14,9 @@ export type SessionStatus = "active" | "ended" | "abandoned";
 /**
  * SessionMode — picks the prompt-builder branch used by the backend.
  *
- *   - "agent":  Auri responds in first person ("yo"), as if it were the
+ *   - "agent":  Susurra responds in first person ("yo"), as if it were the
  *               user. This is the default behaviour (current pre-mode UX).
- *   - "scribe": Auri takes structured notes (markdown bullets with the
+ *   - "scribe": Susurra takes structured notes (markdown bullets with the
  *               canonical 📝 🎯 ⚖️ 📅 ❓ topic emojis) while the user
  *               listens. No first-person response — purely note-taking.
  *

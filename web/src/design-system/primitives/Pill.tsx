@@ -1,7 +1,7 @@
 /**
- * Auri Pill — small status / category chip.
+ * Susurra Pill — small status / category chip.
  *
- * Specs (Auri visual system):
+ * Specs (Susurra visual system):
  *  - rounded-full
  *  - padding 5/13 (vertical/horizontal)
  *  - fontSize 11, weight 700-800
@@ -86,7 +86,7 @@ export function Pill({
         type="button"
         onClick={onClick}
         title={title}
-        className={clsx("auri-pill", className)}
+        className={clsx("susurra-pill", className)}
         style={style}
       >
         {children}
@@ -94,7 +94,7 @@ export function Pill({
     );
   }
   return (
-    <span title={title} className={clsx("auri-pill", className)} style={style}>
+    <span title={title} className={clsx("susurra-pill", className)} style={style}>
       {children}
     </span>
   );

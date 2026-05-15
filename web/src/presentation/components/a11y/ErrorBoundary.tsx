@@ -9,7 +9,7 @@
  *   the console. The fallback UI offers a Retry that resets local state;
  *   navigation away (router.replace) is also safe because component
  *   re-mount clears the boundary.
- * - Uses Auri primitives (Card, Button) so the fallback inherits theme
+ * - Uses Susurra primitives (Card, Button) so the fallback inherits theme
  *   tokens — no jarring "system error" page.
  */
 

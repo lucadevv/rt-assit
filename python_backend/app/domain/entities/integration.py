@@ -1,7 +1,7 @@
 """Integration domain entity (B4 — placeholder).
 
 Represents a user's connection to a third-party provider
-(Google Calendar, Slack, Notion). For now Auri only supports
+(Google Calendar, Slack, Notion). For now Susurra only supports
 LISTING integrations (FR-51) — connect/disconnect flows live
 under a future OAuth implementation. The DB schema reserves a
 ``credentials_encrypted`` column for that future flow, but the

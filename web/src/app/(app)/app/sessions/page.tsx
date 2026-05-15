@@ -4,7 +4,7 @@
  * Sessions list (/app/sessions) — F10 implementation (Paso 3).
  *
  * Replaces the previous behaviour where session cards on the home dashboard
- * had nowhere to go. This page is a Spanish, Auri-themed list with:
+ * had nowhere to go. This page is a Spanish, Susurra-themed list with:
  *  - title + subtitle
  *  - search input (filters by title, case-insensitive client-side)
  *  - multi-select scenario pills (toggle inclusion)
@@ -249,7 +249,7 @@ export default function SessionsPage(): JSX.Element {
             }}
           >
             Todavía no tenés sesiones. Empezá una desde el inicio para arrancar
-            a entrenar con Auri.
+            a entrenar con Susurra.
           </p>
           <Button variant="primary" size="md" onClick={goHome}>
             Ir al inicio
@@ -309,7 +309,7 @@ export default function SessionsPage(): JSX.Element {
       {/* Blink animation for the active status pill — scoped via a tiny
           inline <style> so we don't pollute global CSS. */}
       <style>{`
-        @keyframes auri-blink {
+        @keyframes susurra-blink {
           0%, 60% { opacity: 1; }
           80% { opacity: 0.25; }
           100% { opacity: 1; }

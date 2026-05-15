@@ -9,7 +9,7 @@
  *     which delegates to the DocumentPipAdapter (PipOverlayPort). The hook
  *     never imports infrastructure directly.
  *   - The React tree inside the PiP window is mounted with React 19's
- *     `createRoot(pipDocument.body)` against the `#auri-pip-root` div the
+ *     `createRoot(pipDocument.body)` against the `#susurra-pip-root` div the
  *     adapter plants there.
  *   - State propagation: every render of the host hook builds a fresh
  *     `OverlaySnapshot` from Zustand stores and re-renders the PiP root
@@ -130,11 +130,11 @@ export function usePipOverlay(): UsePipOverlayResult {
         setIsOpen(false);
         return;
       }
-      const rootEl = doc.getElementById("auri-pip-root");
+      const rootEl = doc.getElementById("susurra-pip-root");
       if (!rootEl) {
         // Shouldn't happen — adapter plants this. Defensive.
         // eslint-disable-next-line no-console
-        console.warn("[auri/pip] root element missing in PiP window");
+        console.warn("[susurra/pip] root element missing in PiP window");
         handle.close();
         return;
       }
@@ -144,7 +144,7 @@ export function usePipOverlay(): UsePipOverlayResult {
       analytics.track({ name: "pip_opened" });
     } catch (err: unknown) {
       // eslint-disable-next-line no-console
-      console.error("[auri/pip] open failed", err);
+      console.error("[susurra/pip] open failed", err);
     }
   }, [togglePipOverlay, analytics]);
 

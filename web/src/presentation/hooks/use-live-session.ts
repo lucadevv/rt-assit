@@ -97,12 +97,12 @@ export function useLiveSession(
     analytics,
   } = useContainer();
 
-  // [auri/diag] mount id for tracing this hook instance across logs.
+  // [susurra/diag] mount id for tracing this hook instance across logs.
   const mountIdRef = useRef<string>("");
   if (!mountIdRef.current) {
     mountIdRef.current = Math.random().toString(36).slice(2, 8);
     // eslint-disable-next-line no-console
-    console.info(`[auri/diag] useLiveSession MOUNT id=${mountIdRef.current}`);
+    console.info(`[susurra/diag] useLiveSession MOUNT id=${mountIdRef.current}`);
   }
 
   const session = useSessionStore((s) => s.session);
@@ -209,7 +209,7 @@ export function useLiveSession(
         });
       } catch (err: unknown) {
         // eslint-disable-next-line no-console
-        console.warn("[auri/live] url-hydrate failed", err);
+        console.warn("[susurra/live] url-hydrate failed", err);
       } finally {
         markFinished();
       }
@@ -230,12 +230,12 @@ export function useLiveSession(
           });
         } catch (err: unknown) {
           // eslint-disable-next-line no-console
-          console.warn("[auri/live] recovery detail fetch failed", err);
+          console.warn("[susurra/live] recovery detail fetch failed", err);
           setSession(active);
         }
       } catch (err: unknown) {
         // eslint-disable-next-line no-console
-        console.warn("[auri/live] recover-active-session failed", err);
+        console.warn("[susurra/live] recover-active-session failed", err);
       } finally {
         markFinished();
       }
@@ -269,7 +269,7 @@ export function useLiveSession(
   }, [isCapturing, tickDuration]);
 
   // ------------------------------------------------------------------
-  // Global hotkey bridge — `auri:force-regenerate` (Cmd+Shift+P).
+  // Global hotkey bridge — `susurra:force-regenerate` (Cmd+Shift+P).
   //
   // The `useGlobalHotkeys` hook (wired at the top of /app/live) dispatches
   // a CustomEvent on `window` when the user presses the chord. We listen
@@ -297,13 +297,13 @@ export function useLiveSession(
       }
       // eslint-disable-next-line no-console
       console.info(
-        "[auri/live] force-regenerate requested",
+        "[susurra/live] force-regenerate requested",
         { transcript: lastFinal.content },
       );
     };
-    window.addEventListener("auri:force-regenerate", handler);
+    window.addEventListener("susurra:force-regenerate", handler);
     return () => {
-      window.removeEventListener("auri:force-regenerate", handler);
+      window.removeEventListener("susurra:force-regenerate", handler);
     };
   }, []);
 
@@ -313,9 +313,9 @@ export function useLiveSession(
   useEffect(() => {
     return () => {
       // eslint-disable-next-line no-console
-      console.warn(`[auri/diag] useLiveSession UNMOUNT cleanup running id=${mountIdRef.current}`);
+      console.warn(`[susurra/diag] useLiveSession UNMOUNT cleanup running id=${mountIdRef.current}`);
       // eslint-disable-next-line no-console
-      console.warn(`[auri/diag] isStartingRef=${isStartingRef.current} isCapturing=${useSessionStore.getState().isCapturing}`);
+      console.warn(`[susurra/diag] isStartingRef=${isStartingRef.current} isCapturing=${useSessionStore.getState().isCapturing}`);
       transcriptsUnsubRef.current?.();
       agentUnsubRef.current?.();
       audioUplinkRef.current?.close();
@@ -360,7 +360,7 @@ export function useLiveSession(
   const start = useCallback(async () => {
     // eslint-disable-next-line no-console
     console.info(
-      `[auri/diag] start() invoked mount=${mountIdRef.current} isStartingRef=${isStartingRef.current}`,
+      `[susurra/diag] start() invoked mount=${mountIdRef.current} isStartingRef=${isStartingRef.current}`,
     );
     if (isStartingRef.current) return;
     if (!user) {
@@ -489,7 +489,7 @@ export function useLiveSession(
       // store via onStream so SidebarLayout (and any future subscriber)
       // can react to it reactively.
       // eslint-disable-next-line no-console
-      console.info(`[auri/diag] start() → about to call audioCapture.start()`);
+      console.info(`[susurra/diag] start() → about to call audioCapture.start()`);
       await audioCapture.start(
         {
           onStatus: (state) => {
@@ -505,7 +505,7 @@ export function useLiveSession(
           onStream: (stream) => {
             // eslint-disable-next-line no-console
             console.info(
-              `[auri/diag] onStream invoked tracks=${stream.getTracks().length} audio=${stream.getAudioTracks().length} video=${stream.getVideoTracks().length}`,
+              `[susurra/diag] onStream invoked tracks=${stream.getTracks().length} audio=${stream.getAudioTracks().length} video=${stream.getVideoTracks().length}`,
             );
             setCurrentStream(stream);
           },
@@ -518,9 +518,9 @@ export function useLiveSession(
       const message = err instanceof Error ? err.message : String(err);
       errorRef.current = message;
       // eslint-disable-next-line no-console
-      console.error(`[auri/diag] start() ERROR:`, err);
+      console.error(`[susurra/diag] start() ERROR:`, err);
       // eslint-disable-next-line no-console
-      console.error("[auri/live] start failed", err);
+      console.error("[susurra/live] start failed", err);
       // Best-effort cleanup.
       try {
         audioUplinkRef.current?.close();
@@ -535,7 +535,7 @@ export function useLiveSession(
       }
     } finally {
       // eslint-disable-next-line no-console
-      console.info(`[auri/diag] start() FINALLY isStartingRef→false`);
+      console.info(`[susurra/diag] start() FINALLY isStartingRef→false`);
       isStartingRef.current = false;
     }
   }, [
@@ -597,7 +597,7 @@ export function useLiveSession(
           });
         } catch (err: unknown) {
           // eslint-disable-next-line no-console
-          console.warn("[auri/live] end-session failed", err);
+          console.warn("[susurra/live] end-session failed", err);
         }
       }
     } finally {

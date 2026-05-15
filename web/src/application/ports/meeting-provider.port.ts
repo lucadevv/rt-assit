@@ -1,4 +1,4 @@
-// Level-1 Strategy: a meeting provider Auri embeds (Meet, Zoom, Teams).
+// Level-1 Strategy: a meeting provider Susurra embeds (Meet, Zoom, Teams).
 import type { MeetingProviderId } from "@/domain/entities/meeting-provider-id";
 import type { Meeting } from "@/domain/entities/meeting";
 import type { Participant } from "@/domain/entities/participant";

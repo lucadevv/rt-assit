@@ -5,7 +5,7 @@
  *
  * Renders ONLY:
  *   1. The agent phase indicator (escuchando / pensando / respondiendo).
- *   2. The latest Auri hint (current streaming response, or the last
+ *   2. The latest Susurra hint (current streaming response, or the last
  *      finished response if nothing is streaming right now).
  *   3. A small "Detener" CTA so the user can end capture without
  *      switching layouts.
@@ -106,7 +106,7 @@ export function PipCompact(): JSX.Element {
             color: "var(--color-text-dim)",
           }}
         >
-          Auri
+          Susurra
         </div>
         {isThinking && !visibleResponse ? (
           <p
@@ -141,7 +141,7 @@ export function PipCompact(): JSX.Element {
               fontStyle: "italic",
             }}
           >
-            Sin respuestas todavía. Auri mostrará acá la última sugerencia
+            Sin respuestas todavía. Susurra mostrará acá la última sugerencia
             apenas hable la contraparte.
           </p>
         )}

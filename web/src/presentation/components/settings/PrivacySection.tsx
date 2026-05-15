@@ -72,7 +72,7 @@ export function PrivacySection({
         label="Borrar grabaciones automáticamente"
         hint={
           isPro
-            ? "Auri va a eliminar las grabaciones más viejas que el plazo elegido."
+            ? "Susurra va a eliminar las grabaciones más viejas que el plazo elegido."
             : "Tu plan no almacena grabaciones. Mejorá a Pro para activar esta opción."
         }
         htmlFor="privacy-auto-delete"

@@ -1,4 +1,4 @@
-"""Scribe mode — orthogonal to scenario. Auri observes and takes
+"""Scribe mode — orthogonal to scenario. Susurra observes and takes
 structured notes instead of speaking in the user's voice.
 
 The template adapts naturally per-scenario via the ``{scenario_label}``

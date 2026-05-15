@@ -8,7 +8,7 @@
  *     Stable within a session; we key the live store by this value so
  *     we can render labels even before the backend has assigned a `id`.
  *
- * `colorHint` is one of the four Auri scenario colors (cyan / amber /
+ * `colorHint` is one of the four Susurra scenario colors (cyan / amber /
  * lavender / lime). The frontend resolves the semantic color name to
  * actual OKLCH via `design-system/tokens/colors.ts`.
  */

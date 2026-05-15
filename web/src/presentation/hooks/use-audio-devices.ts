@@ -63,7 +63,7 @@ export function useAudioDevices(): UseAudioDevicesResult {
       setPermissionGranted(audioInputs.some((d) => d.label !== FALLBACK_LABEL));
     } catch (err) {
       // eslint-disable-next-line no-console -- diagnostic, no UX impact
-      console.error("[auri] enumerateDevices failed:", err);
+      console.error("[susurra] enumerateDevices failed:", err);
     }
   }, []);
 

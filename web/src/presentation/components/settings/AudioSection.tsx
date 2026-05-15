@@ -73,7 +73,7 @@ export function AudioSection({
             lineHeight: 1.5,
           }}
         >
-          Probá desde Chrome, Edge o Brave. Auri necesita acceso al
+          Probá desde Chrome, Edge o Brave. Susurra necesita acceso al
           micrófono para enumerar los dispositivos.
         </p>
       </SettingsSection>
@@ -83,7 +83,7 @@ export function AudioSection({
   return (
     <SettingsSection
       title="Audio"
-      description="Elegí el micrófono que Auri va a usar para tus sesiones."
+      description="Elegí el micrófono que Susurra va a usar para tus sesiones."
       trailing={saving ? <Pill variant="ghost">Guardando…</Pill> : null}
     >
       {!permissionGranted ? (

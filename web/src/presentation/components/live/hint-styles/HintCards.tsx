@@ -42,7 +42,7 @@ export function HintCards(): JSX.Element {
             marginBottom: 8,
           }}
         >
-          {isScribe ? "Notas de Auri" : "Auri sugiere"}
+          {isScribe ? "Notas de Susurra" : "Susurra sugiere"}
         </div>
         {primary ? (
           isScribe ? (
@@ -58,7 +58,7 @@ export function HintCards(): JSX.Element {
                     marginLeft: 4,
                     background: "currentColor",
                     verticalAlign: "text-bottom",
-                    animation: "auri-rec-pulse 0.9s steps(2) infinite",
+                    animation: "susurra-rec-pulse 0.9s steps(2) infinite",
                     opacity: 0.7,
                   }}
                 />
@@ -84,7 +84,7 @@ export function HintCards(): JSX.Element {
                     marginLeft: 4,
                     background: "currentColor",
                     verticalAlign: "text-bottom",
-                    animation: "auri-rec-pulse 0.9s steps(2) infinite",
+                    animation: "susurra-rec-pulse 0.9s steps(2) infinite",
                     opacity: 0.7,
                   }}
                 />

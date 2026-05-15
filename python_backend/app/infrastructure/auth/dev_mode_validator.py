@@ -23,7 +23,7 @@ class DevModeValidator(AuthValidator):
         # request.
         return AuthClaims(
             user_id=DEV_USER_ID,
-            email="dev@auri.local",
+            email="dev@susurra.local",
             name=None,
             avatar_url=None,
         )

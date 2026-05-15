@@ -1,5 +1,5 @@
 /**
- * Auri StatCard — large numeric display on a colored fill.
+ * Susurra StatCard — large numeric display on a colored fill.
  *
  * Specs:
  *  - bg color full
@@ -47,7 +47,7 @@ export function StatCard({
     border: "1px solid transparent",
   };
   return (
-    <div className={clsx("auri-stat-card", className)} style={style}>
+    <div className={clsx("susurra-stat-card", className)} style={style}>
       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.6px", textTransform: "uppercase", opacity: 0.78 }}>
         {label}
       </div>

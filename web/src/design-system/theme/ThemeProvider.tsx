@@ -21,7 +21,7 @@ interface ThemeContextValue {
   toggle: () => void;
 }
 
-const STORAGE_KEY = "auri-theme";
+const STORAGE_KEY = "susurra-theme";
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 

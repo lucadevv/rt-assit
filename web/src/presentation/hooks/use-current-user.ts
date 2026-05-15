@@ -90,7 +90,7 @@ export function useCurrentUser(): UseCurrentUserResult {
       })
       .catch((err: unknown) => {
         // eslint-disable-next-line no-console -- surfaced to dev console for debugging
-        console.error("[auri] failed to fetch /api/me:", err);
+        console.error("[susurra] failed to fetch /api/me:", err);
         // Keep the optimistic user — UI already has a usable identity.
       });
   }, [auth, getCurrentUser, setUser, setLoading, analytics]);

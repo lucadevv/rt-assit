@@ -55,7 +55,7 @@ export function RecBadge({ durationSeconds, active }: RecBadgeProps): JSX.Elemen
           height: 8,
           borderRadius: 9999,
           background: active ? "var(--color-lime-ink)" : "var(--color-text-dim)",
-          animation: active ? "auri-rec-pulse 1.2s ease-in-out infinite" : "none",
+          animation: active ? "susurra-rec-pulse 1.2s ease-in-out infinite" : "none",
         }}
       />
       <span>REC</span>

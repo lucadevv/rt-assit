@@ -167,7 +167,7 @@ export function SessionCard({
                     borderRadius: 999,
                     background: "currentColor",
                     marginRight: 6,
-                    animation: "auri-blink 1s infinite",
+                    animation: "susurra-blink 1s infinite",
                   }}
                 />
                 {STATUS_LABEL.active}

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* -------------------------------------------------------------------------
-   Auri design tokens — Tailwind v4 @theme block
+   Susurra design tokens — Tailwind v4 @theme block
    These declarations register tokens as both CSS variables AND Tailwind utilities
    (e.g. bg-lime, text-cyan-ink, border-border).
    ------------------------------------------------------------------------- */
@@ -95,27 +95,27 @@ pre {
 }
 
 /* -------------------------------------------------------------------------
-   Auri micro-interactions
+   Susurra micro-interactions
    ------------------------------------------------------------------------- */
-.auri-btn {
+.susurra-btn {
   -webkit-tap-highlight-color: transparent;
 }
-.auri-btn:hover:not(:disabled) {
+.susurra-btn:hover:not(:disabled) {
   filter: brightness(0.97);
 }
-.auri-btn:active:not(:disabled) {
+.susurra-btn:active:not(:disabled) {
   transform: translateY(1px);
 }
-.auri-btn:focus-visible,
-.auri-input:focus-visible,
-.auri-select:focus-visible,
-.auri-toggle:focus-visible,
-.auri-pill:focus-visible {
+.susurra-btn:focus-visible,
+.susurra-input:focus-visible,
+.susurra-select:focus-visible,
+.susurra-toggle:focus-visible,
+.susurra-pill:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px oklch(82% 0.24 130 / 0.4);
 }
 
-@keyframes auri-spin {
+@keyframes susurra-spin {
   from {
     transform: rotate(0deg);
   }
@@ -124,11 +124,11 @@ pre {
   }
 }
 
-.auri-spin {
-  animation: auri-spin 0.85s linear infinite;
+.susurra-spin {
+  animation: susurra-spin 0.85s linear infinite;
 }
 
-@keyframes auri-rec-pulse {
+@keyframes susurra-rec-pulse {
   0%,
   100% {
     transform: scale(1);
@@ -143,7 +143,7 @@ pre {
 /* AgentPhaseIndicator — soft pulse used by listening / thinking /
    responding dots. The animation duration is set inline per phase so
    each state has its own cadence. */
-@keyframes auri-phase-pulse {
+@keyframes susurra-phase-pulse {
   0%,
   100% {
     opacity: 1;
@@ -155,8 +155,8 @@ pre {
   }
 }
 
-/* Photo placeholder — diagonal stripes (Auri visual brief) */
-.auri-photo-placeholder {
+/* Photo placeholder — diagonal stripes (Susurra visual brief) */
+.susurra-photo-placeholder {
   background-image: repeating-linear-gradient(
     45deg,
     var(--color-border) 0,
@@ -169,7 +169,7 @@ pre {
 }
 
 /* Hero gradient background utility */
-.auri-hero-gradient {
+.susurra-hero-gradient {
   background: linear-gradient(
     135deg,
     var(--color-hero-h0) 0%,

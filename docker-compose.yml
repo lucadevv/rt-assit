@@ -91,7 +91,7 @@ services:
       # to the exact public origin(s) — NEVER use "*" with credentials.
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
       # B5 — Billing & email & cron. BILLING_MODE=dev uses a mock provider
-      # (no LS credentials needed). EMAIL_MODE=dev writes /tmp/auri_emails/.
+      # (no LS credentials needed). EMAIL_MODE=dev writes /tmp/susurra_emails/.
       # CRON_ENABLED=false registers jobs but doesn't auto-fire — use
       # /api/admin/cron/run/{job_name} to trigger manually in dev.
       - BILLING_MODE=${BILLING_MODE:-dev}
@@ -100,7 +100,7 @@ services:
       - LEMON_SQUEEZY_WEBHOOK_SECRET=${LEMON_SQUEEZY_WEBHOOK_SECRET:-}
       - EMAIL_MODE=${EMAIL_MODE:-dev}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
-      - AURI_FROM_EMAIL=${AURI_FROM_EMAIL:-noreply@auri.local}
+      - SUSURRA_FROM_EMAIL=${SUSURRA_FROM_EMAIL:-noreply@susurra.local}
       - CRON_ENABLED=${CRON_ENABLED:-false}
       - CHECKOUT_REDIRECT_BASE=${CHECKOUT_REDIRECT_BASE:-http://localhost:5173}
       - DEV_BILLING_BASE=${DEV_BILLING_BASE:-http://localhost:8767}
@@ -120,13 +120,13 @@ services:
       # the /shared/:id page. Backend only generates the URL string; the
       # frontend owns the actual rendering route.
       - SHARE_PUBLIC_BASE_URL=${SHARE_PUBLIC_BASE_URL:-http://localhost:5173/shared}
-      # B8 — Cross-cutting. AURI_MASTER_KEY is base64url(32 bytes) used to
+      # B8 — Cross-cutting. SUSURRA_MASTER_KEY is base64url(32 bytes) used to
       # AES-256-GCM encrypt BYOK API keys at rest. In dev we fall back to
       # a deterministic zero-byte key (NEVER use in production). RATE_LIMIT_*
       # are sliding-window quotas (per minute) for authed/public traffic.
       # CIRCUIT_BREAKER_* tune the failure-threshold + cooldown for the
       # in-memory breaker around LLM/STT/email providers.
-      - AURI_MASTER_KEY=${AURI_MASTER_KEY:-}
+      - SUSURRA_MASTER_KEY=${SUSURRA_MASTER_KEY:-}
       - RATE_LIMIT_PER_MIN=${RATE_LIMIT_PER_MIN:-100}
       - RATE_LIMIT_PUBLIC_PER_MIN=${RATE_LIMIT_PUBLIC_PER_MIN:-30}
       - CIRCUIT_BREAKER_THRESHOLD=${CIRCUIT_BREAKER_THRESHOLD:-5}

@@ -48,7 +48,7 @@ export function useCheckout(): UseCheckoutResult {
             ? err.message
             : "No pudimos abrir el checkout. Probá de nuevo en un minuto.";
         // eslint-disable-next-line no-console -- dev surface
-        console.error("[auri] createCheckout failed:", err);
+        console.error("[susurra] createCheckout failed:", err);
         setError(msg);
         setRedirecting(false);
       }
