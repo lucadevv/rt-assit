@@ -114,9 +114,27 @@ async def update_preferences(
             auto_delete_recordings_days=body.auto_delete_recordings_days,
             keyboard_shortcuts=body.keyboard_shortcuts,
             audio_device_id=audio_device_id_arg,
+            onboarding_complete=body.onboarding_complete,
         )
     except ValidationError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+    return UserPreferencesResponse.from_domain(prefs)
+
+
+@router.post("/api/me/onboarding/complete", response_model=UserPreferencesResponse)
+async def mark_onboarding_complete(
+    user: User = Depends(get_current_user),
+    use_case: UpdateUserPreferencesUseCase = Depends(
+        get_update_user_preferences_use_case
+    ),
+) -> UserPreferencesResponse:
+    """Idempotently flip ``onboarding_complete=True`` for the current user.
+
+    The /app/onboarding wizard calls this on finish or explicit skip so the
+    ``(app)/layout.tsx`` redirect stops firing on subsequent logins. Safe
+    to call multiple times — the underlying UPDATE is a no-op once the
+    flag is True."""
+    prefs = use_case.execute(user_id=user.id, onboarding_complete=True)
     return UserPreferencesResponse.from_domain(prefs)
 
 

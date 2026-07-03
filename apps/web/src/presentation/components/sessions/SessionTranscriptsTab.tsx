@@ -137,7 +137,7 @@ export function SessionTranscriptsTab({
                   <span
                     style={{
                       fontFamily:
-                        "var(--font-jetbrains-mono), ui-monospace, monospace",
+                        "var(--font-mono)",
                       fontSize: 11,
                       color: "var(--color-text-dim)",
                     }}

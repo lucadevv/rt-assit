@@ -86,7 +86,7 @@ export function AudioPlayer({ audioUrl, sync }: AudioPlayerProps): JSX.Element {
         <span
           style={{
             fontFamily:
-              "var(--font-jetbrains-mono), ui-monospace, monospace",
+              "var(--font-mono)",
             fontSize: 13,
             color: "var(--color-text)",
             minWidth: 110,
@@ -130,9 +130,10 @@ export function AudioPlayer({ audioUrl, sync }: AudioPlayerProps): JSX.Element {
           onChange={(e) => sync.setPlaybackRate(Number(e.target.value))}
           aria-label="Velocidad de reproducción"
           style={{
-            fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+            fontFamily: "var(--font-inter)",
             fontSize: 13,
-            background: "var(--color-bg)",
+            background: "var(--color-bg-soft)",
+            boxShadow: "var(--shadow-card-1)",
             color: "var(--color-text)",
             border: "1px solid var(--color-border)",
             borderRadius: 10,
@@ -153,7 +154,7 @@ export function AudioPlayer({ audioUrl, sync }: AudioPlayerProps): JSX.Element {
           margin: 0,
           fontSize: 11,
           color: "var(--color-text-dim)",
-          fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
           letterSpacing: "0.4px",
         }}
       >

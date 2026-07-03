@@ -34,3 +34,4 @@ class Scenario:
     user_template: str
     description: str = ""
     color: str = "lime"
+    is_dev_focused: bool = False

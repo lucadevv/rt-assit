@@ -18,7 +18,13 @@
  */
 
 import { useEffect, type JSX } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button, Card } from "@/design-system/primitives";
+import {
+  easeOut,
+  easeOutQuart,
+  modalEntrance,
+} from "@/lib/motion-presets";
 
 interface DeleteSessionModalProps {
   open: boolean;
@@ -37,6 +43,7 @@ export function DeleteSessionModal({
   onConfirm,
   onClose,
 }: DeleteSessionModalProps): JSX.Element | null {
+  const shouldReduceMotion = useReducedMotion();
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent): void => {
@@ -49,13 +56,16 @@ export function DeleteSessionModal({
   if (!open) return null;
 
   return (
-    <div
+    <motion.div
       role="dialog"
       aria-modal="true"
       aria-labelledby="delete-session-title"
       onClick={() => {
         if (!deleting) onClose();
       }}
+      initial={shouldReduceMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: easeOut }}
       style={{
         position: "fixed",
         inset: 0,
@@ -67,8 +77,15 @@ export function DeleteSessionModal({
         padding: 16,
       }}
     >
-      <Card
+      <motion.div
         onClick={(e) => e.stopPropagation()}
+        initial={shouldReduceMotion ? false : "hidden"}
+        animate="visible"
+        variants={modalEntrance}
+        transition={{ duration: 0.24, ease: easeOutQuart }}
+        style={{ width: "100%", maxWidth: 460 }}
+      >
+      <Card
         style={{
           width: "100%",
           maxWidth: 460,
@@ -145,6 +162,7 @@ export function DeleteSessionModal({
           </Button>
         </div>
       </Card>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

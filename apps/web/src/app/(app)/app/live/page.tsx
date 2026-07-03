@@ -31,6 +31,7 @@ import { useTweaksStore } from "@/application/stores/tweaks.store";
 import { useSessionStore } from "@/application/stores/session.store";
 import { useLiveSession } from "@/presentation/hooks/use-live-session";
 import { useGlobalHotkeys } from "@/presentation/hooks/use-global-hotkeys";
+import { useConversationMetrics } from "@/presentation/hooks/use-conversation-metrics";
 import { LiveControls } from "@/presentation/components/live/LiveControls";
 import { StandaloneLayout } from "@/presentation/components/live/StandaloneLayout";
 import { PipLayout } from "@/presentation/components/live/PipLayout";
@@ -38,6 +39,8 @@ import { SidebarLayout } from "@/presentation/components/live/SidebarLayout";
 import { TweaksPanel } from "@/presentation/components/live/TweaksPanel";
 import { EndedState } from "@/presentation/components/live/EndedState";
 import { MeetingInfoCard } from "@/presentation/components/live/MeetingInfoCard";
+import { PreMeetingNoteCard } from "@/presentation/components/live/PreMeetingNoteCard";
+import { usePreMeetingNote } from "@/presentation/hooks/use-pre-meeting-note";
 import { Button, Card } from "@/design-system/primitives";
 import { ArrowRightIcon, MicIcon } from "@/design-system/icons";
 
@@ -48,6 +51,13 @@ export default function LivePage(): JSX.Element {
   // (force-regenerate). Mounted at the top so they're active for the
   // entire lifetime of the live page, regardless of the active layout.
   useGlobalHotkeys();
+  // Live coaching metrics — derives talk ratio / WPM / monologue alert
+  // from the existing transcript stream. Mounted at the page level (not
+  // inside SidebarLayout) so the metrics keep accumulating even if the
+  // user switches between layouts mid-session. Cheap when nothing is
+  // capturing (the hook only attaches its 1s tick interval while
+  // `isCapturing` is true).
+  useConversationMetrics();
 
   const layout = useTweaksStore((s) => s.layout);
   // `isHidden` is the global peek-dim flag toggled by Cmd+Shift+H. We
@@ -74,6 +84,13 @@ export default function LivePage(): JSX.Element {
   });
   const session = useSessionStore((s) => s.session);
   const isCapturing = useSessionStore((s) => s.isCapturing);
+
+  // Pre-Interview Wizard output (optional). Fetched lazily once we know
+  // which session we hydrated. Returns null when no note exists, in
+  // which case the card stays hidden.
+  const { note: preMeetingNote } = usePreMeetingNote(
+    session ? session.id : null,
+  );
 
   // Once capture starts, clear the `?sessionId=` query param so:
   //   - a tab refresh during capture doesn't re-trigger a stale
@@ -144,6 +161,9 @@ export default function LivePage(): JSX.Element {
             meetingUrl={session.meetingUrl}
             meetingCode={session.meetingCode}
           />
+        ) : null}
+        {preMeetingNote ? (
+          <PreMeetingNoteCard note={preMeetingNote} />
         ) : null}
         {showEnded && session ? (
           <EndedState session={session} />

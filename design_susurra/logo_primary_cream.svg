@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 140" width="480" height="140">
+  <rect width="480" height="140" fill="#F5EFE6" rx="3"/>
+  <text x="48" y="92" font-family="Inter, -apple-system, sans-serif" font-weight="500" font-size="72" fill="#1A1A24" letter-spacing="-1.5">susurr</text>
+  <text x="265" y="94" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-weight="400" font-size="90" fill="#FF7B5C">a</text>
+  <circle cx="340" cy="32" r="4.5" fill="#FF7B5C"/>
+  <circle cx="357" cy="32" r="3.3" fill="#FF7B5C" opacity="0.6"/>
+  <circle cx="371" cy="32" r="2.3" fill="#FF7B5C" opacity="0.3"/>
+</svg>

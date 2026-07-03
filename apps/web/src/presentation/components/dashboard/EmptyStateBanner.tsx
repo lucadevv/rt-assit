@@ -14,7 +14,9 @@
  */
 
 import type { JSX } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/design-system/primitives";
+import { easeOutQuart } from "@/lib/motion-presets";
 
 type BannerVariant = "cyan" | "amber" | "lavender" | "lime";
 
@@ -45,9 +47,13 @@ export function EmptyStateBanner({
   onCta,
   variant = "cyan",
 }: EmptyStateBannerProps): JSX.Element {
+  const shouldReduceMotion = useReducedMotion();
   return (
-    <div
+    <motion.div
       role="status"
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: easeOutQuart, delay: 0.05 }}
       style={{
         background: VARIANT_BG[variant],
         color: VARIANT_INK[variant],
@@ -74,6 +80,6 @@ export function EmptyStateBanner({
       <Button variant="dark" size="sm" onClick={onCta}>
         {ctaLabel}
       </Button>
-    </div>
+    </motion.div>
   );
 }

@@ -9,9 +9,11 @@ Auth tier: ``WS-JWT`` (JWT in query param ``?token=...``). In dev mode the
 token is optional and the handler synthesises ``dev_default``. For rt_go
 (internal/trusted gateway) we currently allow connections without a token
 in dev mode and document the multi-tenant TODO for B1."""
+import asyncio
 import logging
 import os
 import secrets
+from collections import defaultdict
 from typing import Optional
 
 from fastapi import WebSocket, WebSocketDisconnect, status
@@ -164,3 +166,57 @@ async def authenticate_service_websocket(
         return False
 
     return True
+
+
+# ---------------------------------------------------------------------------
+# Per-IP WebSocket rate limit
+#
+# The HTTP RateLimitMiddleware doesn't apply to WebSocket upgrades — a rogue
+# client could open thousands of concurrent sockets and exhaust the event
+# loop / file descriptors. We maintain an in-memory counter per remote IP
+# and reject new connections beyond MAX_SOCKETS_PER_IP with WS close 4429
+# (custom code in the application range, mirroring HTTP 429 semantics).
+# ---------------------------------------------------------------------------
+
+_active_sockets_per_ip: dict[str, int] = defaultdict(int)
+_sockets_lock = asyncio.Lock()
+MAX_SOCKETS_PER_IP = 10
+WS_TOO_MANY_CONNECTIONS = 4429
+
+
+async def accept_socket_with_rate_limit(
+    websocket: WebSocket, ip: Optional[str]
+) -> bool:
+    """Check + reserve a WS slot for ``ip``. Returns False if rejected.
+
+    On rejection the socket is closed with code 4429 — callers MUST NOT
+    call ``websocket.accept()`` or invoke any handler logic when False
+    is returned. On success the caller MUST eventually call
+    ``release_socket(ip)`` (a try/finally around the handler is the
+    canonical pattern).
+    """
+    if not ip:
+        # Unknown client (test client, broken proxy, etc.) — don't rate
+        # limit. We still record the slot under a sentinel key so the
+        # counter shape stays consistent for tests.
+        ip = "__unknown__"
+
+    async with _sockets_lock:
+        if _active_sockets_per_ip[ip] >= MAX_SOCKETS_PER_IP:
+            await websocket.close(
+                code=WS_TOO_MANY_CONNECTIONS,
+                reason="Too many connections from this IP",
+            )
+            return False
+        _active_sockets_per_ip[ip] += 1
+    return True
+
+
+async def release_socket(ip: Optional[str]) -> None:
+    """Release a previously reserved WS slot. Safe to call multiple times
+    (guarded by ``max(0, ...)``). Must be paired with a successful
+    ``accept_socket_with_rate_limit`` call."""
+    if not ip:
+        ip = "__unknown__"
+    async with _sockets_lock:
+        _active_sockets_per_ip[ip] = max(0, _active_sockets_per_ip[ip] - 1)

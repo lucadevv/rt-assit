@@ -15,9 +15,15 @@
  */
 
 import { useEffect, useRef, useState, type JSX } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button, Input } from "@/design-system/primitives";
 import { useDeleteAccount } from "@/presentation/hooks/use-delete-account";
 import { FocusTrap } from "@/presentation/components/a11y/FocusTrap";
+import {
+  easeOut,
+  easeOutQuart,
+  modalEntrance,
+} from "@/lib/motion-presets";
 
 interface DeleteAccountModalProps {
   open: boolean;
@@ -33,6 +39,7 @@ export function DeleteAccountModal({
   const { deleting, error, confirmDelete } = useDeleteAccount();
   const [confirmInput, setConfirmInput] = useState<string>("");
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   // Reset the input every time the modal opens so a previous attempt
   // doesn't leak in.
@@ -62,10 +69,13 @@ export function DeleteAccountModal({
   const matches = confirmInput.trim().toLowerCase() === email.toLowerCase();
 
   return (
-    <div
+    <motion.div
       onClick={(e) => {
         if (e.target === e.currentTarget && !deleting) onClose();
       }}
+      initial={shouldReduceMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: easeOut }}
       style={{
         position: "fixed",
         inset: 0,
@@ -79,17 +89,21 @@ export function DeleteAccountModal({
       }}
     >
       <FocusTrap onEscape={deleting ? undefined : onClose}>
-      <div
+      <motion.div
         ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="delete-account-title"
         tabIndex={-1}
+        initial={shouldReduceMotion ? false : "hidden"}
+        animate="visible"
+        variants={modalEntrance}
+        transition={{ duration: 0.24, ease: easeOutQuart }}
         style={{
           width: "100%",
           maxWidth: 560,
           maxHeight: "90vh",
-          background: "var(--color-bg)",
+          background: "var(--color-bg-warm)",
           color: "var(--color-text)",
           border: "1px solid var(--color-border)",
           borderRadius: 22,
@@ -187,7 +201,7 @@ export function DeleteAccountModal({
               margin: "0 0 12px",
               fontSize: 13,
               fontFamily:
-                "var(--font-jetbrains-mono), ui-monospace, monospace",
+                "var(--font-mono)",
               color: "var(--color-text-mid)",
             }}
           >
@@ -246,8 +260,8 @@ export function DeleteAccountModal({
             {deleting ? "Eliminando…" : "Eliminar mi cuenta"}
           </Button>
         </footer>
-      </div>
+      </motion.div>
       </FocusTrap>
-    </div>
+    </motion.div>
   );
 }

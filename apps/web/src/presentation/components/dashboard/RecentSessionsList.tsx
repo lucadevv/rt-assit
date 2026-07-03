@@ -18,10 +18,17 @@
 
 import type { JSX } from "react";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import { Card, Pill } from "@/design-system/primitives";
 import type { Session } from "@/domain/entities/session";
 import type { Scenario } from "@/domain/entities/scenario";
 import { scenarioColorOf } from "@/domain/entities/scenario";
+import {
+  fadeUpSubtle,
+  staggerContainer,
+  transitionFast,
+  viewportOnce,
+} from "@/lib/motion-presets";
 
 interface RecentSessionsListProps {
   sessions: Session[];
@@ -60,6 +67,14 @@ export function RecentSessionsList({
   scenarios,
 }: RecentSessionsListProps): JSX.Element {
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
+  const reveal = shouldReduceMotion
+    ? { initial: false as const, animate: "visible" as const }
+    : {
+        initial: "hidden" as const,
+        whileInView: "visible" as const,
+        viewport: viewportOnce,
+      };
 
   const handleClick = (s: Session): void => {
     // Active sessions resume into the live workspace (the live page recovers
@@ -110,7 +125,9 @@ export function RecentSessionsList({
           Ver todas →
         </button>
       </div>
-      <ul
+      <motion.ul
+        variants={staggerContainer(0, 0.06)}
+        {...reveal}
         style={{
           listStyle: "none",
           margin: 0,
@@ -126,7 +143,11 @@ export function RecentSessionsList({
           const duration = formatDuration(s.durationSeconds);
           const statusVariant = s.status === "active" ? "lime" : "ghost";
           return (
-            <li key={s.id}>
+            <motion.li
+              key={s.id}
+              variants={fadeUpSubtle}
+              transition={transitionFast}
+            >
               <button
                 type="button"
                 onClick={() => handleClick(s)}
@@ -194,10 +215,10 @@ export function RecentSessionsList({
                   </div>
                 </Card>
               </button>
-            </li>
+            </motion.li>
           );
         })}
-      </ul>
+      </motion.ul>
     </section>
   );
 }

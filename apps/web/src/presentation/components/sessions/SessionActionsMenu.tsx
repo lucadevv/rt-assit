@@ -117,7 +117,7 @@ export function SessionActionsMenu({
           alignItems: "center",
           justifyContent: "center",
           color: "var(--color-text)",
-          background: "var(--color-bg)",
+          background: "var(--color-bg-warm)",
           transition: "background 120ms ease",
         }}
       >
@@ -142,7 +142,7 @@ export function SessionActionsMenu({
             top: "calc(100% + 6px)",
             right: 0,
             minWidth: 220,
-            background: "var(--color-bg)",
+            background: "var(--color-bg-warm)",
             border: "1px solid var(--color-border)",
             borderRadius: 14,
             boxShadow:
@@ -242,7 +242,7 @@ function menuRowStyle(danger: boolean): CSSProperties {
     fontSize: 14,
     fontWeight: 500,
     borderRadius: 10,
-    color: danger ? "oklch(58% 0.22 25)" : "var(--color-text)",
+    color: danger ? "var(--color-danger)" : "var(--color-text)",
   };
 }
 

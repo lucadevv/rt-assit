@@ -18,13 +18,21 @@
 
 import { useMemo, useState, type JSX } from "react";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button, Card, Pill, Spinner } from "@/design-system/primitives";
 import { useSessionsList } from "@/presentation/hooks/use-sessions-list";
 import { useScenarios } from "@/presentation/hooks/use-scenarios";
+import { filterDevFocused } from "@/domain/entities/scenario";
 import { SessionsFilterBar } from "@/presentation/components/sessions/SessionsFilterBar";
 import { SessionCard } from "@/presentation/components/sessions/SessionCard";
 import type { DateBucket } from "@/presentation/components/sessions/SessionsFilterBar";
 import type { Session } from "@/domain/entities/session";
+import {
+  fadeUpSubtle,
+  staggerContainer,
+  transitionFast,
+  viewportOnce,
+} from "@/lib/motion-presets";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -122,12 +130,36 @@ export default function SessionsPage(): JSX.Element {
   const router = useRouter();
   const { sessions, loading, error } = useSessionsList();
   const { available: scenarios } = useScenarios();
+  const shouldReduceMotion = useReducedMotion();
+  const reveal = shouldReduceMotion
+    ? { initial: false as const, animate: "visible" as const }
+    : {
+        initial: "hidden" as const,
+        whileInView: "visible" as const,
+        viewport: viewportOnce,
+      };
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedScenarios, setSelectedScenarios] = useState<Set<string>>(
     () => new Set<string>(),
   );
   const [dateBucket, setDateBucket] = useState<DateBucket>("all");
+
+  // Phase 4: the filter bar exposes dev-focused scenarios + any legacy
+  // scenarios that appear in the user's existing sessions, so they can
+  // still filter old data without seeing the full catalog of hidden
+  // scenarios.
+  const filterScenarios = useMemo(() => {
+    const dev = filterDevFocused(scenarios);
+    const usedIds = new Set(
+      sessions.map((s) => s.scenario).filter((x): x is string => !!x),
+    );
+    const devIds = new Set(dev.map((s) => s.id));
+    const legacyExtras = scenarios.filter(
+      (s) => !devIds.has(s.id) && usedIds.has(s.id),
+    );
+    return [...dev, ...legacyExtras];
+  }, [scenarios, sessions]);
 
   const toggleScenario = (id: string): void => {
     setSelectedScenarios((prev) => {
@@ -262,7 +294,7 @@ export default function SessionsPage(): JSX.Element {
             onSearchChange={setSearchQuery}
             selectedScenarios={selectedScenarios}
             onToggleScenario={toggleScenario}
-            scenarios={scenarios}
+            scenarios={filterScenarios}
             dateBucket={dateBucket}
             onDateBucketChange={setDateBucket}
             total={sessions.length}
@@ -282,7 +314,9 @@ export default function SessionsPage(): JSX.Element {
               filtros.
             </p>
           ) : (
-            <ul
+            <motion.ul
+              variants={staggerContainer(0, 0.06)}
+              {...reveal}
               style={{
                 listStyle: "none",
                 margin: 0,
@@ -293,15 +327,19 @@ export default function SessionsPage(): JSX.Element {
               }}
             >
               {filtered.map((s) => (
-                <li key={s.id}>
+                <motion.li
+                  key={s.id}
+                  variants={fadeUpSubtle}
+                  transition={transitionFast}
+                >
                   <SessionCard
                     session={s}
                     scenarios={scenarios}
                     onSelect={goDetail}
                   />
-                </li>
+                </motion.li>
               ))}
-            </ul>
+            </motion.ul>
           )}
         </>
       )}

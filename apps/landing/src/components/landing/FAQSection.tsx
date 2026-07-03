@@ -1,4 +1,14 @@
-import type { ReactNode } from 'react';
+'use client';
+
+import { useId, useState, type ReactNode } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  easeOut,
+  easeOutQuart,
+  fadeUpSubtle,
+  staggerContainer,
+  viewportOnce,
+} from '@/lib/motion-presets';
 import { SectionTitle, SerifEm } from './SectionTitle';
 
 type FAQ = {
@@ -106,74 +116,123 @@ const ITEMS: FAQ[] = [
 ];
 
 /**
- * FAQ section: 5 collapsible items using native <details>/<summary>.
+ * FAQ section: collapsible items with controlled state for smooth accordion reveal.
  * Source: design_susurra/index.html lines 963-1007.
  */
 export function FAQSection() {
+  const shouldReduceMotion = useReducedMotion();
+  const reveal = shouldReduceMotion
+    ? { initial: false as const, animate: 'visible' as const }
+    : {
+        initial: 'hidden' as const,
+        whileInView: 'visible' as const,
+        viewport: viewportOnce,
+      };
+
   return (
     <section id="faq" className="relative" style={{ padding: '96px 0' }}>
       <div className="max-w-[1240px] mx-auto px-8">
-        <SectionTitle
-          eyebrow="FAQ"
-          heading={
-            <>
-              Preguntas <SerifEm>honestas.</SerifEm>
-            </>
-          }
-        />
+        <motion.div variants={staggerContainer(0, 0.05)} {...reveal}>
+          <motion.div variants={fadeUpSubtle} transition={{ duration: 0.6, ease: easeOutQuart }}>
+            <SectionTitle
+              heading={
+                <>
+                  Preguntas <SerifEm>honestas.</SerifEm>
+                </>
+              }
+            />
+          </motion.div>
 
-        <div
-          className="mx-auto flex flex-col gap-1"
-          style={{ maxWidth: '720px' }}
-        >
-          {ITEMS.map((item) => (
-            <details
-              key={item.q}
-              className="faq-item group"
-              style={{
-                background: 'white',
-                border: '1px solid var(--line)',
-                borderRadius: '14px',
-                overflow: 'hidden',
-              }}
-            >
-              <summary
-                className="flex items-center justify-between cursor-pointer transition-colors hover:bg-[rgba(245,239,230,0.5)]"
-                style={{
-                  padding: '22px 26px',
-                  listStyle: 'none',
-                  fontWeight: 500,
-                  fontSize: '17px',
-                }}
-              >
-                <span>{item.q}</span>
-                <span
-                  className="transition-transform group-open:rotate-45"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '28px',
-                    color: 'var(--color-coral)',
-                    lineHeight: 1,
-                  }}
-                  aria-hidden="true"
-                >
-                  +
-                </span>
-              </summary>
-              <div
-                style={{
-                  padding: '0 26px 24px',
-                  fontSize: '15px',
-                  color: 'var(--text-dim)',
-                  lineHeight: 1.65,
-                }}
-              >
-                {item.a}
-              </div>
-            </details>
-          ))}
-        </div>
+          <motion.div
+            className="mx-auto flex flex-col gap-1"
+            style={{ maxWidth: '720px' }}
+            variants={staggerContainer(0.05, 0.05)}
+          >
+            {ITEMS.map((item) => (
+              <FAQItem key={item.q} q={item.q} a={item.a} />
+            ))}
+          </motion.div>
+        </motion.div>
       </div>
     </section>
+  );
+}
+
+function FAQItem({ q, a }: FAQ) {
+  const [isOpen, setIsOpen] = useState(false);
+  const panelId = useId();
+  const buttonId = useId();
+
+  return (
+    <motion.div
+      className="faq-item"
+      style={{
+        background: 'white',
+        border: '1px solid var(--line)',
+        borderRadius: '14px',
+        overflow: 'hidden',
+      }}
+      variants={fadeUpSubtle}
+      transition={{ duration: 0.5, ease: easeOutQuart }}
+    >
+      <button
+        type="button"
+        id={buttonId}
+        aria-expanded={isOpen}
+        aria-controls={panelId}
+        onClick={() => setIsOpen((v) => !v)}
+        className="flex w-full items-center justify-between text-left cursor-pointer transition-colors duration-150 hover:bg-[rgba(245,239,230,0.5)]"
+        style={{
+          padding: '22px 26px',
+          fontWeight: 500,
+          fontSize: '17px',
+          background: 'transparent',
+          border: 'none',
+          color: 'inherit',
+        }}
+      >
+        <span>{q}</span>
+        <span
+          className={`transition-transform duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] ${
+            isOpen ? 'rotate-45' : ''
+          }`}
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '28px',
+            color: 'var(--color-coral)',
+            lineHeight: 1,
+            display: 'inline-block',
+          }}
+          aria-hidden="true"
+        >
+          +
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            id={panelId}
+            role="region"
+            aria-labelledby={buttonId}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: easeOut }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div
+              style={{
+                padding: '0 26px 24px',
+                fontSize: '15px',
+                color: 'var(--text-dim)',
+                lineHeight: 1.65,
+              }}
+            >
+              {a}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

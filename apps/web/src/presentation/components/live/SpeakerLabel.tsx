@@ -71,7 +71,7 @@ export function SpeakerLabel({
           borderRadius: 9999,
           background: color.bg,
           color: color.ink,
-          fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+          fontFamily: "var(--font-inter)",
           fontSize,
           fontWeight: 700,
         }}
@@ -127,7 +127,7 @@ export function SpeakerLabel({
         background: color.bg,
         color: color.ink,
         border: "1px solid transparent",
-        fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+        fontFamily: "var(--font-inter)",
         fontSize,
         fontWeight: 700,
         letterSpacing: "0.4px",

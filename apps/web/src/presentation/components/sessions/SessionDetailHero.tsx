@@ -134,7 +134,7 @@ export function SessionDetailHero({
               fontSize: 13,
               color: "var(--color-text-mid)",
               fontFamily:
-                "var(--font-jetbrains-mono), ui-monospace, monospace",
+                "var(--font-mono)",
             }}
           >
             {formatStartedAtLong(session.startedAt)} · {duration}

@@ -34,7 +34,7 @@ export function RecBadge({
         borderRadius: 9999,
         background: "var(--color-lime)",
         color: "var(--color-lime-ink)",
-        fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+        fontFamily: "var(--font-inter)",
         fontSize: 11,
         fontWeight: 800,
         letterSpacing: "0.6px",

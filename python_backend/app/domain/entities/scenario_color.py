@@ -12,6 +12,8 @@ from typing import Final
 SCENARIO_COLORS: Final[dict[str, str]] = {
     "interview_dev": "cyan",
     "interview_behavioral": "cyan",
+    "technical_call": "amber",
+    "code_review": "lime",
     "meeting_business": "amber",
     "client_call": "amber",
     "sales_call": "amber",

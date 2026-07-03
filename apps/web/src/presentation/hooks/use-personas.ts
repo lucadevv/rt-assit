@@ -15,12 +15,15 @@
  *    empty and the empty state is shown.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useContainer } from "@/infrastructure/di/container";
+import { useAuthStore } from "@/application/stores/auth.store";
 import {
   selectDefaultPersona,
   usePersonasStore,
 } from "@/application/stores/personas.store";
+
+const PERSONAS_STALE_MS = 30_000;
 import type { Persona } from "@/domain/entities/persona";
 import type {
   CreatePersonaInput,
@@ -186,16 +189,29 @@ export function usePersonas(): UsePersonasResult {
     [unlinkPersonaDocument, setError],
   );
 
-  // StrictMode dedup — see use-documents.ts for the rationale.
-  const fetchedRef = useRef(false);
+  // Gate fetch on authenticated user (auth store = single source of truth).
+  const isAuthed = useAuthStore((s) => s.user !== null);
+
+  // Dedup window — survives HMR via store-singleton state. Coexists with
+  // `hasFetched` (which prevents the empty-state flash): we still skip
+  // when the store is warm AND the timestamp is within the stale window.
   useEffect(() => {
-    if (fetchedRef.current) return;
-    if (!hasFetched && !loading) {
-      fetchedRef.current = true;
-      void refresh();
+    if (!isAuthed) return;
+    const lastFetched = usePersonasStore.getState().lastFetchedAt;
+    if (
+      hasFetched &&
+      lastFetched !== null &&
+      Date.now() - lastFetched < PERSONAS_STALE_MS
+    ) {
+      return;
     }
+    if (loading) return;
+    usePersonasStore.getState().setLastFetchedAt(Date.now());
+    void refresh().catch(() => {
+      usePersonasStore.getState().setLastFetchedAt(null);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasFetched]);
+  }, [hasFetched, isAuthed]);
 
   return {
     personas,

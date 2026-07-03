@@ -54,9 +54,16 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, JSX } from "react";
+import type { CSSProperties, JSX, ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  easeOut,
+  easeOutQuart,
+  modalEntrance,
+} from "@/lib/motion-presets";
 import { Button, Card, Input, Pill, Select, Toggle } from "@/design-system/primitives";
+import { AgentIcon, ScribeIcon } from "@/design-system/primitives/icons/ModeIcons";
 import { ArrowRightIcon, CheckIcon, MicIcon, PlusIcon, XIcon } from "@/design-system/icons";
 import { useScenarios } from "@/presentation/hooks/use-scenarios";
 import { useDocuments } from "@/presentation/hooks/use-documents";
@@ -68,7 +75,7 @@ import { useContainer } from "@/infrastructure/di/container";
 import { useSessionStore } from "@/application/stores/session.store";
 import { useAgentStore } from "@/application/stores/agent.store";
 import type { Scenario, ScenarioColor } from "@/domain/entities/scenario";
-import { scenarioColorOf } from "@/domain/entities/scenario";
+import { filterDevFocused, scenarioColorOf } from "@/domain/entities/scenario";
 import type { SessionMode } from "@/domain/entities/session";
 import {
   DOC_TYPE_ICONS,
@@ -83,6 +90,7 @@ import {
   SESSION_MATERIAL_TYPE_LABELS,
 } from "@/domain/entities/session-material";
 import type { CreateSessionMaterialInput } from "@/application/ports/session-materials-api.port";
+import { PreInterviewWizardSection, type PreInterviewWizardData } from "./PreInterviewWizardSection";
 
 interface NewSessionModalProps {
   open: boolean;
@@ -149,13 +157,15 @@ export function NewSessionModal({
   onClose,
 }: NewSessionModalProps): JSX.Element | null {
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
   const { user } = useCurrentUser();
   const { available: scenarios, current: globalScenarioId, setCurrent } =
     useScenarios();
   const { documents, hasFetched: docsFetched } = useDocuments();
   const { personas, defaultPersona, hasFetched: personasFetched } =
     usePersonas();
-  const { createSession, createSessionMaterial } = useContainer();
+  const { createSession, createSessionMaterial, createPreMeetingNote } =
+    useContainer();
 
   // ---------- Local form state ----------
   const [name, setName] = useState("");
@@ -184,6 +194,13 @@ export function NewSessionModal({
     id: string;
     joinUrl: string;
   } | null>(null);
+  // Pre-Interview Wizard output. Lifted up from PreInterviewWizardSection
+  // so we can persist it AFTER createSession returns (the wizard runs the
+  // LLM call as preview-only — the session row doesn't exist yet at that
+  // point).
+  const [prepData, setPrepData] = useState<PreInterviewWizardData | null>(
+    null,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -200,14 +217,33 @@ export function NewSessionModal({
     }
   }, [user]);
 
+  // Phase 4 wedge: only dev-focused scenarios are exposed in the picker.
+  // Declared early so the seed effect can use it. Legacy scenarios remain
+  // registered server-side so existing sessions and personas linked to
+  // them still resolve, but new selections are restricted to the four
+  // dev scenarios.
+  const pickerScenarios = useMemo<Scenario[]>(
+    () => filterDevFocused(scenarios),
+    [scenarios],
+  );
+
   // When the modal opens, seed scenario from the global current pick
-  // (if any) so the user lands on something selected.
+  // (if any) so the user lands on something selected. If the global pick
+  // is a legacy non-dev scenario, fall back to the first dev scenario in
+  // the picker so the wedge selection stays consistent.
   useEffect(() => {
     if (!open) return;
-    if (scenarioId === null && globalScenarioId) {
+    if (scenarioId !== null) return;
+    const devIds = new Set(pickerScenarios.map((s) => s.id));
+    if (globalScenarioId && devIds.has(globalScenarioId)) {
       setScenarioId(globalScenarioId);
+      return;
     }
-  }, [open, globalScenarioId, scenarioId]);
+    const first = pickerScenarios[0];
+    if (first) {
+      setScenarioId(first.id);
+    }
+  }, [open, globalScenarioId, scenarioId, pickerScenarios]);
 
   // Seed the persona selector with the user's default persona (if any)
   // every time the modal opens. The user can still override per session.
@@ -228,6 +264,7 @@ export function NewSessionModal({
     setError(null);
     setMaterialDrafts([]);
     setCreatedMeeting(null);
+    setPrepData(null);
   }, [open]);
 
   // ---------- Escape + body scroll lock + focus trap ----------
@@ -278,6 +315,18 @@ export function NewSessionModal({
       return d.scenario === selectedScenario.id;
     });
   }, [documents, relevantDocTypes, selectedScenario]);
+
+  // Pre-Interview wizard is only available for interview scenarios. When
+  // the user switches AWAY from interview_dev / interview_behavioral we
+  // discard any prep data they had drafted so the next session doesn't
+  // accidentally inherit it.
+  const isInterviewScenario =
+    scenarioId === "interview_dev" || scenarioId === "interview_behavioral";
+  useEffect(() => {
+    if (!isInterviewScenario && prepData !== null) {
+      setPrepData(null);
+    }
+  }, [isInterviewScenario, prepData]);
 
   // When the scenario changes, reset the selection map to the defaults:
   // pre-check `is_primary` docs AND any doc with an identity doc_type.
@@ -387,6 +436,37 @@ export function NewSessionModal({
       return;
     }
 
+    // Pre-Interview Wizard: persist the generated prep against the new
+    // session id. Same failure policy as materials — non-blocking. We
+    // only persist when the user explicitly clicked "Guardar y
+    // continuar" (which is what populates `prepData`).
+    if (
+      prepData !== null &&
+      (prepData.probingQuestions.length > 0 ||
+        prepData.prepChecklist.length > 0)
+    ) {
+      try {
+        await createPreMeetingNote.execute({
+          sessionId: createdSessionId,
+          roleTarget: prepData.roleTarget,
+          companyContext: prepData.companyContext,
+          jobDescription:
+            prepData.jobDescription.length > 0
+              ? prepData.jobDescription
+              : null,
+          probingQuestions: prepData.probingQuestions,
+          prepChecklist: prepData.prepChecklist,
+          rawUserInput: prepData.rawUserInput,
+        });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "[susurra] failed to attach pre-meeting note:",
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
+
     // H3: POST each material draft against the just-created session.
     // Failures are logged but do NOT roll back the session — the user
     // can re-add materials from the session detail page later. We use
@@ -436,10 +516,13 @@ export function NewSessionModal({
   if (!open) return null;
 
   return (
-    <div
+    <motion.div
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
+      initial={shouldReduceMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: easeOut }}
       style={{
         position: "fixed",
         inset: 0,
@@ -452,17 +535,21 @@ export function NewSessionModal({
         padding: "5vh 16px",
       }}
     >
-      <div
+      <motion.div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="Nueva sesión"
         tabIndex={-1}
+        initial={shouldReduceMotion ? false : "hidden"}
+        animate="visible"
+        variants={modalEntrance}
+        transition={{ duration: 0.24, ease: easeOutQuart }}
         style={{
           width: "100%",
           maxWidth: 760,
           maxHeight: "90vh",
-          background: "var(--color-bg)",
+          background: "var(--color-bg-warm)",
           color: "var(--color-text)",
           border: "1px solid var(--color-border)",
           borderRadius: 22,
@@ -519,11 +606,11 @@ export function NewSessionModal({
 
           {/* --- Escenario --- */}
           <Field
-            label="Escenario"
-            hint="Elegí el contexto de la conversación para que Susurra ajuste el estilo de respuesta."
+            label="¿En qué situación te ayuda Susurra?"
+            hint="Elegí el momento que vas a vivir. Susurra ajusta el vocabulario y el tono para ese escenario."
           >
             <ScenarioGrid
-              scenarios={scenarios}
+              scenarios={pickerScenarios}
               selectedId={scenarioId}
               onSelect={setScenarioId}
             />
@@ -556,6 +643,20 @@ export function NewSessionModal({
               onChange={setPersonaId}
             />
           </Field>
+
+          {/* --- Pre-Interview Wizard (only for interview scenarios) --- */}
+          {isInterviewScenario && scenarioId ? (
+            <Field
+              label="Preparación previa"
+              hint="Generá preguntas probables y un checklist con IA. Opcional."
+            >
+              <PreInterviewWizardSection
+                scenarioId={scenarioId}
+                personaId={personaId}
+                onSaved={setPrepData}
+              />
+            </Field>
+          ) : null}
 
           {/* --- Modo de Susurra --- */}
           <Field
@@ -621,7 +722,7 @@ export function NewSessionModal({
             <Card
               variant="warm"
               style={{
-                color: "oklch(58% 0.22 25)",
+                color: "var(--color-danger)",
                 fontSize: 13,
                 fontWeight: 500,
               }}
@@ -656,8 +757,8 @@ export function NewSessionModal({
             {submitting ? "Creando…" : "Empezar sesión"}
           </Button>
         </footer>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -743,7 +844,7 @@ function Field({
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <label
         style={{
-          fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+          fontFamily: "var(--font-mono)",
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.6px",
@@ -842,7 +943,7 @@ function ScenarioCard({
     textAlign: "left",
     cursor: "pointer",
     color: "var(--color-text)",
-    fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+    fontFamily: "var(--font-inter)",
     display: "flex",
     flexDirection: "column",
     gap: 8,
@@ -1009,7 +1110,7 @@ function DocRow({
     textAlign: "left",
     appearance: "none",
     width: "100%",
-    fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+    fontFamily: "var(--font-inter)",
     color: "var(--color-text)",
   };
   return (
@@ -1094,7 +1195,7 @@ function LanguagePicker({
               borderRadius: 12,
               padding: "12px 10px",
               cursor: "pointer",
-              fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+              fontFamily: "var(--font-inter)",
               fontSize: 13,
               fontWeight: 600,
               display: "flex",
@@ -1105,7 +1206,7 @@ function LanguagePicker({
           >
             <span
               style={{
-                fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+                fontFamily: "var(--font-mono)",
                 fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.6px",
@@ -1136,7 +1237,7 @@ function LanguagePicker({
 
 interface ModeOption {
   value: SessionMode;
-  icon: string;
+  icon: ReactNode;
   title: string;
   description: string;
 }
@@ -1144,13 +1245,13 @@ interface ModeOption {
 const MODE_OPTIONS: ReadonlyArray<ModeOption> = [
   {
     value: "agent",
-    icon: "⚡", // ⚡
+    icon: <AgentIcon size={16} />,
     title: "Agente",
     description: "Susurra genera lo que vos decís durante la reunión.",
   },
   {
     value: "scribe",
-    icon: "\u{1F4DD}", // 📝
+    icon: <ScribeIcon size={16} />,
     title: "Asistente (Scribe)",
     description: "Susurra toma notas estructuradas mientras vos escuchás.",
   },
@@ -1186,7 +1287,7 @@ function ModePicker({
           textAlign: "left",
           cursor: "pointer",
           color: "var(--color-text)",
-          fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+          fontFamily: "var(--font-inter)",
           display: "flex",
           flexDirection: "column",
           gap: 6,
@@ -1274,7 +1375,7 @@ function RecordToggle({
             width: 36,
             height: 36,
             borderRadius: 12,
-            background: "var(--color-bg)",
+            background: "var(--color-bg-soft)",
             border: "1px solid var(--color-border)",
             display: "inline-flex",
             alignItems: "center",
@@ -1599,12 +1700,12 @@ function MaterialDraftsSection({
             alignItems: "center",
             gap: 8,
             padding: "10px 14px",
-            background: "var(--color-bg)",
+            background: "var(--color-bg-soft)",
             border: "1px dashed var(--color-border)",
             borderRadius: 12,
             cursor: "pointer",
             color: "var(--color-text)",
-            fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+            fontFamily: "var(--font-inter)",
             fontSize: 13,
             fontWeight: 600,
             alignSelf: "flex-start",
@@ -1620,7 +1721,7 @@ function MaterialDraftsSection({
             flexDirection: "column",
             gap: 10,
             padding: 14,
-            background: "var(--color-bg)",
+            background: "var(--color-bg-soft)",
             border: "1px solid var(--color-border)",
             borderRadius: 14,
           }}
@@ -1669,10 +1770,10 @@ function MaterialDraftsSection({
               rows={4}
               placeholder="Pegá el brief / agenda / nota aquí."
               style={{
-                fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+                fontFamily: "var(--font-inter)",
                 fontSize: 14,
                 fontWeight: 500,
-                background: "var(--color-bg)",
+                background: "var(--color-bg-soft)",
                 color: "var(--color-text)",
                 border: "1px solid var(--color-border)",
                 borderRadius: 12,
@@ -1924,7 +2025,7 @@ function MeetMeetingSection({
         <Card
           variant="warm"
           style={{
-            color: "oklch(58% 0.22 25)",
+            color: "var(--color-danger)",
             fontSize: 13,
             fontWeight: 500,
             padding: "10px 12px",

@@ -5,8 +5,8 @@
 
 export const typography = {
   fontFamily: {
-    sans: "var(--font-dm-sans), system-ui, -apple-system, sans-serif",
-    mono: "var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace",
+    sans: "var(--font-inter)",
+    mono: "var(--font-mono)",
   },
   fontSize: {
     display: "54px",

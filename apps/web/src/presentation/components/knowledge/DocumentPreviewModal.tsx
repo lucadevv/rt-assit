@@ -127,7 +127,7 @@ export function DocumentPreviewModal({
             border: "1px solid var(--color-border)",
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
-            fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+            fontFamily: "var(--font-inter)",
             fontSize: 14,
             lineHeight: 1.55,
             maxHeight: "60vh",

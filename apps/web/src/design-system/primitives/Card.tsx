@@ -19,9 +19,15 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyle: Record<CardVariant, CSSProperties> = {
-  default: { background: "var(--color-bg)" },
+  default: {
+    background: "var(--color-bg-soft)",
+    boxShadow: "var(--shadow-card-1)",
+  },
   soft: { background: "var(--color-bg-soft)" },
-  warm: { background: "var(--color-bg-warm)" },
+  warm: {
+    background: "var(--color-bg-warm)",
+    boxShadow: "var(--shadow-card-2)",
+  },
   dark: { background: "var(--color-black)", color: "var(--color-bg)" },
   filled: { background: "var(--color-lime)", color: "var(--color-lime-ink)" },
 };

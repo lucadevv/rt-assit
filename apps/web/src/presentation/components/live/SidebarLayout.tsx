@@ -34,7 +34,9 @@ import { HintArea } from "./HintArea";
 import { MeetMirror } from "./MeetMirror";
 import { AudioLevelMeter } from "./AudioLevelMeter";
 import { CaptureControls } from "./CaptureControls";
+import { ConversationMetrics } from "./ConversationMetrics";
 import { UpgradeBanner } from "@/presentation/components/billing/UpgradeBanner";
+import { OCR_DEBUG_ENABLED } from "@/lib/feature-flags";
 
 const accentVar: Record<
   ReturnType<typeof scenarioColorOf>,
@@ -49,7 +51,7 @@ const accentVar: Record<
 const SECTION_HEADER_STYLE = {
   padding: "12px 16px",
   borderBottom: "1px solid var(--color-border)",
-  fontFamily: "var(--font-jetbrains, var(--font-mono)), monospace",
+  fontFamily: "var(--font-mono)",
   fontSize: 11,
   fontWeight: 700,
   letterSpacing: "0.6px",
@@ -62,6 +64,9 @@ export function SidebarLayout(): JSX.Element {
   const accent = scenarioId ? scenarioColorOf(scenarioId) : "lime";
   const accentBorder = accentVar[accent];
   const setLayout = useTweaksStore((s) => s.setLayout);
+  const showConversationMetrics = useTweaksStore(
+    (s) => s.showConversationMetrics,
+  );
 
   const tierGate = useTierGate("all_layouts");
   const isCapturing = useSessionStore((s) => s.isCapturing);
@@ -240,21 +245,29 @@ export function SidebarLayout(): JSX.Element {
             <CaptureControls />
           </>
         ) : null}
-        {ocrEnabled ? <OcrDebugPanel entries={ocrEntries} /> : null}
+        {OCR_DEBUG_ENABLED && ocrEnabled ? (
+          <OcrDebugPanel entries={ocrEntries} />
+        ) : null}
       </div>
 
       <div
         style={{
           minHeight: 0,
-          display: "grid",
-          gridTemplateRows: "minmax(0, 1fr) minmax(0, 1fr)",
+          display: "flex",
+          flexDirection: "column",
           gap: 12,
         }}
       >
+        {/* Live coaching metrics — top of the right column so the user
+            sees the most actionable signal first. Self-hides until at
+            least one final transcript exists, so the pre-capture state
+            stays clean. */}
+        {showConversationMetrics ? <ConversationMetrics /> : null}
         <Card
           bordered
           padded={false}
           style={{
+            flex: 1,
             minHeight: 0,
             display: "flex",
             flexDirection: "column",
@@ -278,6 +291,7 @@ export function SidebarLayout(): JSX.Element {
           bordered
           padded={false}
           style={{
+            flex: 1,
             minHeight: 0,
             display: "flex",
             flexDirection: "column",
@@ -363,7 +377,8 @@ function OcrDebugPanel({
                 gap: 4,
                 padding: "8px 10px",
                 borderRadius: 8,
-                background: "var(--color-bg)",
+                background: "var(--color-bg-soft)",
+                boxShadow: "var(--shadow-card-1)",
                 border: "1px solid var(--color-border)",
               }}
             >
@@ -372,7 +387,7 @@ function OcrDebugPanel({
                   display: "flex",
                   justifyContent: "space-between",
                   fontFamily:
-                    "var(--font-jetbrains, ui-monospace), monospace",
+                    "var(--font-mono)",
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: "0.4px",

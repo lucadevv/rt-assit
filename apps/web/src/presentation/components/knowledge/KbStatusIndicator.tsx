@@ -26,7 +26,7 @@ const baseStyle: React.CSSProperties = {
   fontWeight: 800,
   letterSpacing: "0.6px",
   textTransform: "uppercase",
-  fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+  fontFamily: "var(--font-inter)",
   cursor: "pointer",
   border: "1px solid transparent",
   lineHeight: 1.05,

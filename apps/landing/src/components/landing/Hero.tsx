@@ -1,16 +1,32 @@
+'use client';
+
+import { motion, useReducedMotion } from 'framer-motion';
+import {
+  easeOut,
+  easeOutExpo,
+  fadeIn,
+  fadeUp,
+  scaleIn,
+  staggerContainer,
+} from '@/lib/motion-presets';
+
 /**
  * Hero section: pill badge + headline + lead + dual CTAs + product mockup
  * with floating annotation chips.
  * Source: design_susurra/index.html lines 712-786.
  */
 export function Hero() {
+  const shouldReduceMotion = useReducedMotion();
+  const initial = shouldReduceMotion ? false : 'hidden';
+  const animate = 'visible';
+
   return (
     <section
       className="relative text-center"
       style={{ padding: '136px 0 100px' /* 56 + 80 to clear fixed nav */ }}
     >
       {/* Ambient coral glow */}
-      <div
+      <motion.div
         aria-hidden="true"
         className="absolute pointer-events-none z-0"
         style={{
@@ -21,24 +37,35 @@ export function Hero() {
           maxWidth: '1100px',
           height: '700px',
           background:
-            'radial-gradient(ellipse at center top, rgba(255,123,92,0.18) 0%, rgba(255,123,92,0.06) 30%, transparent 65%)',
+            'radial-gradient(ellipse at center top, rgba(255,123,92,0.10) 0%, rgba(255,123,92,0.03) 30%, transparent 65%)',
         }}
+        variants={fadeIn}
+        initial={initial}
+        animate={animate}
+        transition={{ duration: 1.2, ease: easeOut }}
       />
 
-      <div className="relative z-[1] max-w-[1240px] mx-auto px-8">
+      <motion.div
+        className="relative z-[1] max-w-[1240px] mx-auto px-8"
+        variants={staggerContainer(0, 0.1)}
+        initial={initial}
+        animate={animate}
+      >
         {/* Pill badge */}
-        <div
+        <motion.div
           className="inline-flex items-center gap-2 mb-8 rounded-full"
           style={{
             fontSize: '11px',
             fontWeight: 600,
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
-            color: 'var(--color-coral-deep)',
+            color: 'var(--color-coral-text)',
             padding: '7px 16px',
-            border: '1px solid rgba(255,123,92,0.28)',
-            background: 'rgba(255,123,92,0.05)',
+            border: '1px solid rgba(26, 26, 36, 0.12)',
+            background: 'rgba(255, 255, 255, 0.5)',
           }}
+          variants={fadeUp}
+          transition={{ duration: 0.5, ease: easeOut, delay: 0 }}
         >
           <span
             className="rounded-full"
@@ -49,7 +76,7 @@ export function Hero() {
             }}
           />
           <span>Beta cerrada por invitación · es-LATAM</span>
-        </div>
+        </motion.div>
 
         {/* Headline */}
         <h1
@@ -65,10 +92,17 @@ export function Hero() {
             color: 'var(--color-carbon)',
           }}
         >
-          Te susurra qué decir.
-          <br />
-          <span
+          <motion.span
+            className="block"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: easeOutExpo, delay: 0.1 }}
+          >
+            Te susurra qué decir.
+          </motion.span>
+          <motion.span
             style={{
+              display: 'block',
               fontFamily: 'var(--font-serif)',
               fontStyle: 'italic',
               fontWeight: 400,
@@ -76,13 +110,16 @@ export function Hero() {
               fontSize: 'clamp(48px, 9.5vw, 100px)',
               letterSpacing: '-0.025em',
             }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: easeOutExpo, delay: 0.25 }}
           >
             Vos brillás.
-          </span>
+          </motion.span>
         </h1>
 
         {/* Lead */}
-        <p
+        <motion.p
           className="mx-auto"
           style={{
             fontSize: 'clamp(16px, 2vw, 19px)',
@@ -91,16 +128,24 @@ export function Hero() {
             margin: '0 auto 38px',
             lineHeight: 1.55,
           }}
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: easeOut, delay: 0.4 }}
         >
           El copilot íntimo para devs LATAM. Susurra escucha tu llamada y te
           sugiere la respuesta exacta, en tu español, basada en tu CV y tu rol.
-        </p>
+        </motion.p>
 
         {/* CTA row */}
-        <div className="inline-flex gap-3 flex-wrap justify-center mb-16">
-          <a
+        <motion.div
+          className="inline-flex gap-3 flex-wrap justify-center mb-16"
+          variants={staggerContainer(0.5, 0.06)}
+          initial={initial}
+          animate={animate}
+        >
+          <motion.a
             href="#waitlist"
-            className="rounded-full font-semibold transition-transform hover:-translate-y-[2px]"
+            className="rounded-full font-semibold transition-transform duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-[2px] active:scale-[0.97]"
             style={{
               background: 'var(--color-coral)',
               color: 'var(--color-carbon)',
@@ -108,12 +153,14 @@ export function Hero() {
               fontSize: '15px',
               boxShadow: '0 6px 20px -6px rgba(255,123,92,0.5)',
             }}
+            variants={fadeUp}
+            transition={{ duration: 0.5, ease: easeOut }}
           >
             Pedir invitación →
-          </a>
-          <a
+          </motion.a>
+          <motion.a
             href="#como-funciona"
-            className="rounded-full font-medium transition-colors hover:bg-white"
+            className="rounded-full font-medium transition-colors duration-200 hover:bg-white active:scale-[0.97]"
             style={{
               background: 'rgba(255,255,255,0.6)',
               color: 'var(--color-carbon)',
@@ -121,19 +168,33 @@ export function Hero() {
               fontSize: '15px',
               border: '1px solid var(--line)',
             }}
+            variants={fadeUp}
+            transition={{ duration: 0.5, ease: easeOut }}
           >
             Ver cómo funciona
-          </a>
-        </div>
+          </motion.a>
+        </motion.div>
 
         {/* Product mockup */}
-        <ProductMockup />
-      </div>
+        <motion.div
+          variants={scaleIn}
+          initial={initial}
+          animate={animate}
+          transition={{ duration: 0.9, ease: easeOutExpo, delay: 0.6 }}
+        >
+          <ProductMockup shouldReduceMotion={!!shouldReduceMotion} />
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
 
-function ProductMockup() {
+function ProductMockup({
+  shouldReduceMotion,
+}: {
+  shouldReduceMotion: boolean;
+}) {
+  const chipInitial = shouldReduceMotion ? false : 'hidden';
   return (
     <div
       className="relative mx-auto"
@@ -144,16 +205,19 @@ function ProductMockup() {
         className="hidden min-[880px]:flex anim-float-a"
         style={{ top: 60, left: -12 }}
         label="Escucha en vivo"
+        initial={chipInitial}
       />
       <FloatChip
         className="hidden min-[880px]:flex anim-float-b"
         style={{ top: 60, right: -12 }}
         label="100% privado"
+        initial={chipInitial}
       />
       <FloatChip
         className="hidden min-[880px]:flex anim-float-a-rev"
         style={{ top: 220, left: -30 }}
         label="40+ idiomas"
+        initial={chipInitial}
       />
 
       {/* Browser-like card */}
@@ -266,7 +330,7 @@ function ProductMockup() {
                     style={{
                       fontSize: '10px',
                       fontWeight: 700,
-                      color: 'var(--color-coral-deep)',
+                      color: 'var(--color-coral-text)',
                       letterSpacing: '0.05em',
                     }}
                   >
@@ -295,7 +359,8 @@ function ProductMockup() {
             </div>
 
             <ConvoMsg
-              speaker="🎙 Entrevistador"
+              speakerLabel="Entrevistador"
+              speakerInitial="E"
               text={
                 <>
                   &ldquo;Tell me about a{' '}
@@ -303,7 +368,7 @@ function ProductMockup() {
                     style={{
                       fontFamily: 'var(--font-serif)',
                       fontStyle: 'italic',
-                      color: 'var(--color-coral-deep)',
+                      color: 'var(--color-coral-text)',
                       fontSize: '15px',
                     }}
                   >
@@ -314,7 +379,8 @@ function ProductMockup() {
               }
             />
             <ConvoMsg
-              speaker="👤 Vos"
+              speakerLabel="Vos"
+              speakerInitial="V"
               text='"Sure, I led the migration of our payment system..."'
             />
           </div>
@@ -331,7 +397,7 @@ function ProductMockup() {
               <RightLabel>Susurra te sugiere</RightLabel>
               <div
                 style={{
-                  background: 'var(--color-ivory)',
+                  background: 'rgba(245,239,230,0.5)',
                   border: '1px solid rgba(255,123,92,0.2)',
                   borderLeft: '3px solid var(--color-coral)',
                   padding: '13px 15px',
@@ -378,13 +444,15 @@ function FloatChip({
   className,
   style,
   label,
+  initial,
 }: {
   className: string;
   style: React.CSSProperties;
   label: string;
+  initial: false | 'hidden';
 }) {
   return (
-    <div
+    <motion.div
       className={`absolute z-[2] items-center gap-2 whitespace-nowrap ${className}`}
       style={{
         padding: '9px 16px',
@@ -397,25 +465,32 @@ function FloatChip({
         fontWeight: 500,
         ...style,
       }}
+      variants={fadeIn}
+      initial={initial}
+      animate="visible"
+      transition={{ duration: 0.6, ease: easeOut, delay: 1.2 }}
+      whileHover={{ scale: 1.05, transition: { duration: 0.2, ease: easeOut } }}
     >
       <span
         style={{
           width: 7,
           height: 7,
           borderRadius: '50%',
-          background: 'var(--color-coral)',
+          background: 'var(--color-carbon)',
         }}
       />
       <span>{label}</span>
-    </div>
+    </motion.div>
   );
 }
 
 function ConvoMsg({
-  speaker,
+  speakerLabel,
+  speakerInitial,
   text,
 }: {
-  speaker: string;
+  speakerLabel: string;
+  speakerInitial: string;
   text: React.ReactNode;
 }) {
   return (
@@ -429,16 +504,40 @@ function ConvoMsg({
       }}
     >
       <div
+        className="flex items-center gap-2"
         style={{
-          fontSize: '10px',
-          fontWeight: 700,
-          color: 'var(--text-mute)',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
           marginBottom: '6px',
         }}
       >
-        {speaker}
+        <span
+          className="flex items-center justify-center"
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: '50%',
+            background: 'var(--coral-soft)',
+            border: '1px solid rgba(255,123,92,0.3)',
+            color: 'var(--color-coral-text)',
+            fontFamily: 'var(--font-sans)',
+            fontWeight: 700,
+            fontSize: '10px',
+            lineHeight: 1,
+          }}
+          aria-hidden="true"
+        >
+          {speakerInitial}
+        </span>
+        <span
+          style={{
+            fontSize: '10px',
+            fontWeight: 700,
+            color: 'var(--text-mute)',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {speakerLabel}
+        </span>
       </div>
       <div
         className="text-left"
@@ -472,7 +571,7 @@ function RightLabel({ children }: { children: React.ReactNode }) {
           width: 4,
           height: 4,
           borderRadius: '50%',
-          background: 'var(--color-coral)',
+          background: 'rgba(26, 26, 36, 0.35)',
         }}
       />
       {children}
@@ -493,7 +592,7 @@ function ContextItem({ children }: { children: React.ReactNode }) {
     >
       <span
         style={{
-          color: 'var(--color-coral-deep)',
+          color: 'var(--color-coral-text)',
           fontWeight: 700,
           lineHeight: 1.6,
         }}

@@ -90,4 +90,5 @@ def build_interview_behavioral() -> Scenario:
         ],
         user_template=DEFAULT_USER_TEMPLATE,
         color="cyan",
+        is_dev_focused=True,
     )

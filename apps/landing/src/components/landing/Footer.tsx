@@ -130,7 +130,7 @@ function FooterLink({
         href={href}
         target={external ? '_blank' : undefined}
         rel={external ? 'noopener noreferrer' : undefined}
-        className="transition-colors hover:text-coral"
+        className="transition-colors duration-150 hover:text-coral"
         style={{
           fontSize: '14px',
           color: 'rgba(245,239,230,0.75)',

@@ -15,7 +15,13 @@ services:
     environment:
       # Override BACKEND_URL so rt_go reaches python_backend via Docker DNS,
       # regardless of what the host's .env points to (likely localhost).
-      - BACKEND_URL=ws://backend:8767/ws/rt-go
+      # The ?service_token=... query is required when the backend runs with
+      # AUTH_MODE != dev (e.g. clerk/custom). rt_go passes BackendURL raw to
+      # gorilla/websocket, so embedding the token in the URL is the cleanest
+      # wiring without changing the Go source. Both sides MUST resolve to
+      # the same value of RT_GO_SERVICE_TOKEN (default dev-rtgo-token).
+      - BACKEND_URL=ws://backend:8767/ws/rt-go?service_token=${RT_GO_SERVICE_TOKEN:-dev-rtgo-token}
+      - RT_GO_SERVICE_TOKEN=${RT_GO_SERVICE_TOKEN:-dev-rtgo-token}
       # Disable Flux (English-only) so STT falls back to nova-2, which supports
       # es-419 (Spanish LATAM) per DefaultDeepgramConfig. Override pattern keeps
       # rt_go/.env intact for local non-Docker dev.
@@ -79,6 +85,18 @@ services:
       - CLERK_JWKS_URL=${CLERK_JWKS_URL:-}
       - CLERK_AUDIENCE=${CLERK_AUDIENCE:-}
       - CLERK_ISSUER=${CLERK_ISSUER:-}
+      # Phase 2 — custom JWT auth (AUTH_MODE=custom). Both vars are
+      # empty by default so the endpoints refuse to work until the
+      # founder generates strong secrets and writes them to the root
+      # .env. Generate via:
+      #   python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+      - CUSTOM_AUTH_JWT_SECRET=${CUSTOM_AUTH_JWT_SECRET:-}
+      - SUSURRA_ADMIN_TOKEN=${SUSURRA_ADMIN_TOKEN:-}
+      # Auth Fase A — cookie env switch. ``dev`` keeps SameSite=Lax and
+      # Secure=false so HttpOnly cookies work over plain http://localhost.
+      # ``prod`` forces SameSite=Strict + Secure=true (HTTPS only) for
+      # production deploys. Any non-'dev' value is treated as prod.
+      - SUSURRA_ENV=${SUSURRA_ENV:-dev}
       # Service-to-service WS auth (rt_go gateway + mac native app).
       # Skipped entirely when AUTH_MODE=dev. In prod (AUTH_MODE=clerk),
       # clients must connect with ?service_token=<value> matching the env
@@ -101,6 +119,12 @@ services:
       - EMAIL_MODE=${EMAIL_MODE:-dev}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - SUSURRA_FROM_EMAIL=${SUSURRA_FROM_EMAIL:-noreply@susurra.local}
+      # Waitlist (landing → /api/waitlist). FROM_EMAIL uses Resend's sandbox
+      # sender by default so signups work without a verified domain. Set
+      # WAITLIST_DESTINATION_EMAIL in the root .env to redirect to the
+      # founder's inbox.
+      - WAITLIST_FROM_EMAIL=${WAITLIST_FROM_EMAIL:-onboarding@resend.dev}
+      - WAITLIST_DESTINATION_EMAIL=${WAITLIST_DESTINATION_EMAIL:-bprueba222@gmail.com}
       - CRON_ENABLED=${CRON_ENABLED:-false}
       - CHECKOUT_REDIRECT_BASE=${CHECKOUT_REDIRECT_BASE:-http://localhost:5173}
       - DEV_BILLING_BASE=${DEV_BILLING_BASE:-http://localhost:8767}
@@ -127,7 +151,7 @@ services:
       # CIRCUIT_BREAKER_* tune the failure-threshold + cooldown for the
       # in-memory breaker around LLM/STT/email providers.
       - SUSURRA_MASTER_KEY=${SUSURRA_MASTER_KEY:-}
-      - RATE_LIMIT_PER_MIN=${RATE_LIMIT_PER_MIN:-100}
+      - RATE_LIMIT_PER_MIN=${RATE_LIMIT_PER_MIN:-2000}
       - RATE_LIMIT_PUBLIC_PER_MIN=${RATE_LIMIT_PUBLIC_PER_MIN:-30}
       - CIRCUIT_BREAKER_THRESHOLD=${CIRCUIT_BREAKER_THRESHOLD:-5}
       - CIRCUIT_BREAKER_COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN:-300}
@@ -207,6 +231,10 @@ services:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+      # Public API base URL — used by the WaitlistSection form to POST
+      # /api/waitlist. Host-side default (localhost:8767) works from the
+      # browser; container-internal calls would use http://backend:8767.
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8767}
     networks:
       - rtassist-net
     restart: unless-stopped

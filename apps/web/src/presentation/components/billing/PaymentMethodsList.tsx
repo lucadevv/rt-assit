@@ -194,7 +194,7 @@ export function PaymentMethodsList({
                       fontSize: 12,
                       color: "var(--color-text-mid)",
                       fontFamily:
-                        "var(--font-jetbrains-mono), ui-monospace, monospace",
+                        "var(--font-mono)",
                     }}
                   >
                     Vence {expString(pm.expMonth, pm.expYear)}

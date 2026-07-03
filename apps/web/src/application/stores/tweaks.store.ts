@@ -44,6 +44,7 @@ const TRANSCRIPT_KEY = "susurra-transcript-style";
 const PIP_OPACITY_KEY = "susurra-pip-opacity";
 const PIP_MODE_KEY = "susurra-pip-mode";
 const PIP_THEME_KEY = "susurra-pip-theme";
+const SHOW_METRICS_KEY = "susurra-show-conversation-metrics";
 
 function readStored<T extends string>(
   key: string,
@@ -58,6 +59,19 @@ function readStored<T extends string>(
     // localStorage may throw in private mode — fall back silently.
   }
   return fallback;
+}
+
+function readStoredBoolean(key: string, fallback: boolean): boolean {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const v = window.localStorage.getItem(key);
+    if (v === null) return fallback;
+    if (v === "true") return true;
+    if (v === "false") return false;
+    return fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function readStoredNumber(key: string, fallback: number): number {
@@ -90,6 +104,7 @@ interface TweaksStoreState extends TweaksState {
   setHidden(value: boolean): void;
   setPipMode(mode: PipMode): void;
   setPipTheme(theme: PipTheme): void;
+  setShowConversationMetrics(value: boolean): void;
 }
 
 export const useTweaksStore = create<TweaksStoreState>((set) => ({
@@ -112,6 +127,9 @@ export const useTweaksStore = create<TweaksStoreState>((set) => ({
   isHidden: false,
   pipMode: readStored<PipMode>(PIP_MODE_KEY, PIP_MODES, "expanded"),
   pipTheme: readStored<PipTheme>(PIP_THEME_KEY, PIP_THEMES, "auto"),
+  // Conversation metrics default ON — they help, and we'd rather make
+  // sure users discover the feature than hide it behind a flag.
+  showConversationMetrics: readStoredBoolean(SHOW_METRICS_KEY, true),
   setLayout: (layout) => {
     writeStored(LAYOUT_KEY, layout);
     set({ layout });
@@ -142,5 +160,9 @@ export const useTweaksStore = create<TweaksStoreState>((set) => ({
   setPipTheme: (pipTheme) => {
     writeStored(PIP_THEME_KEY, pipTheme);
     set({ pipTheme });
+  },
+  setShowConversationMetrics: (value) => {
+    writeStored(SHOW_METRICS_KEY, String(value));
+    set({ showConversationMetrics: value });
   },
 }));

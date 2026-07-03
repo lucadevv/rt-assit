@@ -2,6 +2,7 @@
 from app.application.ports.scenario_repository import ScenarioRepository
 from app.domain.entities.scenario import Scenario
 from app.infrastructure.scenarios.client_call import build_client_call
+from app.infrastructure.scenarios.code_review import build_code_review
 from app.infrastructure.scenarios.exam_oral import build_exam_oral
 from app.infrastructure.scenarios.interview_behavioral import build_interview_behavioral
 from app.infrastructure.scenarios.interview_dev import build_interview_dev
@@ -11,6 +12,7 @@ from app.infrastructure.scenarios.legal_negotiation import build_legal_negotiati
 from app.infrastructure.scenarios.meeting_business import build_meeting_business
 from app.infrastructure.scenarios.personal import build_personal
 from app.infrastructure.scenarios.sales_call import build_sales_call
+from app.infrastructure.scenarios.technical_call import build_technical_call
 from app.infrastructure.scenarios.thesis_defense import build_thesis_defense
 
 
@@ -23,8 +25,11 @@ class InMemoryScenarioRepository(ScenarioRepository):
 
     def _register_built_in(self) -> None:
         # Order here is the natural display order in the UI scenario picker.
+        # Dev-focused (wedge) scenarios come first.
         self.register(build_interview_dev())
         self.register(build_interview_behavioral())
+        self.register(build_technical_call())
+        self.register(build_code_review())
         self.register(build_meeting_business())
         self.register(build_client_call())
         self.register(build_sales_call())

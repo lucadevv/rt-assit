@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Susurra · Brand Guidelines v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --carbon: #1A1A24;
+    --carbon-soft: #2C2A3A;
+    --coral: #FF7B5C;
+    --coral-deep: #E55A3F;
+    --coral-soft: rgba(255,123,92,0.12);
+    --ivory: #F5EFE6;
+    --ivory-warm: #F0E8D8;
+    --sand: #B8A89A;
+    --line: rgba(26,26,36,0.1);
+    --text: #1A1A24;
+    --text-dim: rgba(26,26,36,0.65);
+    --text-mute: rgba(26,26,36,0.45);
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--ivory); color: var(--text); padding: 60px 32px 120px; line-height: 1.6; font-size: 15px; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 1080px; margin: 0 auto; }
+
+  /* Brand mark for header */
+  .brand-mark { display: inline-flex; align-items: baseline; position: relative; line-height: 1; padding-right: 14px; }
+  .brand-sans { font-family: var(--sans); font-weight: 500; font-size: 28px; letter-spacing: -0.04em; color: var(--carbon); }
+  .brand-serif { font-family: var(--serif); font-style: italic; font-size: 38px; font-weight: 400; color: var(--coral); margin-left: 1px; line-height: 0.9; }
+  .brand-dots { position: absolute; top: -4px; right: 0; display: inline-flex; gap: 2px; }
+  .brand-dots span { display: inline-block; border-radius: 50%; background: var(--coral); }
+  .brand-dots span:nth-child(1) { width: 5px; height: 5px; }
+  .brand-dots span:nth-child(2) { width: 3.5px; height: 3.5px; opacity: 0.6; }
+  .brand-dots span:nth-child(3) { width: 2.5px; height: 2.5px; opacity: 0.3; }
+
+  /* Big brand for hero */
+  .brand-big .brand-sans { font-size: 72px; letter-spacing: -0.05em; }
+  .brand-big .brand-serif { font-size: 98px; }
+  .brand-big .brand-dots { top: -8px; right: -4px; }
+  .brand-big .brand-dots span:nth-child(1) { width: 12px; height: 12px; }
+  .brand-big .brand-dots span:nth-child(2) { width: 9px; height: 9px; opacity: 0.6; }
+  .brand-big .brand-dots span:nth-child(3) { width: 6px; height: 6px; opacity: 0.3; }
+
+  /* Doc header */
+  .doc-header { padding-bottom: 32px; border-bottom: 1px solid var(--carbon); margin-bottom: 60px; }
+  .doc-meta { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 40px; }
+  .doc-title { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+  .doc-title-text { font-family: var(--serif); font-style: italic; font-size: 38px; font-weight: 400; color: var(--carbon); }
+  .doc-title-text em { color: var(--coral); }
+
+  /* Chapter */
+  .chapter { margin-bottom: 90px; }
+  .chapter-head { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
+  .chapter-num { font-family: var(--serif); font-style: italic; font-size: 72px; color: var(--coral); line-height: 0.85; font-weight: 400; }
+  .chapter-meta { flex: 1; }
+  .chapter-meta .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 8px; }
+  .chapter-meta h2 { font-family: var(--sans); font-size: 40px; font-weight: 500; letter-spacing: -0.035em; line-height: 1.05; color: var(--carbon); }
+  .chapter-meta h2 em { font-family: var(--serif); font-style: italic; color: var(--coral); font-weight: 400; font-size: 48px; }
+  .chapter-desc { font-size: 16px; color: var(--text-dim); max-width: 720px; line-height: 1.7; margin-bottom: 32px; }
+  .chapter-desc em { font-family: var(--serif); font-style: italic; color: var(--text); font-size: 18px; }
+
+  /* Paleta */
+  .palette { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: var(--carbon); border: 1px solid var(--carbon); border-radius: 8px; overflow: hidden; }
+  .swatch { padding: 28px 22px; min-height: 170px; display: flex; flex-direction: column; justify-content: space-between; }
+  .swatch-name { font-family: var(--serif); font-style: italic; font-size: 26px; line-height: 1; }
+  .swatch-meta { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.8; }
+  .swatch-meta strong { font-weight: 700; }
+
+  /* Type spec */
+  .type-spec { padding: 32px 0; border-bottom: 1px solid var(--line); }
+  .type-spec:last-child { border-bottom: none; }
+  .type-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+  .type-meta span { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); padding: 3px 10px; background: rgba(26,26,36,0.04); border-radius: 4px; }
+  .type-sample { letter-spacing: -0.025em; line-height: 1.05; }
+
+  /* Logo showcase */
+  .logo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 36px; }
+  .logo-cell { padding: 70px 32px; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; min-height: 220px; border: 1px solid var(--line); }
+  .logo-cell-tag { position: absolute; top: 14px; right: 16px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: rgba(0,0,0,0.06); }
+
+  /* Reglas dos / don'ts */
+  .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 28px; }
+  .rule-cell { padding: 22px 24px; border-radius: 12px; font-size: 14px; line-height: 1.65; }
+  .rule-do { background: rgba(255,123,92,0.08); border-left: 3px solid var(--coral); }
+  .rule-dont { background: rgba(26,26,36,0.05); border-left: 3px solid var(--text-mute); }
+  .rule-cell strong { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
+  .rule-do strong { color: var(--coral-deep); }
+  .rule-dont strong { color: var(--text-mute); }
+
+  /* App icons row */
+  .icon-row { display: flex; gap: 28px; align-items: flex-end; padding: 32px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,0.5); flex-wrap: wrap; }
+  .icon-tile { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .icon-tile-label { font-family: var(--mono); font-size: 10px; color: var(--text-mute); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* Voice */
+  .voice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--carbon); border: 1px solid var(--carbon); border-radius: 12px; overflow: hidden; }
+  .voice-cell { padding: 30px 26px; min-height: 260px; background: var(--ivory); }
+  .voice-cell.no { background: var(--carbon); color: var(--ivory); }
+  .voice-cell-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 20px; }
+  .voice-cell.yes .voice-cell-label { color: var(--coral-deep); }
+  .voice-cell.no .voice-cell-label { color: var(--coral); }
+  .voice-cell .examples p { font-family: var(--serif); font-size: 19px; line-height: 1.55; font-style: italic; margin-bottom: 10px; }
+  .voice-cell.no .examples p { color: rgba(245,239,230,0.85); }
+
+  /* Specs table */
+  .specs { width: 100%; border-collapse: collapse; }
+  .specs td { padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: top; }
+  .specs td:first-child { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-mute); width: 220px; padding-right: 24px; }
+  .specs td:last-child { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--coral-deep); }
+  .specs td:last-child code { font-family: var(--mono); font-style: normal; font-size: 14px; color: var(--carbon); background: rgba(26,26,36,0.04); padding: 2px 6px; border-radius: 3px; }
+
+  /* Component examples */
+  .component-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+  .component-demo { padding: 32px; border-radius: 14px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+  .demo-label { position: absolute; top: 12px; left: 14px; font-family: var(--mono); font-size: 9px; color: var(--text-mute); letter-spacing: 0.1em; text-transform: uppercase; }
+  .demo-pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border: 1px solid rgba(255,123,92,0.3); background: rgba(255,123,92,0.06); border-radius: 999px; color: var(--coral-deep); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+  .demo-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--coral); }
+  .demo-btn-primary { display: inline-flex; padding: 13px 24px; background: var(--coral); color: var(--carbon); border-radius: 999px; font-size: 15px; font-weight: 600; }
+  .demo-btn-dark { display: inline-flex; padding: 13px 24px; background: var(--carbon); color: var(--ivory); border-radius: 999px; font-size: 15px; font-weight: 600; }
+  .demo-btn-ghost { display: inline-flex; padding: 13px 22px; background: rgba(255,255,255,0.6); color: var(--carbon); border: 1px solid var(--line); border-radius: 999px; font-size: 15px; font-weight: 500; }
+
+  /* Doc footer */
+  .doc-footer { margin-top: 90px; padding-top: 36px; border-top: 1px solid var(--carbon); display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-mute); flex-wrap: wrap; gap: 12px; }
+  .doc-footer em { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--coral); text-transform: none; letter-spacing: 0; }
+
+  @media (max-width: 720px) {
+    body { padding: 36px 18px 80px; }
+    .doc-title-text { font-size: 30px; }
+    .chapter-num { font-size: 56px; }
+    .chapter-meta h2 { font-size: 30px; }
+    .chapter-meta h2 em { font-size: 36px; }
+    .logo-grid, .rules, .voice-grid, .component-grid { grid-template-columns: 1fr; }
+    .brand-big .brand-sans { font-size: 48px; }
+    .brand-big .brand-serif { font-size: 64px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Doc header -->
+  <header class="doc-header">
+    <div class="doc-meta">
+      <span>Susurra · Brand guidelines</span>
+      <span>v1.0 · Final</span>
+      <span>Luis Carranza, LLC · 2026</span>
+    </div>
+    <div class="doc-title">
+      <a class="brand-mark brand-big" href="/">
+        <span class="brand-sans">susurr</span><span class="brand-serif">a</span>
+        <span class="brand-dots"><span></span><span></span><span></span></span>
+      </a>
+      <span class="doc-title-text"><em>Brand</em> guidelines</span>
+    </div>
+  </header>
+
+  <!-- 01 Esencia -->
+  <section class="chapter">
+    <div class="chapter-head">
+      <div class="chapter-num">01</div>
+      <div class="chapter-meta">
+        <div class="eyebrow">Foundation</div>
+        <h2>Lo que <em>susurramos.</em></h2>
+      </div>
+    </div>
+    <p class="chapter-desc">Susurra es un copilot íntimo: <em>asiste, no grita</em>. La marca refleja eso: tipografía editorial italic, paleta de luz cálida (crema dominante), un único acento humano (coral) que recuerda al fuego de una conversación importante. Es la antípoda de las herramientas yanquis: cálida, latina, sofisticada.</p>
+
+    <table class="specs">
+      <tr><td>Nombre</td><td>Susurra</td></tr>
+      <tr><td>Pronunciación</td><td>su-SU-rra (acento en segunda sílaba)</td></tr>
+      <tr><td>Empresa</td><td>Luis Carranza, LLC</td></tr>
+      <tr><td>Founder</td><td>Luis Carranza Saldaña · Ing. Sistemas Computacionales</td></tr>
+      <tr><td>Misión</td><td>Que ningún profesional LATAM pierda una oportunidad por trabarse al hablar.</td></tr>
+      <tr><td>Posicionamiento</td><td>El copilot íntimo y privado para devs LATAM. Sin trabarte, sin trampa.</td></tr>
+      <tr><td>Tagline primario</td><td>Te susurra qué decir. Vos brillás.</td></tr>
+      <tr><td>Tagline secundario</td><td>El copilot íntimo para conversaciones que importan.</td></tr>
+    </table>
+  </section>
+
+  <!-- 02 Color -->
+  <section class="chapter">
+    <div class="chapter-head">
+      <div class="chapter-num">02</div>
+      <div class="chapter-meta">
+        <div class="eyebrow">Color system</div>
+        <h2>Crema, carbón, <em>coral.</em></h2>
+      </div>
+    </div>
+    <p class="chapter-desc">Crema marfil como dominante: cálida, humana, accesible. Carbón medianoche como ancla: para texto, sombras, modo oscuro. <em>Coral susurro</em> como acento único: cálido, vivo, identificable. Sin verdes, sin azules, sin amarillos. La restricción es la marca.</p>
+
+    <div class="palette">
+      <div class="swatch" style="background: #F5EFE6; color: #1A1A24;">
+        <div class="swatch-name">Marfil</div>
+        <div class="swatch-meta"><strong>BACKGROUND · 60%</strong><br>#F5EFE6</div>
+      </div>
+      <div class="swatch" style="background: #1A1A24; color: #F5EFE6;">
+        <div class="swatch-name">Carbón medianoche</div>
+        <div class="swatch-meta"><strong>TEXT · 20%</strong><br>#1A1A24</div>
+      </div>
+      <div class="swatch" style="background: #FF7B5C; color: #1A1A24;">
+        <div class="swatch-name">Coral susurro</div>
+        <div class="swatch-meta"><strong>ACCENT · 12%</strong><br>#FF7B5C</div>
+      </div>
+      <div class="swatch" style="background: #E55A3F; color: #F5EFE6;">
+        <div class="swatch-name">Coral deep</div>
+        <div class="swatch-meta"><strong>HOVER · 3%</strong><br>#E55A3F</div>
+      </div>
+      <div class="swatch" style="background: #2C2A3A; color: #F5EFE6;">
+        <div class="swatch-name">Carbón humo</div>
+        <div class="swatch-meta"><strong>SOFT · 3%</strong><br>#2C2A3A</div>
+      </div>
+      <div class="swatch" style="background: #B8A89A; color: #1A1A24;">
+        <div class="swatch-name">Arena</div>
+        <div class="swatch-meta"><strong>BRIDGE · 2%</strong><br>#B8A89A</div>
+      </div>
+    </div>
+
+    <table class="specs" style="margin-top: 32px;">
+      <tr><td>Background landing</td><td><code>#F5EFE6</code> · Marfil</td></tr>
+      <tr><td>Background app/dark</td><td><code>#1A1A24</code> · Carbón medianoche</td></tr>
+      <tr><td>Texto principal claro</td><td><code>#1A1A24</code> sobre marfil</td></tr>
+      <tr><td>Texto principal oscuro</td><td><code>#F5EFE6</code> sobre carbón (no blanco puro)</td></tr>
+      <tr><td>CTA principal</td><td><code>#FF7B5C</code> · Coral susurro</td></tr>
+      <tr><td>CTA secundario</td><td><code>#1A1A24</code> · Carbón medianoche</td></tr>
+    </table>
+
+    <div class="rules">
+      <div class="rule-cell rule-do">
+        <strong>✓ Hacer</strong>
+        Marfil como background dominante en landing y marketing. Coral solo para acentos puntuales (CTAs, italic, dots). Carbón para texto principal y modo oscuro de la app.
+      </div>
+      <div class="rule-cell rule-dont">
+        <strong>× No hacer</strong>
+        Coral como background grande (es color de atención, no de base). Mezclar coral con otros colores cálidos. Usar negro puro #000000 (usar Carbón medianoche).
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 Tipografía -->
+  <section class="chapter">
+    <div class="chapter-head">
+      <div class="chapter-num">03</div>
+      <div class="chapter-meta">
+        <div class="eyebrow">Typography</div>
+        <h2>Inter <em>+</em> Instrument Serif</h2>
+      </div>
+    </div>
+    <p class="chapter-desc">Inter para la utilidad: UI, body, controles, números. <em>Instrument Serif italic</em> para los momentos de peso emocional: títulos, citas, marca. El contraste sans/serif es lo que separa Susurra del resto. <em>El italic es la firma</em> — más que el coral.</p>
+
+    <div class="type-spec">
+      <div class="type-meta">
+        <span>Display</span><span>96px</span><span>Sans 500 + Serif italic</span>
+      </div>
+      <div class="type-sample" style="font-family: var(--sans); font-weight: 500; font-size: 84px; line-height: 0.95; letter-spacing: -0.045em;">Nunca más te quedés sin <em style="font-family: var(--serif); font-style: italic; color: var(--coral); font-weight: 400; font-size: 102px;">palabras.</em></div>
+    </div>
+
+    <div class="type-spec">
+      <div class="type-meta">
+        <span>H1</span><span>48px</span><span>Serif italic</span>
+      </div>
+      <div class="type-sample" style="font-family: var(--serif); font-size: 48px; font-style: italic; color: var(--carbon);">El copilot íntimo para devs LATAM.</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="type-meta">
+        <span>H2</span><span>24px</span><span>Sans 500</span>
+      </div>
+      <div class="type-sample" style="font-family: var(--sans); font-size: 24px; font-weight: 500; line-height: 1.25; letter-spacing: -0.025em;">Funciona en cualquier llamada. Sin instalar nada.</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="type-meta">
+        <span>Body</span><span>16px</span><span>Sans 400</span>
+      </div>
+      <div class="type-sample" style="font-family: var(--sans); font-size: 16px; font-weight: 400; line-height: 1.7; max-width: 640px; letter-spacing: 0;">Susurra escucha lo que dice el entrevistador, entiende el contexto, y te susurra qué decir basado en tu CV y tu rol. En español LATAM con voseo. Sin teleprompter, sin trampa.</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="type-meta">
+        <span>Caption</span><span>11px</span><span>Sans 600 · 0.14em uppercase</span>
+      </div>
+      <div class="type-sample" style="font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--coral-deep);">Beta cerrada por invitación · es-LATAM</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="type-meta">
+        <span>Mono</span><span>11px</span><span>JetBrains Mono · 0.08em uppercase</span>
+      </div>
+      <div class="type-sample" style="font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-mute);">SUSURRA.AI · ES-LATAM · BETA PRIVADA</div>
+    </div>
+
+    <table class="specs" style="margin-top: 28px;">
+      <tr><td>Tipo primaria</td><td><code>Inter</code> · 400, 500, 600, 700 · Google Fonts</td></tr>
+      <tr><td>Tipo de marca</td><td><code>Instrument Serif</code> · 400 italic · Google Fonts</td></tr>
+      <tr><td>Tipo mono (opcional)</td><td><code>JetBrains Mono</code> · 400, 500 · solo metadata</td></tr>
+      <tr><td>Regla de oro</td><td>El italic serif siempre está presente. Es la firma.</td></tr>
+      <tr><td>Letter-spacing display</td><td><code>-0.045em</code> en sans · <code>-0.025em</code> en serif</td></tr>
+    </table>
+  </section>
+
+  <!-- 04 Logo -->
+  <section class="chapter">
+    <div class="chapter-head">
+      <div class="chapter-num">04</div>
+      <div class="chapter-meta">
+        <div class="eyebrow">Logo & Mark</div>
+        <h2>Wordmark con <em>"a"</em> italic</h2>
+      </div>
+    </div>
+    <p class="chapter-desc">El wordmark "susurr" en Inter 500 + la "a" final en Instrument Serif italic coral + tres puntos coral disipándose. <em>La "a" italic es la firma</em>. Sin curvas adicionales, sin ornamentos. La marca está en el detalle, no en el grito.</p>
+
+    <div class="logo-grid">
+      <div class="logo-cell" style="background: #F5EFE6;">
+        <span class="logo-cell-tag">PRIMARY · MARFIL</span>
+        <a class="brand-mark brand-big">
+          <span class="brand-sans">susurr</span><span class="brand-serif">a</span>
+          <span class="brand-dots"><span></span><span></span><span></span></span>
+        </a>
+      </div>
+      <div class="logo-cell" style="background: #1A1A24;">
+        <span class="logo-cell-tag" style="color: rgba(245,239,230,0.6); background: rgba(245,239,230,0.06);">DARK · CARBÓN</span>
+        <a class="brand-mark brand-big" style="color: var(--ivory);">
+          <span class="brand-sans" style="color: var(--ivory);">susurr</span><span class="brand-serif">a</span>
+          <span class="brand-dots"><span></span><span></span><span></span></span>
+        </a>
+      </div>
+      <div class="logo-cell" style="background: #FF7B5C;">
+        <span class="logo-cell-tag" style="color: rgba(26,26,36,0.5); background: rgba(26,26,36,0.06);">ACCENT · CORAL</span>
+        <a class="brand-mark brand-big">
+          <span class="brand-sans" style="color: var(--carbon);">susurr</span><span class="brand-serif" style="color: var(--ivory);">a</span>
+          <span class="brand-dots"><span style="background: var(--ivory);"></span><span style="background: var(--ivory);"></span><span style="background: var(--ivory);"></span></span>
+        </a>
+      </div>
+      <div class="logo-cell" style="background: #2C2A3A;">
+        <span class="logo-cell-tag" style="color: rgba(245,239,230,0.6); background: rgba(245,239,230,0.06);">ELEVATED · HUMO</span>
+        <a class="brand-mark brand-big" style="color: var(--ivory);">
+          <span class="brand-sans" style="color: var(--ivory);">susurr</span><span class="brand-serif">a</span>
+          <span class="brand-dots"><span></span><span></span><span></span></span>
+        </a>
+      </div>
+    </div>
+
+    <h3 style="font-family: var(--sans); font-weight: 500; font-size: 22px; letter-spacing: -0.02em; margin-bottom: 18px;">Variantes y tamaños</h3>
+    <div class="icon-row">
+      <div class="icon-tile">
+        <div style="width: 96px; height: 96px; background: #1A1A24; border-radius: 22%; display: flex; align-items: center; justify-content: center; position: relative;">
+          <span style="font-family: var(--serif); font-style: italic; font-size: 68px; color: var(--coral); line-height: 1;">s</span>
+          <span style="position: absolute; top: 14px; right: 14px; display: inline-flex; gap: 2px;">
+            <span style="width: 4px; height: 4px; border-radius: 50%; background: var(--coral);"></span>
+            <span style="width: 3px; height: 3px; border-radius: 50%; background: var(--coral); opacity: 0.6;"></span>
+          </span>
+        </div>
+        <div class="icon-tile-label">App · 96px</div>
+      </div>
+      <div class="icon-tile">
+        <div style="width: 56px; height: 56px; background: #1A1A24; border-radius: 22%; display: flex; align-items: center; justify-content: center;">
+          <span style="font-family: var(--serif); font-style: italic; font-size: 40px; color: var(--coral); line-height: 1;">s</span>
+        </div>
+        <div class="icon-tile-label">Avatar · 56px</div>
+      </div>
+      <div class="icon-tile">
+        <div style="width: 36px; height: 36px; background: #1A1A24; border-radius: 22%; display: flex; align-items: center; justify-content: center;">
+          <span style="font-family: var(--serif); font-style: italic; font-size: 26px; color: var(--coral); line-height: 1;">s</span>
+        </div>
+        <div class="icon-tile-label">UI · 36px</div>
+      </div>
+      <div class="icon-tile">
+        <div style="width: 22px; height: 22px; background: #F5EFE6; border: 1px solid var(--line); border-radius: 5px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--coral); line-height: 1;">s</span>
+        </div>
+        <div class="icon-tile-label">Favicon · 22px</div>
+      </div>
+    </div>
+
+    <div class="rules">
+      <div class="rule-cell rule-do">
+        <strong>✓ Hacer</strong>
+        Mantener la proporción: la "a" italic siempre es ~30% más grande que "susurr". Los 3 puntos siempre van arriba a la derecha de la "a". Mínimo 80px de ancho para uso digital.
+      </div>
+      <div class="rule-cell rule-dont">
+        <strong>× No hacer</strong>
+        Estirar, comprimir, rotar el wordmark. Usar mayúsculas ("SUSURRA"). Quitar la "a" italic (rompe la firma). Aplicar sombras, gradientes o efectos al logo.
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 Componentes -->
+  <section class="chapter">
+    <div class="chapter-head">
+      <div class="chapter-num">05</div>
+      <div class="chapter-meta">
+        <div class="eyebrow">UI components</div>
+        <h2>Componentes <em>esenciales.</em></h2>
+      </div>
+    </div>
+    <p class="chapter-desc">El sistema usa tres botones y dos pills. Sin sombras dramáticas, sin gradientes. La calidad viene del control: bordes redondeados de 999px (píldoras), padding consistente (12-16px vertical, 18-24px horizontal), transiciones de 150ms.</p>
+
+    <div class="component-grid">
+      <div class="component-demo" style="background: white; border: 1px solid var(--line); position: relative;">
+        <span class="demo-label">PILL · STATUS</span>
+        <span class="demo-pill"><span class="demo-pill-dot"></span><span>BETA · ES-LATAM</span></span>
+      </div>
+      <div class="component-demo" style="background: white; border: 1px solid var(--line); position: relative;">
+        <span class="demo-label">BUTTON · PRIMARY (CORAL)</span>
+        <a class="demo-btn-primary" href="#">Pedir invitación →</a>
+      </div>
+      <div class="component-demo" style="background: white; border: 1px solid var(--line); position: relative;">
+        <span class="demo-label">BUTTON · DARK</span>
+        <a class="demo-btn-dark" href="#">Pedir invitación →</a>
+      </div>
+      <div class="component-demo" style="background: white; border: 1px solid var(--line); position: relative;">
+        <span class="demo-label">BUTTON · GHOST</span>
+        <a class="demo-btn-ghost" href="#">Ver cómo funciona</a>
+      </div>
+    </div>
+
+    <table class="specs" style="margin-top: 28px;">
+      <tr><td>Border radius pill</td><td><code>999px</code> · siempre redondeo total</td></tr>
+      <tr><td>Border radius card</td><td><code>14px</code> · cards grandes <code>16-18px</code></td></tr>
+      <tr><td>Padding botones</td><td><code>13-14px vertical · 22-26px horizontal</code></td></tr>
+      <tr><td>Transición default</td><td><code>0.15s ease</code> · hover sutil con translateY(-2px)</td></tr>
+      <tr><td>Shadow CTAs</td><td><code>0 6px 20px -6px rgba(255,123,92,0.5)</code> · solo en hover</td></tr>
+    </table>
+  </section>
+
+  <!-- 06 Voz -->
+  <section class="chapter">
+    <div class="chapter-head">
+      <div class="chapter-num">06</div>
+      <div class="chapter-meta">
+        <div class="eyebrow">Voice & Tone</div>
+        <h2>Cómo <em>habla</em> Susurra</h2>
+      </div>
+    </div>
+    <p class="chapter-desc">Pausado. Editorial. Respeta al lector. <em>No grita, no apura, no usa exclamaciones gratuitas</em>. Voseo cuando aplica, sin forzar. Cita ideas con peso. La cursiva es la herramienta retórica favorita. Mayúsculas solo para metadata y captions, nunca para gritar.</p>
+
+    <div class="voice-grid">
+      <div class="voice-cell yes">
+        <div class="voice-cell-label">SÍ DECIMOS</div>
+        <div class="examples">
+          <p>"Te susurra qué decir. Vos brillás."</p>
+          <p>"Sin trabarte. Sin trampa."</p>
+          <p>"En tu español. En tu rol. En tiempo real."</p>
+          <p>"No es un teleprompter. Es contexto."</p>
+          <p>"Algunas conversaciones te marcan."</p>
+        </div>
+      </div>
+      <div class="voice-cell no">
+        <div class="voice-cell-label">NUNCA DECIMOS</div>
+        <div class="examples">
+          <p>"¡La IA que revolucionará tus entrevistas!"</p>
+          <p>"Tu wingman para hackear entrevistas 🚀"</p>
+          <p>"Stop sucking at interviews. Get hired now!"</p>
+          <p>"AI-powered, next-gen, game-changing."</p>
+          <p>"Convertí cada llamada en una oportunidad 💼"</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rules">
+      <div class="rule-cell rule-do">
+        <strong>✓ Reglas de copy</strong>
+        Verbo "susurrar" siempre que se pueda · frases cortas, una idea por línea · vos primera persona, "Susurra" segunda · sin tecnobullshit ("LLM", "RAG" no van en marketing)
+      </div>
+      <div class="rule-cell rule-dont">
+        <strong>× Evitar</strong>
+        Exclamaciones gratuitas · emojis decorativos (solo para info clara) · "revolucionario", "game-changer" · anglicismos innecesarios · spanish-translated-from-english tone
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 Identidad -->
+  <section class="chapter">
+    <div class="chapter-head">
+      <div class="chapter-num">07</div>
+      <div class="chapter-meta">
+        <div class="eyebrow">Naming & handles</div>
+        <h2>Identidad <em>consistente.</em></h2>
+      </div>
+    </div>
+    <p class="chapter-desc">Una marca, un dominio, un handle. Susurra se escribe en minúsculas en logo y handles, en mayúscula primera en texto normal. <em>Nunca en mayúsculas todas, nunca con punto en el handle</em>.</p>
+
+    <table class="specs">
+      <tr><td>Marca</td><td>Susurra</td></tr>
+      <tr><td>Marca legal</td><td>Luis Carranza, LLC (operadora)</td></tr>
+      <tr><td>Dominio principal</td><td><code>susurra.ai</code></td></tr>
+      <tr><td>Dominios defensivos</td><td><code>susurra.dev</code> · <code>susurra.lat</code></td></tr>
+      <tr><td>Email principal</td><td><code>hola@susurra.ai</code></td></tr>
+      <tr><td>Email founder</td><td><code>luis@susurra.ai</code> · luiscodecarranza@gmail.com</td></tr>
+      <tr><td>Handle redes (prioridad)</td><td><code>@susurra.app</code> · <code>@susurrahq</code> · <code>@hablasusurra</code></td></tr>
+      <tr><td>LinkedIn</td><td><code>/company/susurra</code> · founder: <code>/in/lucadevv</code></td></tr>
+      <tr><td>GitHub</td><td><code>/susurra</code></td></tr>
+      <tr><td>Pronunciación</td><td>su-SU-rra (acento en segunda sílaba)</td></tr>
+      <tr><td>Mayúsculas en marca</td><td>"Susurra" en texto · "susurra" en logo · NUNCA "SUSURRA"</td></tr>
+    </table>
+  </section>
+
+  <!-- 08 Founder -->
+  <section class="chapter">
+    <div class="chapter-head">
+      <div class="chapter-num">08</div>
+      <div class="chapter-meta">
+        <div class="eyebrow">Founder identity</div>
+        <h2>El rostro <em>detrás.</em></h2>
+      </div>
+    </div>
+    <p class="chapter-desc">Susurra tiene founder con cara y nombre real. Esto es <em>ventaja competitiva crítica</em> vs Cluely y otras herramientas anónimas. El founder es parte del posicionamiento, no detrás de cámara.</p>
+
+    <table class="specs">
+      <tr><td>Founder</td><td>Luis Carranza Saldaña</td></tr>
+      <tr><td>Título</td><td>Ingeniero de Sistemas Computacionales</td></tr>
+      <tr><td>Stack principal</td><td>Flutter mobile · 4 años</td></tr>
+      <tr><td>Ubicación</td><td>Perú</td></tr>
+      <tr><td>LinkedIn</td><td>linkedin.com/in/lucadevv</td></tr>
+      <tr><td>Email contacto</td><td>luiscodecarranza@gmail.com</td></tr>
+      <tr><td>Empresa legal</td><td>Luis Carranza, LLC</td></tr>
+      <tr><td>Founder story</td><td>"Me trabé en una entrevista importante con una empresa de Silicon Valley. Sabía la respuesta. Por eso construyo Susurra."</td></tr>
+    </table>
+  </section>
+
+  <!-- Doc footer -->
+  <div class="doc-footer">
+    <span>Susurra · Guidelines v1.0</span>
+    <em>Marfil · Carbón · Coral</em>
+    <span>Inter · Instrument Serif</span>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -98,7 +98,7 @@ export function PipCompact(): JSX.Element {
       >
         <div
           style={{
-            fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+            fontFamily: "var(--font-mono)",
             fontSize: 10,
             fontWeight: 800,
             letterSpacing: "1px",

@@ -6,6 +6,7 @@
   --color-carbon-smoke: #2C2A3A;
   --color-coral: #FF7B5C;
   --color-coral-deep: #E55A3F;
+  --color-coral-text: #8C3220;  /* AAA-pass coral for text use on ivory bg */
   --color-ivory: #F5EFE6;
   --color-ivory-warm: #F0E8D8;
   --color-sand: #B8A89A;
@@ -25,7 +26,17 @@
   --line-strong: rgba(26, 26, 36, 0.15);
   --text-dim: rgba(26, 26, 36, 0.65);
   --text-mute: rgba(26, 26, 36, 0.45);
-  --coral-soft: rgba(255, 123, 92, 0.12);
+  --coral-soft: rgba(255, 123, 92, 0.06);
+
+  /* Motion tokens — Emil Kowalski curves */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-float: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
 }
 
 /* Smooth scrolling for anchor nav */
@@ -67,7 +78,19 @@ body {
 }
 
 /* Utility-style animation classes (used by Hero floating chips and live dot) */
-.anim-float-a { animation: floatA 5s ease-in-out infinite; }
-.anim-float-b { animation: floatB 5s ease-in-out infinite; }
-.anim-float-a-rev { animation: floatA 6s ease-in-out infinite reverse; }
+.anim-float-a { animation: floatA 5s var(--ease-float) infinite; }
+.anim-float-b { animation: floatB 5s var(--ease-float) infinite; }
+.anim-float-a-rev { animation: floatA 6s var(--ease-float) infinite reverse; }
 .anim-pulse-coral { animation: pulse-coral 1.6s ease infinite; }
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

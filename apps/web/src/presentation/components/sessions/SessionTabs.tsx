@@ -64,7 +64,7 @@ export function SessionTabs({
                 cursor: "pointer",
                 padding: "8px 14px",
                 borderRadius: 9999,
-                fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+                fontFamily: "var(--font-inter)",
                 fontSize: 13,
                 fontWeight: 700,
                 letterSpacing: "0.3px",

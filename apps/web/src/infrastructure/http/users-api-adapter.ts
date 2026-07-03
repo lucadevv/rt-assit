@@ -29,6 +29,7 @@ interface MeResponseRaw {
   language_preferred: string;
   created_at: string;
   updated_at: string;
+  is_admin?: boolean;
 }
 
 interface DeleteResponseRaw {
@@ -53,6 +54,7 @@ function mapUser(raw: MeResponseRaw): User {
     languagePreferred: raw.language_preferred,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
+    isAdmin: raw.is_admin ?? false,
   };
 }
 

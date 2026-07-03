@@ -66,7 +66,7 @@ export function HintSidebar(): JSX.Element {
           <span
             style={{
               flex: "0 0 56px",
-              fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+              fontFamily: "var(--font-mono)",
               fontSize: 11,
               color: "var(--color-text-dim)",
               fontWeight: 700,
@@ -108,7 +108,7 @@ export function HintSidebar(): JSX.Element {
           <span
             style={{
               flex: "0 0 56px",
-              fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+              fontFamily: "var(--font-mono)",
               fontSize: 11,
               color: "var(--color-lime-ink)",
               fontWeight: 700,

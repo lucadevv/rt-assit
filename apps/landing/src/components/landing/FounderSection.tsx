@@ -1,17 +1,43 @@
+'use client';
+
+import { motion, useReducedMotion } from 'framer-motion';
+import {
+  easeOutQuart,
+  fadeUpSubtle,
+  staggerContainer,
+  viewportOnce,
+} from '@/lib/motion-presets';
+
 /**
  * Founder story section: avatar with "lc" initials + narrative + contact links.
  * Source: design_susurra/index.html lines 887-919.
  */
 export function FounderSection() {
+  const shouldReduceMotion = useReducedMotion();
+  const reveal = shouldReduceMotion
+    ? { initial: false as const, animate: 'visible' as const }
+    : {
+        initial: 'hidden' as const,
+        whileInView: 'visible' as const,
+        viewport: viewportOnce,
+      };
+
+  const circleVariant = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1 },
+  };
+
   return (
     <section id="founder" className="relative" style={{ padding: '96px 0' }}>
       <div className="max-w-[1240px] mx-auto px-8">
-        <div
+        <motion.div
           className="mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 md:gap-14 items-center text-center md:text-left"
           style={{ maxWidth: '880px' }}
+          variants={staggerContainer(0, 0.1)}
+          {...reveal}
         >
           {/* Founder photo (initials "lc") */}
-          <div
+          <motion.div
             className="relative mx-auto md:mx-0 flex items-center justify-center"
             style={{
               aspectRatio: '1 / 1',
@@ -22,6 +48,8 @@ export function FounderSection() {
                 'linear-gradient(145deg, var(--color-coral) 0%, var(--color-coral-deep) 100%)',
               boxShadow: '0 20px 60px -20px rgba(229,90,63,0.4)',
             }}
+            variants={circleVariant}
+            transition={{ duration: 0.8, ease: easeOutQuart }}
           >
             <span
               style={{
@@ -67,11 +95,13 @@ export function FounderSection() {
                 />
               </svg>
             </div>
-          </div>
+          </motion.div>
 
           {/* Story */}
-          <div>
-            <h2
+          <motion.div
+            variants={staggerContainer(0.1, 0.08)}
+          >
+            <motion.h2
               style={{
                 fontFamily: 'var(--font-sans)',
                 fontWeight: 500,
@@ -80,6 +110,8 @@ export function FounderSection() {
                 lineHeight: 1.1,
                 marginBottom: '22px',
               }}
+              variants={fadeUpSubtle}
+              transition={{ duration: 0.6, ease: easeOutQuart }}
             >
               Por qué construyo{' '}
               <span
@@ -93,35 +125,45 @@ export function FounderSection() {
               >
                 Susurra.
               </span>
-            </h2>
-            <FounderParagraph>
-              Soy <strong>Luis Carranza Saldaña</strong>, Ingeniero de Sistemas
-              Computacionales, dev Flutter mobile de Perú. Llevo 4 años
-              construyendo apps y conversando con clientes en inglés.
-            </FounderParagraph>
-            <FounderParagraph>
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontStyle: 'italic',
-                  color: 'var(--color-carbon)',
-                  fontSize: '18px',
-                }}
-              >
-                Me trabé en una entrevista importante con una empresa de Silicon
-                Valley.
-              </span>{' '}
-              Sabía la respuesta, tenía la experiencia, pero las palabras en
-              inglés se me escaparon bajo presión. Esa noche pensé: &ldquo;tiene
-              que haber algo mejor que sólo estudiar y rezar.&rdquo;
-            </FounderParagraph>
-            <FounderParagraph>
-              Por eso construyo Susurra. Para que ningún dev LATAM pierda una
-              oportunidad por no encontrar las palabras en el momento exacto.
-              Si te suma estar en la beta, estamos juntos en esto.
-            </FounderParagraph>
+            </motion.h2>
+            <motion.div variants={fadeUpSubtle} transition={{ duration: 0.6, ease: easeOutQuart }}>
+              <FounderParagraph>
+                Soy <strong>Luis Carranza Saldaña</strong>, Ingeniero de Sistemas
+                Computacionales, dev Flutter mobile de Perú. Llevo 4 años
+                construyendo apps y conversando con clientes en inglés.
+              </FounderParagraph>
+            </motion.div>
+            <motion.div variants={fadeUpSubtle} transition={{ duration: 0.6, ease: easeOutQuart }}>
+              <FounderParagraph>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontStyle: 'italic',
+                    color: 'var(--color-carbon)',
+                    fontSize: '18px',
+                  }}
+                >
+                  Me trabé en una entrevista importante con una empresa de Silicon
+                  Valley.
+                </span>{' '}
+                Sabía la respuesta, tenía la experiencia, pero las palabras en
+                inglés se me escaparon bajo presión. Esa noche pensé: &ldquo;tiene
+                que haber algo mejor que sólo estudiar y rezar.&rdquo;
+              </FounderParagraph>
+            </motion.div>
+            <motion.div variants={fadeUpSubtle} transition={{ duration: 0.6, ease: easeOutQuart }}>
+              <FounderParagraph>
+                Por eso construyo Susurra. Para que ningún dev LATAM pierda una
+                oportunidad por no encontrar las palabras en el momento exacto.
+                Si te suma estar en la beta, estamos juntos en esto.
+              </FounderParagraph>
+            </motion.div>
 
-            <div className="flex flex-wrap gap-4 mt-6 justify-center md:justify-start">
+            <motion.div
+              className="flex flex-wrap gap-4 mt-6 justify-center md:justify-start"
+              variants={fadeUpSubtle}
+              transition={{ duration: 0.6, ease: easeOutQuart }}
+            >
               <FounderLink href="https://www.linkedin.com/in/lucadevv">
                 <svg
                   width="14"
@@ -146,11 +188,11 @@ export function FounderSection() {
                 </svg>
                 Escribime directo
               </FounderLink>
-              <FounderTag>📍 Perú</FounderTag>
+              <FounderTag>Perú</FounderTag>
               <FounderTag>Luis Carranza, LLC</FounderTag>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
@@ -184,7 +226,7 @@ function FounderLink({
       href={href}
       target={isExternal ? '_blank' : undefined}
       rel={isExternal ? 'noopener noreferrer' : undefined}
-      className="inline-flex items-center gap-1.5 transition-colors"
+      className="inline-flex items-center gap-1.5 transition-colors duration-150 active:scale-[0.97]"
       style={{
         fontSize: '13px',
         fontWeight: 500,

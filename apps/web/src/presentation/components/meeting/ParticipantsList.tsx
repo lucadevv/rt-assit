@@ -31,7 +31,8 @@ function ParticipantRow({ participant }: { participant: Participant }): JSX.Elem
         gap: 10,
         padding: "8px 10px",
         borderRadius: 12,
-        background: "var(--color-bg)",
+        background: "var(--color-bg-soft)",
+        boxShadow: "var(--shadow-card-1)",
         border: "1px solid var(--color-border)",
       }}
     >

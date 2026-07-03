@@ -10,10 +10,12 @@
 
 import { useEffect, useRef, useState, type JSX } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Avatar } from "@/design-system/primitives";
 import { LogOutIcon, SettingsIcon } from "@/design-system/icons";
 import { useContainer } from "@/infrastructure/di/container";
 import { useAuthStore } from "@/application/stores/auth.store";
+import { AUTH_MODE } from "@/infrastructure/auth/auth-factory";
 
 function initialsOf(user: { name: string | null; email: string } | null): string {
   if (!user) return "?";
@@ -29,8 +31,8 @@ function initialsOf(user: { name: string | null; email: string } | null): string
 
 export function UserMenu(): JSX.Element {
   const user = useAuthStore((s) => s.user);
-  const reset = useAuthStore((s) => s.reset);
   const { auth } = useContainer();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -54,10 +56,12 @@ export function UserMenu(): JSX.Element {
 
   const handleSignOut = async () => {
     setOpen(false);
-    try {
-      await auth.signOut();
-    } finally {
-      reset();
+    // Adapter owns the full logout flow: custom-auth-adapter hits
+    // /api/auth/logout (cookies cleared by server) and resets the store;
+    // clerk adapter calls Clerk's signOut(); dev adapter is a no-op.
+    await auth.signOut();
+    if (AUTH_MODE !== "dev") {
+      router.replace("/sign-in");
     }
   };
 
@@ -97,7 +101,7 @@ export function UserMenu(): JSX.Element {
             top: "calc(100% + 8px)",
             right: 0,
             minWidth: 220,
-            background: "var(--color-bg)",
+            background: "var(--color-bg-warm)",
             border: "1px solid var(--color-border)",
             borderRadius: 14,
             boxShadow: "0 10px 30px rgba(0,0,0,0.12)",

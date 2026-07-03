@@ -31,7 +31,8 @@ export function PlaybackHints({
           color: "var(--color-text-mid)",
           fontSize: 13,
           textAlign: "center",
-          background: "var(--color-bg)",
+          background: "var(--color-bg-soft)",
+          boxShadow: "var(--shadow-card-1)",
           border: "1px dashed var(--color-border)",
           borderRadius: 18,
         }}
@@ -58,7 +59,8 @@ export function PlaybackHints({
         maxHeight: 520,
         overflow: "auto",
         padding: 8,
-        background: "var(--color-bg)",
+        background: "var(--color-bg-soft)",
+        boxShadow: "var(--shadow-card-1)",
         border: "1px solid var(--color-border)",
         borderRadius: 18,
       }}
@@ -106,7 +108,7 @@ export function PlaybackHints({
               <span
                 style={{
                   fontFamily:
-                    "var(--font-jetbrains-mono), ui-monospace, monospace",
+                    "var(--font-mono)",
                   fontSize: 11,
                   color: "var(--color-text-dim)",
                 }}

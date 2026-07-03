@@ -29,12 +29,15 @@ interface BillingStoreState {
   usage: Usage | null;
   loading: boolean;
   error: string | null;
+  /** Dedup window — survives HMR via store-singleton state. */
+  lastFetchedAt: number | null;
 
   setPlans: (plans: Plan[]) => void;
   setSubscription: (sub: Subscription | null) => void;
   setUsage: (usage: Usage | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  setLastFetchedAt: (timestamp: number | null) => void;
   reset: () => void;
 }
 
@@ -50,6 +53,7 @@ export const useBillingStore = create<BillingStoreState>((set, get) => ({
   usage: null,
   loading: false,
   error: null,
+  lastFetchedAt: null,
 
   setPlans: (plans) => {
     const sub = get().subscription;
@@ -64,6 +68,7 @@ export const useBillingStore = create<BillingStoreState>((set, get) => ({
   setUsage: (usage) => set({ usage }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
+  setLastFetchedAt: (lastFetchedAt) => set({ lastFetchedAt }),
   reset: () =>
     set({
       plans: [],
@@ -72,5 +77,6 @@ export const useBillingStore = create<BillingStoreState>((set, get) => ({
       usage: null,
       loading: false,
       error: null,
+      lastFetchedAt: null,
     }),
 }));

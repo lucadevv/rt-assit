@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500" width="1500" height="500">
+  <rect width="1500" height="500" fill="#1A1A24"/>
+  <text x="80" y="240" font-family="Inter, sans-serif" font-weight="500" font-size="148" fill="#F5EFE6" letter-spacing="-3">susurr</text>
+  <text x="540" y="245" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-weight="400" font-size="184" fill="#FF7B5C">a</text>
+  <circle cx="690" cy="115" r="11" fill="#FF7B5C"/>
+  <circle cx="720" cy="115" r="8" fill="#FF7B5C" opacity="0.6"/>
+  <circle cx="745" cy="115" r="5.5" fill="#FF7B5C" opacity="0.3"/>
+  <text x="80" y="330" font-family="Instrument Serif, Georgia, serif" font-style="italic" font-weight="400" font-size="40" fill="#B8A89A">Te susurra qué decir. Vos brillás.</text>
+  <text x="80" y="430" font-family="Inter, sans-serif" font-weight="500" font-size="18" fill="#FF7B5C" letter-spacing="3">EL COPILOT &#xC1;NTIMO DE ENTREVISTAS &#xB7; ES-LATAM</text>
+</svg>

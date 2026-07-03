@@ -17,6 +17,7 @@
 
 import { useMemo, useState } from "react";
 import type { JSX } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Spinner, Pill } from "@/design-system/primitives";
 import {
   DOC_TYPE_LABELS,
@@ -26,6 +27,12 @@ import {
   type DocumentListItem,
 } from "@/domain/entities/document";
 import { DocumentCard } from "./DocumentCard";
+import {
+  fadeUpSubtle,
+  staggerContainer,
+  transitionFast,
+  viewportOnce,
+} from "@/lib/motion-presets";
 
 interface ScenarioOption {
   id: string;
@@ -52,7 +59,7 @@ const sectionTitleStyle: React.CSSProperties = {
   letterSpacing: "0.6px",
   color: "var(--color-text-mid)",
   margin: 0,
-  fontFamily: "var(--font-jet-brains-mono), ui-monospace, monospace",
+  fontFamily: "var(--font-mono)",
 };
 
 export function DocumentList({
@@ -282,6 +289,14 @@ function Section({
   emptyHint,
   hideHeader,
 }: SectionProps): JSX.Element {
+  const shouldReduceMotion = useReducedMotion();
+  const reveal = shouldReduceMotion
+    ? { initial: false as const, animate: "visible" as const }
+    : {
+        initial: "hidden" as const,
+        whileInView: "visible" as const,
+        viewport: viewportOnce,
+      };
   return (
     <section style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {hideHeader ? null : (
@@ -314,7 +329,11 @@ function Section({
           {emptyHint}
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <motion.div
+          variants={staggerContainer(0, 0.06)}
+          {...reveal}
+          style={{ display: "flex", flexDirection: "column", gap: 8 }}
+        >
           {docs.map((d) => {
             const cardProps = {
               doc: d,
@@ -326,9 +345,17 @@ function Section({
                 ? { onTogglePrimary: (next: boolean) => onTogglePrimary(d, next) }
                 : {}),
             };
-            return <DocumentCard key={d.id} {...cardProps} />;
+            return (
+              <motion.div
+                key={d.id}
+                variants={fadeUpSubtle}
+                transition={transitionFast}
+              >
+                <DocumentCard {...cardProps} />
+              </motion.div>
+            );
           })}
-        </div>
+        </motion.div>
       )}
     </section>
   );

@@ -47,7 +47,7 @@ export function HeroBanner({ userName, tier }: HeroBannerProps): JSX.Element {
     >
       <p
         style={{
-          fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace",
+          fontFamily: "var(--font-mono)",
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.6px",

@@ -20,6 +20,8 @@ interface DocumentsStoreState {
   /** True after the first successful list() fetch — prevents flashing
    * the empty state during initial load. */
   hasFetched: boolean;
+  /** Dedup window — survives HMR via store-singleton state. */
+  lastFetchedAt: number | null;
   selectedDocId: number | null;
 
   setDocuments: (docs: DocumentListItem[]) => void;
@@ -29,6 +31,7 @@ interface DocumentsStoreState {
   setLoading: (v: boolean) => void;
   setError: (e: string | null) => void;
   setHasFetched: (v: boolean) => void;
+  setLastFetchedAt: (timestamp: number | null) => void;
   selectDoc: (id: number | null) => void;
   reset: () => void;
 }
@@ -38,6 +41,7 @@ export const useDocumentsStore = create<DocumentsStoreState>((set) => ({
   loading: false,
   error: null,
   hasFetched: false,
+  lastFetchedAt: null,
   selectedDocId: null,
 
   setDocuments: (docs) => set({ documents: docs }),
@@ -71,6 +75,7 @@ export const useDocumentsStore = create<DocumentsStoreState>((set) => ({
   setLoading: (v) => set({ loading: v }),
   setError: (e) => set({ error: e }),
   setHasFetched: (v) => set({ hasFetched: v }),
+  setLastFetchedAt: (lastFetchedAt) => set({ lastFetchedAt }),
   selectDoc: (id) => set({ selectedDocId: id }),
 
   reset: () =>
@@ -79,6 +84,7 @@ export const useDocumentsStore = create<DocumentsStoreState>((set) => ({
       loading: false,
       error: null,
       hasFetched: false,
+      lastFetchedAt: null,
       selectedDocId: null,
     }),
 }));

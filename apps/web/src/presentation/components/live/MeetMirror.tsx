@@ -183,8 +183,8 @@ export function MeetMirror({ stream }: MeetMirrorProps): JSX.Element {
             width: 7,
             height: 7,
             borderRadius: "50%",
-            background: "#ef4444",
-            boxShadow: "0 0 6px rgba(239, 68, 68, 0.9)",
+            background: "var(--color-danger)",
+            boxShadow: "0 0 6px color-mix(in srgb, var(--color-danger) 90%, transparent)",
           }}
         />
         Live · Mirror

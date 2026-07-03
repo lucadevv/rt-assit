@@ -64,7 +64,7 @@ export function UpgradeBanner({
             <span
               style={{
                 fontFamily:
-                  "var(--font-jetbrains-mono), ui-monospace, monospace",
+                  "var(--font-mono)",
                 fontSize: 11,
                 letterSpacing: "1.2px",
                 textTransform: "uppercase",
@@ -90,7 +90,7 @@ export function UpgradeBanner({
           style={{
             background: "var(--color-amber-ink)",
             color: "var(--color-amber)",
-            fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+            fontFamily: "var(--font-inter)",
             fontWeight: 700,
             fontSize: 13,
             padding: "10px 18px",

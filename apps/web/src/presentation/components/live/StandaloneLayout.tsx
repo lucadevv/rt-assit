@@ -59,7 +59,7 @@ export function StandaloneLayout(): JSX.Element {
         >
           <span
             style={{
-              fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+              fontFamily: "var(--font-mono)",
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.6px",
@@ -103,7 +103,7 @@ export function StandaloneLayout(): JSX.Element {
         >
           <span
             style={{
-              fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+              fontFamily: "var(--font-mono)",
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.6px",

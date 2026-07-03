@@ -7,9 +7,9 @@
  * `dev_default` user the backend's AUTH_MODE=dev synthesises, so the full
  * stack works end-to-end without Clerk credentials.
  *
- * `getToken` returns `null` deliberately — the backend dev mode does NOT
- * require a Bearer token, it just looks at the absence of an Authorization
- * header to fall back to the dev user.
+ * `getToken` is intentionally omitted — backend dev mode falls back to the
+ * dev user when no Authorization header is present, so a token getter would
+ * be a no-op.
  */
 
 import type { AuthPort, AuthState } from "@/application/ports/auth.port";
@@ -27,6 +27,7 @@ const DEV_USER: User = {
   // override these as soon as the home effect resolves.
   createdAt: "2026-01-01T00:00:00.000Z",
   updatedAt: "2026-01-01T00:00:00.000Z",
+  isAdmin: false,
 };
 
 // Stable singleton — referential equality across renders is critical for the
@@ -35,7 +36,6 @@ const DEV_USER: User = {
 const DEV_AUTH_STATE: AuthState = {
   status: "authenticated",
   user: DEV_USER,
-  getToken: async () => null,
 };
 
 const DEV_AUTH_PORT: AuthPort = {

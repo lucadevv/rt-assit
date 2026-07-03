@@ -15,6 +15,7 @@
 
 import type { AuthPort } from "@/application/ports/auth.port";
 import { AUTH_MODE, useClerkAuthAdapter } from "./clerk-auth-adapter";
+import { useCustomAuthAdapter } from "./custom-auth-adapter";
 import { useDevAuthAdapter } from "./dev-auth-adapter";
 
 export function useAuthAdapter(): AuthPort {
@@ -23,6 +24,10 @@ export function useAuthAdapter(): AuthPort {
     // build-time literal (Next inlines NEXT_PUBLIC_*); the branch is
     // permanent for any given build, so hook order is stable per render.
     return useClerkAuthAdapter();
+  }
+  if (AUTH_MODE === "custom") {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useCustomAuthAdapter();
   }
   // eslint-disable-next-line react-hooks/rules-of-hooks
   return useDevAuthAdapter();

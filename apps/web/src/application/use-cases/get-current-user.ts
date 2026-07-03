@@ -24,6 +24,7 @@ interface MeResponse {
   language_preferred: string;
   created_at: string;
   updated_at: string;
+  is_admin?: boolean;
 }
 
 const VALID_TIERS: readonly UserTier[] = ["free", "pro", "premium", "byok"];
@@ -48,6 +49,7 @@ export class GetCurrentUserUseCase {
       languagePreferred: raw.language_preferred,
       createdAt: raw.created_at,
       updatedAt: raw.updated_at,
+      isAdmin: raw.is_admin ?? false,
     };
   }
 }

@@ -16,12 +16,15 @@
  * fetches and exposes a `refresh()` callback for mutations to retrigger.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useContainer } from "@/infrastructure/di/container";
+import { useAuthStore } from "@/application/stores/auth.store";
 import { useBillingStore } from "@/application/stores/billing.store";
 import type { Plan } from "@/domain/entities/plan";
 import type { Subscription } from "@/domain/entities/subscription";
 import type { Usage } from "@/domain/entities/usage";
+
+const BILLING_STALE_MS = 30_000;
 
 interface UseBillingResult {
   plans: Plan[];
@@ -110,17 +113,34 @@ export function useBilling(): UseBillingResult {
     plans.length,
   ]);
 
-  // StrictMode dedup: in dev, React mounts effects twice to surface
-  // side-effect bugs. We only want the initial fetch once. `refresh()`
-  // remains callable manually after mutations.
-  const fetchedRef = useRef(false);
+  // Gate billing fetch on authenticated user. Without this, calling
+  // useBilling() from (app)/layout.tsx fires before the auth gate redirects
+  // to /sign-in, producing a 401 console error noise in custom-auth mode.
+  // The auth store is the single source of truth — agnostic of storage.
+  const isAuthed = useAuthStore((s) => s.user !== null);
+
+  // Dedup window — survives HMR via store-singleton state. Gates the
+  // entire refresh() (plans + subscription + usage in parallel), not
+  // individual fetches.
   useEffect(() => {
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
-    void refresh();
-    // refresh is stable thanks to useCallback — eslint exhaustive-deps
-    // satisfied by listing it directly.
-  }, [refresh]);
+    if (!isAuthed) return;
+    const lastFetched = useBillingStore.getState().lastFetchedAt;
+    if (lastFetched !== null && Date.now() - lastFetched < BILLING_STALE_MS) {
+      return;
+    }
+    useBillingStore.getState().setLastFetchedAt(Date.now());
+    void refresh()
+      .then(() => {
+        // refresh() catches internally — rollback if it surfaced an error
+        // so a retry can happen sooner than the stale window.
+        if (useBillingStore.getState().error !== null) {
+          useBillingStore.getState().setLastFetchedAt(null);
+        }
+      })
+      .catch(() => {
+        useBillingStore.getState().setLastFetchedAt(null);
+      });
+  }, [isAuthed, refresh]);
 
   return {
     plans,

@@ -9,6 +9,11 @@ import type { CSSProperties, JSX } from "react";
 import { Button, Pill } from "@/design-system/primitives";
 import type { Persona } from "@/domain/entities/persona";
 import { PERSONA_TONE_LABELS } from "@/domain/entities/persona";
+import {
+  PERSONA_ICONS,
+  PersonaUser,
+  type PersonaIconKey,
+} from "@/design-system/primitives/icons/PersonaIcons";
 import type { ScenarioColor } from "@/domain/entities/scenario";
 
 interface PersonaCardProps {
@@ -43,7 +48,8 @@ export function PersonaCard({
   onSetDefault,
 }: PersonaCardProps): JSX.Element {
   const containerStyle: CSSProperties = {
-    background: "var(--color-bg)",
+    background: "var(--color-bg-soft)",
+    boxShadow: "var(--shadow-card-1)",
     border: persona.isDefault
       ? "2px solid var(--color-text)"
       : "1px solid var(--color-border)",
@@ -52,8 +58,11 @@ export function PersonaCard({
     display: "flex",
     flexDirection: "column",
     gap: 12,
-    fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+    fontFamily: "var(--font-inter)",
   };
+
+  const IconComponent =
+    PERSONA_ICONS[persona.icon as PersonaIconKey] ?? PersonaUser;
 
   return (
     <div style={containerStyle}>
@@ -61,7 +70,6 @@ export function PersonaCard({
         <span
           aria-hidden
           style={{
-            fontSize: 28,
             lineHeight: 1,
             flexShrink: 0,
             width: 44,
@@ -72,9 +80,10 @@ export function PersonaCard({
             background: "var(--color-bg-soft)",
             border: "1px solid var(--color-border)",
             borderRadius: 12,
+            color: "var(--color-coral-deep)",
           }}
         >
-          {persona.icon ?? "\u{1F464}"}
+          <IconComponent size={20} color="var(--color-coral-deep)" />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3
@@ -131,7 +140,7 @@ export function PersonaCard({
               border: `1px solid ${SCENARIO_BORDER[scenarioColor]}`,
               color: "var(--color-text)",
               fontFamily:
-                "var(--font-jetbrains, ui-monospace), monospace",
+                "var(--font-mono)",
             }}
           >
             {scenarioLabel}
@@ -169,7 +178,7 @@ export function PersonaCard({
           variant="ghost"
           size="sm"
           onClick={() => onDelete(persona)}
-          style={{ color: "oklch(58% 0.22 25)" }}
+          style={{ color: "var(--color-danger)" }}
         >
           Eliminar
         </Button>

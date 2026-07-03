@@ -21,12 +21,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       ref={ref}
       className={clsx("susurra-select", className)}
       style={{
-        fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+        fontFamily: "var(--font-inter)",
         fontSize: 14,
         fontWeight: 500,
         background: "var(--color-bg)",
         color: "var(--color-text)",
-        border: `1px solid ${invalid ? "oklch(58% 0.22 25)" : "var(--color-border)"}`,
+        border: `1px solid ${invalid ? "var(--color-danger)" : "var(--color-border)"}`,
         borderRadius: 12,
         padding: "10px 14px",
         outline: "none",

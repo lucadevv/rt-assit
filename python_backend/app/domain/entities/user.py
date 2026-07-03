@@ -25,3 +25,5 @@ class User:
     language_preferred: str
     created_at: datetime
     updated_at: datetime
+    password_hash: Optional[str] = None
+    is_admin: bool = False

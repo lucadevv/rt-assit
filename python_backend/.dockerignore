@@ -20,8 +20,8 @@ dist/
 # Persisted data (mounted at runtime).
 data/
 
-# Tests not needed at runtime.
-tests/
+# Tests ARE included in the image so CI can run
+# `docker exec rtassist-backend pytest` without volume mounts.
 
 # Editor / OS noise.
 .idea/

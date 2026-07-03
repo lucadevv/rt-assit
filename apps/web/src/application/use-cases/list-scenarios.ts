@@ -20,6 +20,7 @@ interface ScenarioRaw {
   doc_types: string[];
   description?: string;
   color?: string;
+  is_dev_focused?: boolean;
 }
 
 export class ListScenariosUseCase {
@@ -33,6 +34,7 @@ export class ListScenariosUseCase {
       doc_types: s.doc_types ?? [],
       description: s.description ?? "",
       color: s.color ?? "lime",
+      is_dev_focused: s.is_dev_focused ?? false,
     }));
   }
 }

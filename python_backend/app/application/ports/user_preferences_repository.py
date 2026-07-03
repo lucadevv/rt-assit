@@ -33,6 +33,7 @@ class UserPreferencesRepository(ABC):
         keyboard_shortcuts: Optional[dict[str, Any]] = None,
         audio_device_id: Optional[str] = None,
         audio_device_id_set: bool = False,
+        onboarding_complete: Optional[bool] = None,
     ) -> UserPreferences:
         """Patch only the fields provided (None = leave unchanged).
 
@@ -42,6 +43,11 @@ class UserPreferencesRepository(ABC):
         None which clears the device); when False, the column is left
         untouched. This sentinel pattern keeps the explicit-reset semantic
         without breaking the "None = unchanged" rule used elsewhere.
+
+        ``onboarding_complete`` is a plain bool (no NULL semantics) — the
+        first-run wizard flips it to True once the user finishes (or
+        explicitly skips) the flow. ``None`` here means "leave unchanged"
+        per the standard sentinel rule.
         """
         ...
 

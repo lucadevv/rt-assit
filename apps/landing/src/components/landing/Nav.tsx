@@ -1,3 +1,7 @@
+'use client';
+
+import { motion, useReducedMotion } from 'framer-motion';
+import { easeOut } from '@/lib/motion-presets';
 import { BrandMark } from './BrandMark';
 
 /**
@@ -5,15 +9,20 @@ import { BrandMark } from './BrandMark';
  * Source: design_susurra/index.html lines 691-710.
  */
 export function Nav() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
-    <header
+    <motion.header
       className="fixed top-0 left-0 right-0 z-50"
       style={{
         background: 'rgba(245, 239, 230, 0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         borderBottom: '1px solid rgba(26, 26, 36, 0.06)',
       }}
+      initial={shouldReduceMotion ? false : { opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: easeOut }}
     >
       <div className="max-w-[1240px] mx-auto px-8">
         <nav
@@ -48,7 +57,7 @@ export function Nav() {
 
           <a
             href="#waitlist"
-            className="rounded-full px-[18px] py-[9px] text-[13px] font-medium transition-transform hover:-translate-y-[1px]"
+            className="rounded-full px-[18px] py-[9px] text-[13px] font-medium transition-transform duration-150 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-[2px] active:scale-[0.97]"
             style={{
               background: 'var(--color-carbon)',
               color: 'var(--color-ivory)',
@@ -58,6 +67,6 @@ export function Nav() {
           </a>
         </nav>
       </div>
-    </header>
+    </motion.header>
   );
 }

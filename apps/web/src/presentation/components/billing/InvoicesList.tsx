@@ -108,7 +108,7 @@ export function InvoicesList({
                 padding: "10px 18px",
                 fontSize: 11,
                 fontFamily:
-                  "var(--font-jetbrains-mono), ui-monospace, monospace",
+                  "var(--font-mono)",
                 letterSpacing: "1px",
                 textTransform: "uppercase",
                 color: "var(--color-text-dim)",
@@ -141,7 +141,7 @@ export function InvoicesList({
                   <span
                     style={{
                       fontFamily:
-                        "var(--font-jetbrains-mono), ui-monospace, monospace",
+                        "var(--font-mono)",
                       fontSize: 12,
                       color: "var(--color-text)",
                       overflow: "hidden",

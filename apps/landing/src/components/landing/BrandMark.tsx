@@ -61,7 +61,7 @@ export function BrandMark({ variant = 'nav', href = '/' }: BrandMarkProps) {
     ...dotBase,
     width: isFooter ? 4.5 : 4,
     height: isFooter ? 4.5 : 4,
-    opacity: 0.6,
+    opacity: 0.45,
   };
   const dot3: CSSProperties = {
     ...dotBase,

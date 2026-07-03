@@ -16,7 +16,13 @@ from app.application.ports.document_extractor import DocumentExtractor, URLExtra
 from app.application.ports.documents_repository import DocumentsRepository
 from app.application.ports.hints_repository import HintsRepository
 from app.application.ports.integrations_repository import IntegrationsRepository
+from app.application.ports.jwt_signer import JwtSigner
 from app.application.ports.llm_provider import LLMProvider
+from app.application.ports.password_hasher import PasswordHasher
+from app.application.ports.refresh_token_minter import RefreshTokenMinter
+from app.application.ports.refresh_tokens_repository import (
+    RefreshTokensRepository,
+)
 from app.application.ports.scenario_repository import ScenarioRepository
 from app.application.ports.session_event_publisher import SessionEventPublisher
 from app.application.ports.session_exporter import SessionExporter
@@ -45,7 +51,17 @@ from app.application.use_cases.delete_session import DeleteSessionUseCase
 from app.application.use_cases.delete_user_data import DeleteUserDataUseCase
 from app.application.use_cases.edit_transcript import EditTranscriptUseCase
 from app.application.use_cases.end_session import EndSessionUseCase
+from app.application.ports.beta_invitations_repository import (
+    BetaInvitationsRepository,
+)
+from app.application.use_cases.admin_create_user import AdminCreateUserUseCase
+from app.application.use_cases.invite_beta_user import InviteBetaUserUseCase
 from app.application.use_cases.ensure_user_exists import EnsureUserExistsUseCase
+from app.application.use_cases.login_user import LoginUserUseCase
+from app.application.use_cases.logout_user import LogoutUserUseCase
+from app.application.use_cases.refresh_access_token import (
+    RefreshAccessTokenUseCase,
+)
 from app.application.use_cases.export_session import ExportSessionUseCase
 from app.application.use_cases.generate_response import GenerateResponseUseCase
 from app.application.use_cases.generate_session_summary import (
@@ -121,6 +137,11 @@ from app.infrastructure.auth.auth_factory import (
     create_auth_validator,
     is_dev_mode as _is_dev_mode,
 )
+from app.infrastructure.auth.bcrypt_password_hasher import BcryptPasswordHasher
+from app.infrastructure.auth.jwt_signer_adapter import JwtSignerAdapter
+from app.infrastructure.auth.opaque_refresh_token_minter import (
+    OpaqueRefreshTokenMinter,
+)
 from app.infrastructure.exporters.default_session_exporter import (
     DefaultSessionExporter,
 )
@@ -139,6 +160,9 @@ from app.infrastructure.persistence.sqlite.hints_repository import (
 from app.infrastructure.persistence.sqlite.integrations_repository import (
     SQLiteIntegrationsRepository,
 )
+from app.infrastructure.persistence.sqlite.refresh_tokens_repository import (
+    SQLiteRefreshTokensRepository,
+)
 from app.infrastructure.persistence.sqlite.session_tags_repository import (
     SQLiteSessionTagsRepository,
 )
@@ -156,6 +180,9 @@ from app.infrastructure.persistence.sqlite.transcripts_repository import (
 )
 from app.infrastructure.persistence.sqlite.user_preferences_repository import (
     SQLiteUserPreferencesRepository,
+)
+from app.infrastructure.persistence.sqlite.beta_invitations_repository import (
+    SQLiteBetaInvitationsRepository,
 )
 from app.infrastructure.persistence.sqlite.users_repository import (
     SQLiteUsersRepository,
@@ -520,6 +547,129 @@ def get_ensure_user_exists_use_case(
     users_repo: UsersRepository = Depends(get_users_repository),
 ) -> EnsureUserExistsUseCase:
     return EnsureUserExistsUseCase(users_repo)
+
+
+@lru_cache(maxsize=1)
+def get_refresh_tokens_repository() -> RefreshTokensRepository:
+    """Singleton repo for opaque refresh tokens (Auth Fase A).
+
+    Lru-cached so we share a single instance across requests — the
+    SQLite adapter is stateless (each call opens its own connection)
+    so the singleton is just for memory hygiene / consistency with the
+    other ``get_*_repository`` factories in this module."""
+    return SQLiteRefreshTokensRepository()
+
+
+# ---------------------------------------------------------------------------
+# Auth Sprint A — ports + adapters (concrete impls wired here so use-cases
+# stay infra-free). All three are stateless singletons.
+# ---------------------------------------------------------------------------
+
+
+@lru_cache(maxsize=1)
+def get_jwt_signer() -> JwtSigner:
+    return JwtSignerAdapter()
+
+
+@lru_cache(maxsize=1)
+def get_password_hasher() -> PasswordHasher:
+    return BcryptPasswordHasher()
+
+
+@lru_cache(maxsize=1)
+def get_refresh_token_minter() -> RefreshTokenMinter:
+    return OpaqueRefreshTokenMinter()
+
+
+def build_refresh_tokens_repository() -> RefreshTokensRepository:
+    """Plain-function helper for non-DI callers (cron jobs registered in
+    ``app/main.py``). Returns the same singleton as the FastAPI Depends
+    factory so the prune cron and the request-path share one instance."""
+    return get_refresh_tokens_repository()
+
+
+def get_login_user_use_case(
+    users_repo: UsersRepository = Depends(get_users_repository),
+    refresh_tokens_repo: RefreshTokensRepository = Depends(
+        get_refresh_tokens_repository
+    ),
+    jwt_signer: JwtSigner = Depends(get_jwt_signer),
+    password_hasher: PasswordHasher = Depends(get_password_hasher),
+    refresh_minter: RefreshTokenMinter = Depends(get_refresh_token_minter),
+) -> LoginUserUseCase:
+    return LoginUserUseCase(
+        users_repo=users_repo,
+        refresh_tokens_repo=refresh_tokens_repo,
+        jwt_signer=jwt_signer,
+        password_hasher=password_hasher,
+        refresh_minter=refresh_minter,
+    )
+
+
+def get_refresh_access_token_use_case(
+    users_repo: UsersRepository = Depends(get_users_repository),
+    refresh_tokens_repo: RefreshTokensRepository = Depends(
+        get_refresh_tokens_repository
+    ),
+    jwt_signer: JwtSigner = Depends(get_jwt_signer),
+    refresh_minter: RefreshTokenMinter = Depends(get_refresh_token_minter),
+) -> RefreshAccessTokenUseCase:
+    return RefreshAccessTokenUseCase(
+        users_repo=users_repo,
+        refresh_tokens_repo=refresh_tokens_repo,
+        jwt_signer=jwt_signer,
+        refresh_minter=refresh_minter,
+    )
+
+
+def get_logout_user_use_case(
+    refresh_tokens_repo: RefreshTokensRepository = Depends(
+        get_refresh_tokens_repository
+    ),
+) -> LogoutUserUseCase:
+    return LogoutUserUseCase(refresh_tokens_repo=refresh_tokens_repo)
+
+
+def get_admin_create_user_use_case(
+    users_repo: UsersRepository = Depends(get_users_repository),
+    password_hasher: PasswordHasher = Depends(get_password_hasher),
+) -> AdminCreateUserUseCase:
+    return AdminCreateUserUseCase(
+        users_repo=users_repo, password_hasher=password_hasher
+    )
+
+
+@lru_cache(maxsize=1)
+def get_beta_invitations_repository() -> BetaInvitationsRepository:
+    return SQLiteBetaInvitationsRepository()
+
+
+def get_invite_beta_user_use_case(
+    invitations_repo: BetaInvitationsRepository = Depends(
+        get_beta_invitations_repository
+    ),
+    users_repo: UsersRepository = Depends(get_users_repository),
+    password_hasher: PasswordHasher = Depends(get_password_hasher),
+) -> InviteBetaUserUseCase:
+    """Compose AdminCreateUserUseCase + EmailSender + invitations repo.
+
+    ``sign_in_url`` is read from env so prod points at the real domain;
+    dev defaults to localhost:3006 (matches the docker-compose web port).
+    ``from_email`` follows the same env knob used by the waitlist flow so
+    operators only configure one variable."""
+    sign_in_url = os.getenv(
+        "SUSURRA_SIGN_IN_URL", "http://localhost:3006/sign-in"
+    )
+    from_email = os.getenv("WAITLIST_FROM_EMAIL", "onboarding@resend.dev")
+    return InviteBetaUserUseCase(
+        admin_create_user_use_case=AdminCreateUserUseCase(
+            users_repo=users_repo, password_hasher=password_hasher
+        ),
+        invitations_repo=invitations_repo,
+        email_sender=get_email_sender(),
+        sign_in_url=sign_in_url,
+        from_email=from_email,
+    )
 
 
 def get_get_current_user_use_case(
@@ -1373,6 +1523,22 @@ def build_send_trial_expiring_email_use_case() -> SendTrialExpiringEmailUseCase:
     return _build_send_trial_expiring_email()
 
 
+def build_submit_waitlist_use_case():
+    from app.application.use_cases.submit_waitlist import SubmitWaitlistUseCase
+
+    destination = os.getenv(
+        "WAITLIST_DESTINATION_EMAIL", "bprueba222@gmail.com"
+    )
+    from_email = os.getenv(
+        "WAITLIST_FROM_EMAIL", "onboarding@resend.dev"
+    )
+    return SubmitWaitlistUseCase(
+        email_sender=get_email_sender(),
+        destination_email=destination,
+        from_email=from_email,
+    )
+
+
 # ---- Usage increment factories (called from B1 EndSession + UploadDocument) ----
 
 
@@ -1990,6 +2156,67 @@ def get_delete_session_material_use_case(
 ) -> DeleteSessionMaterialUseCase:
     return DeleteSessionMaterialUseCase(
         materials_repo=materials_repo, sessions_repo=sessions_repo
+    )
+
+
+# ---------------------------------------------------------------------------
+# Pre-Interview Wizard — repo + use cases
+# ---------------------------------------------------------------------------
+
+
+from app.application.ports.pre_meeting_notes_repository import (
+    PreMeetingNotesRepository,
+)
+from app.application.use_cases.create_pre_meeting_note import (
+    CreatePreMeetingNoteUseCase,
+)
+from app.application.use_cases.generate_pre_meeting_note import (
+    GeneratePreMeetingNoteUseCase,
+)
+from app.application.use_cases.get_pre_meeting_note import (
+    GetPreMeetingNoteUseCase,
+)
+from app.infrastructure.persistence.sqlite.pre_meeting_notes_repository import (
+    SQLitePreMeetingNotesRepository,
+)
+
+
+@lru_cache(maxsize=1)
+def get_pre_meeting_notes_repository() -> PreMeetingNotesRepository:
+    return SQLitePreMeetingNotesRepository()
+
+
+def get_generate_pre_meeting_note_use_case(
+    llm: LLMProvider = Depends(get_llm_provider),
+    personas_repo: PersonasRepository = Depends(get_personas_repository),
+    docs_repo: DocumentsRepository = Depends(get_documents_repository),
+) -> GeneratePreMeetingNoteUseCase:
+    return GeneratePreMeetingNoteUseCase(
+        llm=llm,
+        personas_repo=personas_repo,
+        documents_repo=docs_repo,
+    )
+
+
+def get_create_pre_meeting_note_use_case(
+    notes_repo: PreMeetingNotesRepository = Depends(
+        get_pre_meeting_notes_repository
+    ),
+    sessions_repo: SessionsRepository = Depends(get_sessions_repository),
+) -> CreatePreMeetingNoteUseCase:
+    return CreatePreMeetingNoteUseCase(
+        notes_repo=notes_repo, sessions_repo=sessions_repo
+    )
+
+
+def get_get_pre_meeting_note_use_case(
+    notes_repo: PreMeetingNotesRepository = Depends(
+        get_pre_meeting_notes_repository
+    ),
+    sessions_repo: SessionsRepository = Depends(get_sessions_repository),
+) -> GetPreMeetingNoteUseCase:
+    return GetPreMeetingNoteUseCase(
+        notes_repo=notes_repo, sessions_repo=sessions_repo
     )
 
 

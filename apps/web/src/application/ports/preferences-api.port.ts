@@ -13,4 +13,10 @@ import type {
 export interface PreferencesApiPort {
   get(): Promise<UserPreferences>;
   update(req: UpdateUserPreferences): Promise<UserPreferences>;
+  /**
+   * Idempotently flip `onboarding_complete=true` for the current user.
+   * Backed by POST /api/me/onboarding/complete. Returns the full
+   * UserPreferences so callers can replace their cache in one call.
+   */
+  markOnboardingComplete(): Promise<UserPreferences>;
 }

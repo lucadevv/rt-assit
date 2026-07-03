@@ -30,7 +30,8 @@ export function AccountSection({ user }: AccountSectionProps): JSX.Element {
       <div
         style={{
           border: "1px solid var(--color-amber-ink)",
-          background: "var(--color-bg)",
+          background: "var(--color-bg-soft)",
+          boxShadow: "var(--shadow-card-1)",
           borderRadius: 22,
           padding: 20,
           display: "flex",

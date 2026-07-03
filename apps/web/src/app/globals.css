@@ -14,7 +14,8 @@
   --color-coral-deep: #e55a3f; /* hover / pressed */
   --color-coral-soft: rgba(255, 123, 92, 0.1); /* subtle backgrounds */
   --color-ivory: #f5efe6; /* dominant background */
-  --color-ivory-warm: #faf6ef; /* elevated surfaces (cards) */
+  --color-ivory-warm: #faf6ef; /* elevated surfaces — Card default */
+  --color-ivory-bright: #fffbf5; /* elevated+ surfaces — Card warm / important */
   --color-sand: #b8a89a; /* bridge tone / borders */
 
   /* Semantic aliases */
@@ -43,6 +44,10 @@
   --color-lavender: #efe6dd;
   --color-lavender-ink: #2c2a3a;
 
+  /* Danger — semantic red for invalid inputs, delete actions, errors */
+  --color-danger: oklch(58% 0.22 25);
+  --color-danger-soft: oklch(58% 0.22 25 / 0.1);
+
   /* Typography */
   --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia,
@@ -58,6 +63,13 @@
   /* Shadows */
   --shadow-soft: 0 6px 20px -6px rgba(26, 26, 36, 0.15);
   --shadow-glow-coral: 0 0 80px -20px rgba(255, 123, 92, 0.4);
+
+  /* Motion — easing curves + base durations (Tier 2 motion polish) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
 }
 
 /* -------------------------------------------------------------------------
@@ -66,15 +78,20 @@
    working without per-file rewrites. Light-only.
    ------------------------------------------------------------------------- */
 :root {
-  /* Surfaces */
-  --color-bg: var(--color-ivory);
-  --color-bg-soft: var(--color-ivory-warm);
-  --color-bg-warm: var(--color-ivory-warm);
+  /* Surfaces — 3-tier elevation system */
+  --color-bg: var(--color-ivory); /* page canvas (deepest) */
+  --color-bg-soft: var(--color-ivory-warm); /* Card default (mid elevation) */
+  --color-bg-warm: var(--color-ivory-bright); /* Card warm / important (highest elevation) */
   --color-surface: var(--color-ivory-warm);
 
-  /* Borders + neutrals */
-  --color-border: rgba(26, 26, 36, 0.08);
+  /* Borders + neutrals — bumped 0.08 → 0.12 for visible card edges */
+  --color-border: rgba(26, 26, 36, 0.12);
+  --color-border-soft: rgba(26, 26, 36, 0.06);
   --color-black: var(--color-carbon);
+
+  /* Card elevation shadows */
+  --shadow-card-1: 0 1px 2px rgba(26, 26, 36, 0.04), 0 1px 1px rgba(26, 26, 36, 0.02);
+  --shadow-card-2: 0 4px 12px -4px rgba(26, 26, 36, 0.08), 0 2px 4px rgba(26, 26, 36, 0.04);
 
   /* Text scale */
   --color-text: var(--color-carbon);

@@ -71,7 +71,7 @@ function UsageBar({
         <span
           style={{
             fontSize: 12,
-            fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace",
+            fontFamily: "var(--font-mono)",
             color: "var(--color-text-mid)",
           }}
         >

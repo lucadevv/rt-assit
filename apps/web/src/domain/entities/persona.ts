@@ -35,7 +35,13 @@ export interface Persona {
   name: string;
   description: string | null;
   scenarioId: string | null;
-  /** Emoji glyph (single character / cluster). */
+  /**
+   * Persona icon key from the branded SVG set (see PersonaIcons.tsx).
+   * Kept as a loose string at the entity boundary for backward
+   * compatibility: legacy rows that still carry a raw emoji glyph
+   * pass through here and fall back to the generic `user` icon at
+   * render time via `PERSONA_ICONS[key] ?? PersonaUser`.
+   */
   icon: string | null;
   tone: PersonaTone | null;
   customInstructions: string | null;
@@ -45,22 +51,6 @@ export interface Persona {
   /** ISO 8601 timestamp string. */
   updatedAt: string;
 }
-
-/** Curated emoji picker for the persona editor. */
-export const PERSONA_ICON_PRESETS: readonly string[] = [
-  "\u{1F464}", // 👤
-  "\u{1F3E2}", // 🏢
-  "\u{1F393}", // 🎓
-  "\u{1F4BC}", // 💼
-  "\u{1F4DE}", // 📞
-  "\u{1F3A4}", // 🎤
-  "\u{1F4CA}", // 📊
-  "\u{1F52C}", // 🔬
-  "\u{1F9D1}", // 🧑
-  "\u{1F9E0}", // 🧠
-  "\u{1F4D6}", // 📖
-  "\u{1F680}", // 🚀
-];
 
 const VALID_TONES: ReadonlySet<string> = new Set([
   "professional",

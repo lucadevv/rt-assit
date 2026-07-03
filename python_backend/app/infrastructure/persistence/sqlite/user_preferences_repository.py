@@ -43,8 +43,8 @@ class SQLiteUserPreferencesRepository(UserPreferencesRepository):
                    (user_id, theme, density, default_layout, default_hint_style,
                     default_transcript_style, default_scenario,
                     auto_delete_recordings_days, keyboard_shortcuts,
-                    audio_device_id, updated_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                    audio_device_id, onboarding_complete, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
                    ON CONFLICT(user_id) DO UPDATE SET
                        theme = excluded.theme,
                        density = excluded.density,
@@ -55,6 +55,7 @@ class SQLiteUserPreferencesRepository(UserPreferencesRepository):
                        auto_delete_recordings_days = excluded.auto_delete_recordings_days,
                        keyboard_shortcuts = excluded.keyboard_shortcuts,
                        audio_device_id = excluded.audio_device_id,
+                       onboarding_complete = excluded.onboarding_complete,
                        updated_at = datetime('now')""",
                 (
                     prefs.user_id,
@@ -67,6 +68,7 @@ class SQLiteUserPreferencesRepository(UserPreferencesRepository):
                     prefs.auto_delete_recordings_days,
                     json.dumps(prefs.keyboard_shortcuts or {}),
                     prefs.audio_device_id,
+                    1 if prefs.onboarding_complete else 0,
                 ),
             )
             conn.commit()
@@ -92,6 +94,7 @@ class SQLiteUserPreferencesRepository(UserPreferencesRepository):
         keyboard_shortcuts: Optional[dict[str, Any]] = None,
         audio_device_id: Optional[str] = None,
         audio_device_id_set: bool = False,
+        onboarding_complete: Optional[bool] = None,
     ) -> UserPreferences:
         # Ensure a row exists (insert defaults), then patch.
         with get_conn() as conn:
@@ -130,6 +133,10 @@ class SQLiteUserPreferencesRepository(UserPreferencesRepository):
                 # Explicit set — None means clear the column.
                 fields.append("audio_device_id = ?")
                 params.append(audio_device_id)
+            if onboarding_complete is not None:
+                # SQLite has no native bool — store as 0/1 int.
+                fields.append("onboarding_complete = ?")
+                params.append(1 if onboarding_complete else 0)
 
             if fields:
                 fields.append("updated_at = datetime('now')")
@@ -166,6 +173,14 @@ class SQLiteUserPreferencesRepository(UserPreferencesRepository):
             audio_device_id = row["audio_device_id"]
         except (IndexError, KeyError):
             audio_device_id = None
+        # ``onboarding_complete`` is post-B4 (first-run wizard) — same
+        # defensive read so rows seeded before the migration default to
+        # False (the wizard then fires once and flips it).
+        try:
+            onboarding_raw = row["onboarding_complete"]
+        except (IndexError, KeyError):
+            onboarding_raw = 0
+        onboarding_complete = bool(onboarding_raw or 0)
         return UserPreferences(
             user_id=row["user_id"],
             theme=cast(ThemeMode, row["theme"]),
@@ -179,6 +194,7 @@ class SQLiteUserPreferencesRepository(UserPreferencesRepository):
             auto_delete_recordings_days=row["auto_delete_recordings_days"],
             keyboard_shortcuts=shortcuts,
             audio_device_id=audio_device_id,
+            onboarding_complete=onboarding_complete,
             updated_at=_parse_datetime(row["updated_at"]),
         )
 

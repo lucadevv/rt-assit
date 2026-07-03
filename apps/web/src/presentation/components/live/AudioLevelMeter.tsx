@@ -112,7 +112,7 @@ export function AudioLevelMeter({ stream }: AudioLevelMeterProps): JSX.Element {
           if (isActive) {
             if (i < AMBER_THRESHOLD) color = "var(--color-lime)";
             else if (i < RED_THRESHOLD) color = "var(--color-amber)";
-            else color = "#ef4444";
+            else color = "var(--color-danger)";
           }
           return (
             <div

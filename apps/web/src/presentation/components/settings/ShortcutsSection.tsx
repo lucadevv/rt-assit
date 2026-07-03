@@ -30,7 +30,7 @@ function KeyCap({ children }: { children: string }): JSX.Element {
   return (
     <kbd
       style={{
-        fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace",
+        fontFamily: "var(--font-mono)",
         fontSize: 11,
         fontWeight: 700,
         background: "var(--color-bg-soft)",

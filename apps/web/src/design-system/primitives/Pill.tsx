@@ -65,7 +65,7 @@ export function Pill({
     backgroundColor: v.bg,
     color: v.color,
     border: v.border ?? "1px solid transparent",
-    fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+    fontFamily: "var(--font-inter)",
     fontSize: 11,
     fontWeight: 800,
     letterSpacing: "0.6px",

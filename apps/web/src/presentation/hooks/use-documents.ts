@@ -12,14 +12,17 @@
  * The store is the source of truth — no local state.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useContainer } from "@/infrastructure/di/container";
+import { useAuthStore } from "@/application/stores/auth.store";
 import {
   selectByType,
   selectHasCv,
   useDocumentsStore,
 } from "@/application/stores/documents.store";
 import type { DocType, DocumentListItem } from "@/domain/entities/document";
+
+const DOCUMENTS_STALE_MS = 30_000;
 
 interface UseDocumentsResult {
   documents: DocumentListItem[];
@@ -123,21 +126,29 @@ export function useDocuments(): UseDocumentsResult {
     [updateDocument, setDocuments, setError],
   );
 
-  // StrictMode dedup: store-level `hasFetched` prevents repeats in
-  // production, but in dev the double-mount can race (both mounts see
-  // hasFetched=false before refresh() resolves). The ref ensures the
-  // initial fire happens at most once per mount.
-  const fetchedRef = useRef(false);
+  // Gate fetch on authenticated user (auth store = single source of truth).
+  const isAuthed = useAuthStore((s) => s.user !== null);
+
+  // Dedup window — survives HMR via store-singleton state. Coexists with
+  // `hasFetched` (which prevents the empty-state flash): we still skip
+  // when the store is warm AND the timestamp is within the stale window.
   useEffect(() => {
-    if (fetchedRef.current) return;
-    if (!hasFetched && !loading) {
-      fetchedRef.current = true;
-      void refresh();
+    if (!isAuthed) return;
+    const lastFetched = useDocumentsStore.getState().lastFetchedAt;
+    if (
+      hasFetched &&
+      lastFetched !== null &&
+      Date.now() - lastFetched < DOCUMENTS_STALE_MS
+    ) {
+      return;
     }
-    // We deliberately depend only on `hasFetched` so the fetch fires once
-    // per session even if multiple components mount the hook.
+    if (loading) return;
+    useDocumentsStore.getState().setLastFetchedAt(Date.now());
+    void refresh().catch(() => {
+      useDocumentsStore.getState().setLastFetchedAt(null);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasFetched]);
+  }, [hasFetched, isAuthed]);
 
   return {
     documents,

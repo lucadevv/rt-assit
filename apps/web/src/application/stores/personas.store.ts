@@ -21,6 +21,8 @@ interface PersonasStoreState {
    * empty state during initial load. Mirrors `useDocuments` pattern.
    */
   hasFetched: boolean;
+  /** Dedup window — survives HMR via store-singleton state. */
+  lastFetchedAt: number | null;
 
   setPersonas: (list: Persona[]) => void;
   upsertPersona: (p: Persona) => void;
@@ -28,6 +30,7 @@ interface PersonasStoreState {
   setLoading: (v: boolean) => void;
   setError: (e: string | null) => void;
   setHasFetched: (v: boolean) => void;
+  setLastFetchedAt: (timestamp: number | null) => void;
   /** Reset the default flag on every other persona — used when one is set. */
   markDefault: (id: number) => void;
   reset: () => void;
@@ -38,6 +41,7 @@ export const usePersonasStore = create<PersonasStoreState>((set) => ({
   loading: false,
   error: null,
   hasFetched: false,
+  lastFetchedAt: null,
 
   setPersonas: (list) => set({ personas: list }),
 
@@ -60,6 +64,7 @@ export const usePersonasStore = create<PersonasStoreState>((set) => ({
   setLoading: (v) => set({ loading: v }),
   setError: (e) => set({ error: e }),
   setHasFetched: (v) => set({ hasFetched: v }),
+  setLastFetchedAt: (lastFetchedAt) => set({ lastFetchedAt }),
 
   markDefault: (id) =>
     set((state) => ({
@@ -75,6 +80,7 @@ export const usePersonasStore = create<PersonasStoreState>((set) => ({
       loading: false,
       error: null,
       hasFetched: false,
+      lastFetchedAt: null,
     }),
 }));
 

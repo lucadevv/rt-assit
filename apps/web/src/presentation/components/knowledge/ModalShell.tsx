@@ -17,6 +17,16 @@
 
 import { useEffect, useRef } from "react";
 import type { JSX, ReactNode } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
+import {
+  easeOut,
+  easeOutQuart,
+  modalEntrance,
+} from "@/lib/motion-presets";
 
 interface ModalShellProps {
   open: boolean;
@@ -36,8 +46,9 @@ export function ModalShell({
   footer,
   ariaLabel,
   width = 720,
-}: ModalShellProps): JSX.Element | null {
+}: ModalShellProps): JSX.Element {
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (!open) return;
@@ -60,46 +71,56 @@ export function ModalShell({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
-
   return (
-    <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(8, 6, 22, 0.55)",
-        backdropFilter: "blur(2px)",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        padding: "5vh 16px",
-      }}
-    >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={ariaLabel ?? title}
-        tabIndex={-1}
-        style={{
-          width: "100%",
-          maxWidth: width,
-          maxHeight: "90vh",
-          background: "var(--color-bg)",
-          color: "var(--color-text)",
-          border: "1px solid var(--color-border)",
-          borderRadius: 22,
-          boxShadow: "0 24px 60px rgba(8, 6, 22, 0.35)",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          outline: "none",
-        }}
-      >
+    <AnimatePresence>
+      {open ? (
+        <motion.div
+          key="modalshell-backdrop"
+          initial={shouldReduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: easeOut }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8, 6, 22, 0.55)",
+            backdropFilter: "blur(2px)",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            padding: "5vh 16px",
+          }}
+        >
+          <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={ariaLabel ?? title}
+            tabIndex={-1}
+            initial={shouldReduceMotion ? false : "hidden"}
+            animate="visible"
+            exit="exit"
+            variants={modalEntrance}
+            transition={{ duration: 0.24, ease: easeOutQuart }}
+            style={{
+              width: "100%",
+              maxWidth: width,
+              maxHeight: "90vh",
+              background: "var(--color-bg-warm)",
+              color: "var(--color-text)",
+              border: "1px solid var(--color-border)",
+              borderRadius: 22,
+              boxShadow: "0 24px 60px rgba(8, 6, 22, 0.35)",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+              outline: "none",
+            }}
+          >
         <header
           style={{
             display: "flex",
@@ -163,7 +184,9 @@ export function ModalShell({
             {footer}
           </footer>
         ) : null}
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }

@@ -23,6 +23,8 @@
 export type ScenarioId =
   | "interview_dev"
   | "interview_behavioral"
+  | "technical_call"
+  | "code_review"
   | "meeting_business"
   | "client_call"
   | "sales_call"
@@ -39,6 +41,35 @@ export interface Scenario {
   doc_types: readonly string[];
   description?: string;
   color?: string;
+  is_dev_focused?: boolean;
+}
+
+export const DEV_FOCUSED_IDS = [
+  "interview_dev",
+  "interview_behavioral",
+  "technical_call",
+  "code_review",
+] as const;
+
+export type DevFocusedScenarioId = (typeof DEV_FOCUSED_IDS)[number];
+
+export function isDevFocused(scenario: Scenario): boolean {
+  return (
+    scenario.is_dev_focused === true ||
+    DEV_FOCUSED_IDS.includes(scenario.id as DevFocusedScenarioId)
+  );
+}
+
+export function filterDevFocused(scenarios: Scenario[]): Scenario[] {
+  const filtered = scenarios.filter((s) => isDevFocused(s));
+  const order = new Map<string, number>(
+    DEV_FOCUSED_IDS.map((id, idx) => [id, idx]),
+  );
+  return filtered.sort((a, b) => {
+    const ai = order.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+    const bi = order.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+    return ai - bi;
+  });
 }
 
 const SCENARIO_COLORS: ReadonlySet<ScenarioColor> = new Set([
@@ -69,6 +100,8 @@ export function scenarioColorOf(
 
 function scenarioColorOfId(id: ScenarioId): ScenarioColor {
   if (id === "interview_dev" || id === "interview_behavioral") return "cyan";
+  if (id === "technical_call") return "amber";
+  if (id === "code_review") return "lime";
   if (id === "meeting_business" || id === "sales_call" || id === "client_call")
     return "amber";
   if (id === "exam_oral" || id === "thesis_defense") return "lavender";

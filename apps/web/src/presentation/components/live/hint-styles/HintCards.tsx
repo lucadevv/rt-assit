@@ -6,6 +6,11 @@
  */
 
 import type { JSX } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
 import { Card } from "@/design-system/primitives";
 import { useSessionStore } from "@/application/stores/session.store";
 import {
@@ -13,6 +18,12 @@ import {
   selectIsThinking,
 } from "@/application/stores/agent.store";
 import { ScribeMarkdown } from "./ScribeMarkdown";
+import {
+  easeOut,
+  fadeUpSubtle,
+  staggerContainer,
+  transitionFast,
+} from "@/lib/motion-presets";
 
 export function HintCards(): JSX.Element {
   const hints = useSessionStore((s) => s.hints);
@@ -22,12 +33,23 @@ export function HintCards(): JSX.Element {
   const mode = useSessionStore((s) => s.session?.mode ?? "agent");
   const isThinking = useAgentStore(selectIsThinking);
   const currentResponse = useAgentStore((s) => s.currentResponse);
+  const shouldReduceMotion = useReducedMotion();
 
   const live = currentResponse;
   const past = [...hints].reverse();
   const primary = live || past[0]?.content || null;
   const contextual = live ? past.slice(0, 2) : past.slice(1, 3);
   const isScribe = mode === "scribe";
+  // Key the primary card by either the live cycle (stable while streaming)
+  // or by the most-recent committed hint id — flips once per response cycle
+  // so AnimatePresence fades the new content into place.
+  const primaryKey: string = live
+    ? "live"
+    : past[0]?.id != null
+      ? `past-${past[0].id}`
+      : past[0]?.timestampMs != null
+        ? `past-${past[0].timestampMs}`
+        : "empty";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -44,6 +66,14 @@ export function HintCards(): JSX.Element {
         >
           {isScribe ? "Notas de Susurra" : "Susurra sugiere"}
         </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={primaryKey}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: easeOut }}
+          >
         {primary ? (
           isScribe ? (
             <div style={{ position: "relative" }}>
@@ -100,10 +130,15 @@ export function HintCards(): JSX.Element {
                 : "Las sugerencias aparecerán acá cuando empiece la conversación."}
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </Card>
 
       {contextual.length > 0 ? (
-        <div
+        <motion.div
+          initial={shouldReduceMotion ? false : "hidden"}
+          animate="visible"
+          variants={staggerContainer(0, 0.06)}
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -111,7 +146,12 @@ export function HintCards(): JSX.Element {
           }}
         >
           {contextual.map((hint) => (
-            <Card key={hint.id ?? hint.timestampMs} variant="soft" padded>
+            <motion.div
+              key={hint.id ?? hint.timestampMs}
+              variants={fadeUpSubtle}
+              transition={transitionFast}
+            >
+            <Card variant="soft" padded>
               <div
                 style={{
                   fontSize: 11,
@@ -143,8 +183,9 @@ export function HintCards(): JSX.Element {
                 </div>
               )}
             </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : null}
     </div>
   );

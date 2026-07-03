@@ -8,8 +8,15 @@
  */
 
 import type { JSX } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import type { RecordingWithSession } from "@/domain/entities/recording";
 import { RecordingCard } from "./RecordingCard";
+import {
+  fadeUpSubtle,
+  staggerContainer,
+  transitionFast,
+  viewportOnce,
+} from "@/lib/motion-presets";
 
 interface RecordingsListProps {
   recordings: RecordingWithSession[];
@@ -20,9 +27,19 @@ export function RecordingsList({
   recordings,
   onSelect,
 }: RecordingsListProps): JSX.Element {
+  const shouldReduceMotion = useReducedMotion();
+  const reveal = shouldReduceMotion
+    ? { initial: false as const, animate: "visible" as const }
+    : {
+        initial: "hidden" as const,
+        whileInView: "visible" as const,
+        viewport: viewportOnce,
+      };
   return (
-    <div
+    <motion.div
       role="list"
+      variants={staggerContainer(0, 0.06)}
+      {...reveal}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -30,10 +47,15 @@ export function RecordingsList({
       }}
     >
       {recordings.map((rec) => (
-        <div role="listitem" key={rec.sessionId}>
+        <motion.div
+          role="listitem"
+          key={rec.sessionId}
+          variants={fadeUpSubtle}
+          transition={transitionFast}
+        >
           <RecordingCard recording={rec} onSelect={onSelect} />
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

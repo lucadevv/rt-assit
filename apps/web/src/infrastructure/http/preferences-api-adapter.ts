@@ -37,6 +37,13 @@ interface UserPreferencesRaw {
   auto_delete_recordings_days: number | null;
   keyboard_shortcuts: Record<string, unknown> | null;
   audio_device_id: string | null;
+  /**
+   * Onboarding flag — older backend builds may not return this field, so
+   * the mapper defaults a missing value to `false` (safer: the worst case
+   * is showing the wizard once on a stale build). Once the migration ran
+   * this is always present.
+   */
+  onboarding_complete?: boolean | null;
   updated_at: string | null;
 }
 
@@ -103,6 +110,7 @@ function map(raw: UserPreferencesRaw): UserPreferences {
     autoDeleteRecordingsDays: raw.auto_delete_recordings_days,
     audioDeviceId: raw.audio_device_id,
     keyboardShortcuts: normaliseShortcuts(raw.keyboard_shortcuts),
+    onboardingComplete: raw.onboarding_complete === true,
     updatedAt: raw.updated_at,
   };
 }
@@ -134,10 +142,26 @@ export class PreferencesApiAdapter implements PreferencesApiPort {
       body["audio_device_id"] = req.audioDeviceId;
     if (req.keyboardShortcuts !== undefined)
       body["keyboard_shortcuts"] = req.keyboardShortcuts;
+    if (req.onboardingComplete !== undefined)
+      body["onboarding_complete"] = req.onboardingComplete;
 
     const raw = await this.api.patch<UserPreferencesRaw>(
       "/api/preferences",
       body,
+    );
+    return map(raw);
+  }
+
+  /**
+   * POST /api/me/onboarding/complete — idempotent flip of
+   * `onboarding_complete=true`. Implemented as a dedicated endpoint so the
+   * wizard can call it without re-sending the rest of the preference
+   * surface (and so analytics can attribute the completion cleanly).
+   */
+  async markOnboardingComplete(): Promise<UserPreferences> {
+    const raw = await this.api.post<UserPreferencesRaw>(
+      "/api/me/onboarding/complete",
+      {},
     );
     return map(raw);
   }

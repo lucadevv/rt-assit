@@ -63,7 +63,7 @@ const variantStyle: Record<ButtonVariant, CSSProperties> = {
     border: "1px solid transparent",
   },
   danger: {
-    background: "oklch(58% 0.22 25)",
+    background: "var(--color-danger)",
     color: "#ffffff",
     border: "1px solid transparent",
   },
@@ -87,7 +87,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   const style: CSSProperties = {
     ...sizeStyle[size],
     ...variantStyle[variant],
-    fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+    fontFamily: "var(--font-inter)",
     fontWeight: 700,
     letterSpacing: "0",
     borderRadius: 50,

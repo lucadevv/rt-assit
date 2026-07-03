@@ -41,7 +41,7 @@ export function RecBadge({ durationSeconds, active }: RecBadgeProps): JSX.Elemen
         background: active ? "var(--color-lime)" : "var(--color-bg-soft)",
         color: active ? "var(--color-lime-ink)" : "var(--color-text-mid)",
         border: active ? "1px solid transparent" : "1px solid var(--color-border)",
-        fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+        fontFamily: "var(--font-mono)",
         fontSize: 12,
         fontWeight: 700,
         letterSpacing: "0.6px",

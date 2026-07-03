@@ -19,7 +19,11 @@ from typing import Literal, Optional
 logger = logging.getLogger(__name__)
 
 EnvMode = Literal["dev", "prod"]
-AuthMode = Literal["dev", "prod"]
+# AUTH_MODE must match the values accepted by auth_factory.build_auth_validator().
+# 'dev'    → DevModeValidator (synthesises dev_default user)
+# 'custom' → CustomAuthValidator (HS256 JWT minted by /api/auth/* routes)
+# 'clerk'  → ClerkJWTValidator (legacy/external Clerk JWKS)
+AuthMode = Literal["dev", "custom", "clerk"]
 
 
 def _split_csv(raw: str) -> list[str]:
@@ -174,10 +178,16 @@ except ModuleNotFoundError:  # pragma: no cover — fallback path
         @classmethod
         def _from_env(cls) -> "Settings":
             env_val = _env("ENV", "dev")
-            auth_val = _env("AUTH_MODE", "dev")
+            auth_val = _env("AUTH_MODE", "dev").lower()
+            # Mirror the Literal narrowing of the pydantic-backed path so
+            # unknown AUTH_MODE values fall back to 'dev' (safe default)
+            # rather than silently corrupting the auth_factory dispatch.
+            normalized_auth: AuthMode = (
+                auth_val if auth_val in ("dev", "custom", "clerk") else "dev"  # type: ignore[assignment]
+            )
             return cls(
                 env="prod" if env_val == "prod" else "dev",
-                auth_mode="prod" if auth_val == "prod" else "dev",
+                auth_mode=normalized_auth,
                 log_level=_env("LOG_LEVEL", "INFO"),
                 fernet_key=_env_optional("FERNET_KEY"),
                 cors_allowed_origins=_split_csv(

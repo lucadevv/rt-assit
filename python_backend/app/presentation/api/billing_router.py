@@ -511,6 +511,7 @@ async def admin_run_cron(
         build_check_trial_expiration_use_case,
         build_cleanup_abandoned_sessions_use_case,
         build_cleanup_expired_recordings_use_case,
+        build_refresh_tokens_repository,
         build_reset_monthly_usage_use_case,
     )
 
@@ -532,6 +533,9 @@ async def admin_run_cron(
         )
         result = await uc.execute()
         return {"job": job_name, **result}
+    if job_name == "prune_expired_refresh_tokens":
+        deleted = build_refresh_tokens_repository().prune_expired()
+        return {"job": job_name, "deleted_count": deleted}
     raise HTTPException(status_code=404, detail=f"job {job_name} no encontrado")
 
 

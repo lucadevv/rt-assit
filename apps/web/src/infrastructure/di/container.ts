@@ -29,11 +29,13 @@
 import { useMemo } from "react";
 import { useAuthAdapter } from "@/infrastructure/auth/auth-factory";
 import { FetchApiClient } from "@/infrastructure/http/api-client";
+import { useAuthStore } from "@/application/stores/auth.store";
 import { SessionsApiAdapter } from "@/infrastructure/http/sessions-api-adapter";
 import { SpeakersApiAdapter } from "@/infrastructure/http/speakers-api-adapter";
 import { DocumentsApiAdapter } from "@/infrastructure/http/documents-api-adapter";
 import { PersonasApiAdapter } from "@/infrastructure/http/personas-api-adapter";
 import { SessionMaterialsApiAdapter } from "@/infrastructure/http/session-materials-api-adapter";
+import { PreMeetingNotesApiAdapter } from "@/infrastructure/http/pre-meeting-notes-api-adapter";
 import { PreferencesApiAdapter } from "@/infrastructure/http/preferences-api-adapter";
 import { IntegrationsApiAdapter } from "@/infrastructure/http/integrations-api-adapter";
 import { OAuthApiAdapter } from "@/infrastructure/http/oauth-api-adapter";
@@ -70,6 +72,9 @@ import { UnlinkPersonaDocumentUseCase } from "@/application/use-cases/unlink-per
 import { ListSessionMaterialsUseCase } from "@/application/use-cases/list-session-materials";
 import { CreateSessionMaterialUseCase } from "@/application/use-cases/create-session-material";
 import { DeleteSessionMaterialUseCase } from "@/application/use-cases/delete-session-material";
+import { GeneratePreMeetingNoteUseCase } from "@/application/use-cases/generate-pre-meeting-note";
+import { CreatePreMeetingNoteUseCase } from "@/application/use-cases/create-pre-meeting-note";
+import { GetPreMeetingNoteForSessionUseCase } from "@/application/use-cases/get-pre-meeting-note-for-session";
 import { GetDashboardStatsUseCase } from "@/application/use-cases/get-dashboard-stats";
 import { ListRecentSessionsUseCase } from "@/application/use-cases/list-recent-sessions";
 import { ListSessionsUseCase } from "@/application/use-cases/list-sessions";
@@ -78,6 +83,7 @@ import { DocumentPipAdapter } from "@/infrastructure/pip/document-pip-adapter";
 import { TogglePipOverlayUseCase } from "@/application/use-cases/toggle-pip-overlay";
 import { GetPreferencesUseCase } from "@/application/use-cases/get-preferences";
 import { UpdatePreferencesUseCase } from "@/application/use-cases/update-preferences";
+import { MarkOnboardingCompleteUseCase } from "@/application/use-cases/mark-onboarding-complete";
 import { UpdateUserProfileUseCase } from "@/application/use-cases/update-user-profile";
 import { DeleteUserDataUseCase } from "@/application/use-cases/delete-user-data";
 import { ListIntegrationsUseCase } from "@/application/use-cases/list-integrations";
@@ -112,6 +118,10 @@ import { ListSessionShareLinksUseCase } from "@/application/use-cases/list-sessi
 import { RevokeShareLinkUseCase } from "@/application/use-cases/revoke-share-link";
 import { createAnalytics } from "@/infrastructure/analytics/analytics-factory";
 import { TrackAnalyticsEventUseCase } from "@/application/use-cases/track-analytics-event";
+import { AdminInvitationsApiAdapter } from "@/infrastructure/http/admin-invitations-api-adapter";
+import { InviteBetaUserUseCase } from "@/application/use-cases/invite-beta-user";
+import { ListInvitationsUseCase } from "@/application/use-cases/list-invitations";
+import type { AdminInvitationsApiPort } from "@/application/ports/admin-invitations-api.port";
 import type { AnalyticsPort } from "@/application/ports/analytics.port";
 import type { RecordingsApiPort } from "@/application/ports/recordings-api.port";
 import type { ShareApiPort } from "@/application/ports/share-api.port";
@@ -133,6 +143,7 @@ import type { SpeakersApiPort } from "@/application/ports/speakers-api.port";
 import type { DocumentsApiPort } from "@/application/ports/documents-api.port";
 import type { PersonasApiPort } from "@/application/ports/personas-api.port";
 import type { SessionMaterialsApiPort } from "@/application/ports/session-materials-api.port";
+import type { PreMeetingNotesApiPort } from "@/application/ports/pre-meeting-notes-api.port";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8767";
@@ -195,6 +206,12 @@ export interface SusurraContainer {
   createSessionMaterial: CreateSessionMaterialUseCase;
   deleteSessionMaterial: DeleteSessionMaterialUseCase;
 
+  // Pre-Interview Wizard
+  preMeetingNotesApi: PreMeetingNotesApiPort;
+  generatePreMeetingNote: GeneratePreMeetingNoteUseCase;
+  createPreMeetingNote: CreatePreMeetingNoteUseCase;
+  getPreMeetingNoteForSession: GetPreMeetingNoteForSessionUseCase;
+
   // F4 — Home Dashboard (computed views over sessions)
   getDashboardStats: GetDashboardStatsUseCase;
   listRecentSessions: ListRecentSessionsUseCase;
@@ -213,6 +230,7 @@ export interface SusurraContainer {
   usersApi: UsersApiPort;
   getPreferences: GetPreferencesUseCase;
   updatePreferences: UpdatePreferencesUseCase;
+  markOnboardingComplete: MarkOnboardingCompleteUseCase;
   updateUserProfile: UpdateUserProfileUseCase;
   deleteUserData: DeleteUserDataUseCase;
   listIntegrations: ListIntegrationsUseCase;
@@ -261,6 +279,11 @@ export interface SusurraContainer {
   // F9 — Polish + A11Y + Observability
   analytics: AnalyticsPort;
   trackAnalyticsEvent: TrackAnalyticsEventUseCase;
+
+  // Admin — founder-only invitations workflow
+  adminInvitationsApi: AdminInvitationsApiPort;
+  inviteBetaUser: InviteBetaUserUseCase;
+  listInvitations: ListInvitationsUseCase;
 }
 
 export function useContainer(): SusurraContainer {
@@ -268,12 +291,25 @@ export function useContainer(): SusurraContainer {
 
   return useMemo<SusurraContainer>(() => {
     const state = auth.getState();
+    // `getToken` is present only on the clerk adapter (Bearer flow). The
+    // cookie-based custom adapter and dev adapter omit it — cookies travel
+    // via `credentials: "include"` on every request.
     const getToken =
       state.status === "authenticated" ? state.getToken : undefined;
 
     const apiClient: ApiClient = new FetchApiClient({
       baseUrl: API_BASE,
       ...(getToken ? { getToken } : {}),
+      onSessionExpired: () => {
+        // Refresh-after-401 itself failed → session is gone. Cookies were
+        // already cleared by the server (or expired); just reset in-memory
+        // state and hard-navigate so Next router cache is bypassed and the
+        // auth-gated layout re-evaluates from scratch.
+        useAuthStore.getState().reset();
+        if (typeof window !== "undefined") {
+          window.location.href = "/sign-in";
+        }
+      },
     });
 
     const sessionsApi = new SessionsApiAdapter(apiClient);
@@ -281,6 +317,7 @@ export function useContainer(): SusurraContainer {
     const documentsApi = new DocumentsApiAdapter(apiClient, API_BASE, getToken);
     const personasApi = new PersonasApiAdapter(apiClient);
     const sessionMaterialsApi = new SessionMaterialsApiAdapter(apiClient);
+    const preMeetingNotesApi = new PreMeetingNotesApiAdapter(apiClient);
     const preferencesApi = new PreferencesApiAdapter(apiClient);
     const integrationsApi = new IntegrationsApiAdapter(apiClient);
     const oauthApi = new OAuthApiAdapter(apiClient);
@@ -289,6 +326,7 @@ export function useContainer(): SusurraContainer {
     const billingApi = new BillingApiAdapter(apiClient);
     const recordingsApi = new RecordingsApiAdapter(apiClient);
     const shareApi = new ShareApiAdapter(apiClient);
+    const adminInvitationsApi = new AdminInvitationsApiAdapter(apiClient);
 
     // AudioCaptureStrategy selection (currently hard-coded to tab-share).
     //
@@ -364,6 +402,17 @@ export function useContainer(): SusurraContainer {
       createSessionMaterial: new CreateSessionMaterialUseCase(sessionMaterialsApi),
       deleteSessionMaterial: new DeleteSessionMaterialUseCase(sessionMaterialsApi),
 
+      preMeetingNotesApi,
+      generatePreMeetingNote: new GeneratePreMeetingNoteUseCase(
+        preMeetingNotesApi,
+      ),
+      createPreMeetingNote: new CreatePreMeetingNoteUseCase(
+        preMeetingNotesApi,
+      ),
+      getPreMeetingNoteForSession: new GetPreMeetingNoteForSessionUseCase(
+        preMeetingNotesApi,
+      ),
+
       getDashboardStats: new GetDashboardStatsUseCase(sessionsApi),
       listRecentSessions: new ListRecentSessionsUseCase(sessionsApi),
       listSessions: new ListSessionsUseCase(sessionsApi),
@@ -377,6 +426,7 @@ export function useContainer(): SusurraContainer {
       usersApi,
       getPreferences: new GetPreferencesUseCase(preferencesApi),
       updatePreferences: new UpdatePreferencesUseCase(preferencesApi),
+      markOnboardingComplete: new MarkOnboardingCompleteUseCase(preferencesApi),
       updateUserProfile: new UpdateUserProfileUseCase(usersApi),
       deleteUserData: new DeleteUserDataUseCase(usersApi),
       listIntegrations: new ListIntegrationsUseCase(integrationsApi),
@@ -421,6 +471,10 @@ export function useContainer(): SusurraContainer {
 
       analytics,
       trackAnalyticsEvent: new TrackAnalyticsEventUseCase(analytics),
+
+      adminInvitationsApi,
+      inviteBetaUser: new InviteBetaUserUseCase(adminInvitationsApi),
+      listInvitations: new ListInvitationsUseCase(adminInvitationsApi),
     };
   }, [auth]);
 }

@@ -123,7 +123,7 @@ export function EndedState({ session }: EndedStateProps): JSX.Element {
               display: "inline-flex",
               alignItems: "center",
               gap: 8,
-              fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+              fontFamily: "var(--font-mono)",
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.6px",
@@ -233,7 +233,7 @@ function SummaryItem({ label, value, accent }: SummaryItemProps): JSX.Element {
     >
       <span
         style={{
-          fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+          fontFamily: "var(--font-mono)",
           fontSize: 10,
           fontWeight: 700,
           letterSpacing: "0.6px",

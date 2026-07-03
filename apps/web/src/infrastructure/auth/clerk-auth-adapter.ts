@@ -18,9 +18,14 @@ import { useMemo } from "react";
 import { useAuth as useClerkAuth, useUser as useClerkUser } from "@clerk/nextjs";
 import type { AuthPort, AuthState } from "@/application/ports/auth.port";
 import type { User } from "@/domain/entities/user";
+import { useAuthStore } from "@/application/stores/auth.store";
 
-export const AUTH_MODE: "dev" | "clerk" =
-  (process.env.NEXT_PUBLIC_AUTH_MODE as "dev" | "clerk" | undefined) ?? "dev";
+export const AUTH_MODE: "dev" | "clerk" | "custom" =
+  (process.env.NEXT_PUBLIC_AUTH_MODE as
+    | "dev"
+    | "clerk"
+    | "custom"
+    | undefined) ?? "dev";
 
 export function useClerkAuthAdapter(): AuthPort {
   const { isLoaded, isSignedIn, signOut, getToken } = useClerkAuth();
@@ -59,6 +64,7 @@ export function useClerkAuthAdapter(): AuthPort {
           languagePreferred: "es-419",
           createdAt: createdAtIso ?? nowIso,
           updatedAt: nowIso,
+          isAdmin: false,
         };
 
         return {
@@ -69,6 +75,7 @@ export function useClerkAuthAdapter(): AuthPort {
       },
       async signOut() {
         await signOut();
+        useAuthStore.getState().reset();
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

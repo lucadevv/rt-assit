@@ -62,7 +62,7 @@ export function OnboardingShell({
             borderRadius: 9999,
             padding: "8px 14px",
             color: "var(--color-text-mid)",
-            fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+            fontFamily: "var(--font-inter)",
             fontSize: 12,
             fontWeight: 600,
             cursor: "pointer",
@@ -103,7 +103,7 @@ export function OnboardingShell({
                   height: 32,
                   borderRadius: 9999,
                   fontFamily:
-                    "var(--font-jetbrains, ui-monospace), monospace",
+                    "var(--font-mono)",
                   fontSize: 13,
                   fontWeight: 800,
                   background: isActive || isDone

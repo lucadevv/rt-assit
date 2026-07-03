@@ -18,7 +18,13 @@ export type AuthState =
   | {
       status: "authenticated";
       user: User;
-      getToken: () => Promise<string | null>;
+      /**
+       * Optional Bearer-token getter. Present only for adapters that
+       * still use Bearer auth (currently `clerk-auth-adapter`). The
+       * cookie-based `custom-auth-adapter` (Fase D) omits this — cookies
+       * authenticate every request automatically via `credentials: "include"`.
+       */
+      getToken?: () => Promise<string | null>;
     }
   | { status: "unauthenticated" };
 

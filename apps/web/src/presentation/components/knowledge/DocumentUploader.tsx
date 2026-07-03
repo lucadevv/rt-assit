@@ -68,7 +68,7 @@ const fieldLabelStyle: React.CSSProperties = {
   letterSpacing: "0.6px",
   color: "var(--color-text-mid)",
   marginBottom: 6,
-  fontFamily: "var(--font-jet-brains-mono), ui-monospace, monospace",
+  fontFamily: "var(--font-mono)",
 };
 
 export function DocumentUploader({
@@ -318,13 +318,13 @@ export function DocumentUploader({
                 style={{
                   width: "100%",
                   fontFamily:
-                    "var(--font-dm-sans), system-ui, sans-serif",
+                    "var(--font-inter)",
                   fontSize: 14,
                   fontWeight: 500,
                   padding: "12px 14px",
                   borderRadius: 12,
                   border: "1px solid var(--color-border)",
-                  background: "var(--color-bg)",
+                  background: "var(--color-bg-soft)",
                   color: "var(--color-text)",
                   outline: "none",
                   resize: "vertical",
@@ -521,7 +521,7 @@ function FilePanel({
             justifyContent: "space-between",
             gap: 12,
             padding: "12px 16px",
-            background: "var(--color-bg)",
+            background: "var(--color-bg-soft)",
             borderRadius: 14,
             border: "1px solid var(--color-border)",
             cursor: "default",
@@ -559,7 +559,7 @@ function FilePanel({
           role="alert"
           style={{
             marginTop: 12,
-            color: "oklch(58% 0.22 25)",
+            color: "var(--color-danger)",
             fontSize: 13,
           }}
         >

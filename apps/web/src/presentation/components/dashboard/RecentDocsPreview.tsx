@@ -13,10 +13,17 @@
 
 import type { JSX } from "react";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import { Card, Button, Spinner } from "@/design-system/primitives";
 import { useDocuments } from "@/presentation/hooks/use-documents";
 import { DOC_TYPE_LABELS } from "@/domain/entities/document";
 import { ArrowRightIcon } from "@/design-system/icons";
+import {
+  fadeUpSubtle,
+  staggerContainer,
+  transitionFast,
+  viewportOnce,
+} from "@/lib/motion-presets";
 
 const PREVIEW_LIMIT = 3;
 
@@ -24,6 +31,14 @@ export function RecentDocsPreview(): JSX.Element {
   const router = useRouter();
   const { documents, loading } = useDocuments();
   const recent = documents.slice(0, PREVIEW_LIMIT);
+  const shouldReduceMotion = useReducedMotion();
+  const reveal = shouldReduceMotion
+    ? { initial: false as const, animate: "visible" as const }
+    : {
+        initial: "hidden" as const,
+        whileInView: "visible" as const,
+        viewport: viewportOnce,
+      };
 
   return (
     <section aria-labelledby="recent-docs-heading">
@@ -99,8 +114,10 @@ export function RecentDocsPreview(): JSX.Element {
           </div>
         </Card>
       ) : (
-        <div
+        <motion.div
           role="list"
+          variants={staggerContainer(0, 0.06)}
+          {...reveal}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
@@ -108,10 +125,12 @@ export function RecentDocsPreview(): JSX.Element {
           }}
         >
           {recent.map((doc) => (
-            <button
+            <motion.button
               key={doc.id}
               type="button"
               role="listitem"
+              variants={fadeUpSubtle}
+              transition={transitionFast}
               onClick={() => router.push("/app/knowledge")}
               style={{
                 width: "100%",
@@ -129,7 +148,7 @@ export function RecentDocsPreview(): JSX.Element {
                 <p
                   style={{
                     fontFamily:
-                      "var(--font-jetbrains-mono), ui-monospace, monospace",
+                      "var(--font-mono)",
                     fontSize: 11,
                     fontWeight: 600,
                     color: "var(--color-text-mid)",
@@ -163,9 +182,9 @@ export function RecentDocsPreview(): JSX.Element {
                   {doc.sizeChars.toLocaleString("es-419")} caracteres
                 </p>
               </Card>
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       )}
     </section>
   );

@@ -119,7 +119,7 @@ export function RecordingCard({
             <span
               style={{
                 fontFamily:
-                  "var(--font-jetbrains-mono), ui-monospace, monospace",
+                  "var(--font-mono)",
                 fontSize: 11,
                 color: "var(--color-text-dim)",
                 letterSpacing: "0.4px",
@@ -165,7 +165,7 @@ export function RecordingCard({
           <span
             style={{
               fontFamily:
-                "var(--font-jetbrains-mono), ui-monospace, monospace",
+                "var(--font-mono)",
               fontSize: 14,
               fontWeight: 700,
               color: "var(--color-text)",

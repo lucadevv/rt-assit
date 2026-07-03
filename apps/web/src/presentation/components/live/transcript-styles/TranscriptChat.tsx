@@ -6,11 +6,13 @@
  */
 
 import type { JSX } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useSessionStore } from "@/application/stores/session.store";
 import { SpeakerLabel } from "../SpeakerLabel";
 import type { Transcript } from "@/domain/entities/transcript";
 import type { Speaker } from "@/domain/entities/speaker";
 import type { ScenarioColor } from "@/domain/entities/scenario";
+import { easeOut } from "@/lib/motion-presets";
 
 const colorBg: Record<ScenarioColor, string> = {
   cyan: "var(--color-cyan)",
@@ -59,9 +61,21 @@ function Bubble({
   const speaker = ensureSpeakerForKey(speakers, key);
   const color = speakerColor(speaker);
   const justify = align === "right" ? "flex-end" : "flex-start";
+  const shouldReduceMotion = useReducedMotion();
+  // Interim bubbles update in place — never animate their entrance.
+  // Final bubbles fade-and-slide once on arrival.
+  const motionProps =
+    isInterim || shouldReduceMotion
+      ? {}
+      : {
+          initial: { opacity: 0, y: 6 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.16, ease: easeOut },
+        };
 
   return (
-    <div
+    <motion.div
+      {...motionProps}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -121,7 +135,7 @@ function Bubble({
       >
         {transcript.content}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

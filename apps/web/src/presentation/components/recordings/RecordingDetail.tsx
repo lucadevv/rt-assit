@@ -302,7 +302,7 @@ export function RecordingDetail({
               <span
                 style={{
                   fontFamily:
-                    "var(--font-jetbrains-mono), ui-monospace, monospace",
+                    "var(--font-mono)",
                   fontSize: 11,
                   color: "var(--color-text-dim)",
                 }}
@@ -312,7 +312,7 @@ export function RecordingDetail({
               <span
                 style={{
                   fontFamily:
-                    "var(--font-jetbrains-mono), ui-monospace, monospace",
+                    "var(--font-mono)",
                   fontSize: 11,
                   color: "var(--color-text-dim)",
                 }}

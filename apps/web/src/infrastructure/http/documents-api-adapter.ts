@@ -177,6 +177,7 @@ export class DocumentsApiAdapter implements DocumentsApiPort {
 
     const res = await fetch(`${this.baseUrl}/api/documents`, {
       method: "POST",
+      credentials: "include",
       headers,
       body: fd,
     });

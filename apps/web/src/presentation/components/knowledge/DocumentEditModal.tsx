@@ -152,7 +152,7 @@ export function DocumentEditModal({
                   color: "var(--color-text-mid)",
                   marginBottom: 6,
                   fontFamily:
-                    "var(--font-jet-brains-mono), ui-monospace, monospace",
+                    "var(--font-mono)",
                 }}
               >
                 Título
@@ -176,7 +176,7 @@ export function DocumentEditModal({
                   color: "var(--color-text-mid)",
                   marginBottom: 6,
                   fontFamily:
-                    "var(--font-jet-brains-mono), ui-monospace, monospace",
+                    "var(--font-mono)",
                 }}
               >
                 Contenido
@@ -188,13 +188,13 @@ export function DocumentEditModal({
                 rows={14}
                 style={{
                   width: "100%",
-                  fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+                  fontFamily: "var(--font-inter)",
                   fontSize: 14,
                   fontWeight: 500,
                   padding: "12px 14px",
                   borderRadius: 12,
                   border: "1px solid var(--color-border)",
-                  background: "var(--color-bg)",
+                  background: "var(--color-bg-soft)",
                   color: "var(--color-text)",
                   outline: "none",
                   resize: "vertical",

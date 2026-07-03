@@ -4,6 +4,7 @@
  * TopBar — global app header.
  *
  * Layout (left → right):
+ *  - Hamburger button (only visible below 1024px, opens the sidebar overlay)
  *  - Logo (wordmark)
  *  - REC badge (only visible when recording)
  *  - Spacer
@@ -20,17 +21,23 @@
  */
 
 import type { JSX } from "react";
-import { Logo, Button } from "@/design-system/primitives";
-import { ShareIcon } from "@/design-system/icons";
+import { Logo } from "@/design-system/primitives";
+import { HamburgerIcon } from "@/design-system/icons";
 import { UserMenu } from "./UserMenu";
 import { RecBadge } from "./RecBadge";
 import { KbStatusIndicator } from "@/presentation/components/knowledge/KbStatusIndicator";
+import { useIsMobile } from "@/presentation/hooks/use-media-query";
+import { useSidebarStore } from "@/application/stores/sidebar.store";
 
 interface TopBarProps {
   isRecording?: boolean;
 }
 
 export function TopBar({ isRecording = false }: TopBarProps): JSX.Element {
+  const isMobile = useIsMobile();
+  const isOpen = useSidebarStore((s) => s.isOpen);
+  const openSidebar = useSidebarStore((s) => s.open);
+
   return (
     <header
       style={{
@@ -44,7 +51,33 @@ export function TopBar({ isRecording = false }: TopBarProps): JSX.Element {
         height: 64,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {isMobile && (
+          <button
+            type="button"
+            onClick={openSidebar}
+            aria-label="Abrir menú de navegación"
+            aria-expanded={isOpen}
+            aria-controls="sidebar-overlay"
+            className="susurra-btn"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              border: "1px solid transparent",
+              background: "transparent",
+              color: "var(--color-text)",
+              cursor: "pointer",
+              transition: "background-color 120ms ease",
+              padding: 0,
+            }}
+          >
+            <HamburgerIcon size={20} />
+          </button>
+        )}
         <Logo size={32} variant="wordmark" />
       </div>
 
@@ -62,15 +95,6 @@ export function TopBar({ isRecording = false }: TopBarProps): JSX.Element {
 
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <KbStatusIndicator />
-        <Button
-          variant="ghost"
-          size="sm"
-          leadingIcon={<ShareIcon size={14} />}
-          disabled
-          title="Compartir (Premium · disponible en F7)"
-        >
-          Compartir
-        </Button>
         <UserMenu />
       </div>
     </header>

@@ -4,12 +4,15 @@ DB path is configurable via DB_PATH env var. Defaults to /app/data/rtassist.db
 (matches docker-compose volume mount). The path is preserved so the existing
 DB and its rows survive the refactor."""
 import json
+import logging
 import os
 import sqlite3
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = Path(os.getenv("DB_PATH", "/app/data/rtassist.db"))
 
@@ -569,6 +572,72 @@ def init_db() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_meetings_user
                 ON meetings(user_id, created_at DESC);
+
+            -- Pre-Interview Wizard: AI-generated prep attached to a session
+            -- BEFORE it starts. Optional, 1:1 with sessions (UNIQUE on
+            -- session_id). The two arrays are stored as JSON-encoded TEXT
+            -- to keep the schema flat and the read-path a single SELECT.
+            CREATE TABLE IF NOT EXISTS pre_meeting_notes (
+                id TEXT PRIMARY KEY,
+                session_id TEXT NOT NULL UNIQUE
+                    REFERENCES sessions(id) ON DELETE CASCADE,
+                user_id TEXT NOT NULL
+                    REFERENCES users(id) ON DELETE CASCADE,
+                role_target TEXT NOT NULL,
+                company_context TEXT NOT NULL,
+                job_description TEXT,
+                probing_questions TEXT NOT NULL,
+                prep_checklist TEXT NOT NULL,
+                raw_user_input TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_pre_meeting_notes_user
+                ON pre_meeting_notes(user_id, created_at DESC);
+
+            -- Auth Fase A: opaque refresh tokens -------------------------
+            -- Each row is a server-issued refresh credential. ``id`` is
+            -- both the random hex32 cookie value AND the PK — there is
+            -- no separate "token hash" column because the opaque id IS
+            -- the secret (cookie HttpOnly + DB-only validation = no
+            -- offline brute-force surface). Rotated on every successful
+            -- /api/auth/refresh: old row gets ``revoked_at = now()`` and
+            -- a brand-new row is inserted. Indexes accelerate the
+            -- per-user revoke-all path and the housekeeping prune of
+            -- expired rows.
+            CREATE TABLE IF NOT EXISTS refresh_tokens (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                revoked_at TEXT,
+                user_agent TEXT,
+                ip TEXT,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id
+                ON refresh_tokens(user_id);
+            CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at
+                ON refresh_tokens(expires_at);
+
+            -- Admin Invitations: founder-issued beta invites -----------
+            -- One row per invite. ``user_id`` references the freshly
+            -- provisioned ``users`` row; ON DELETE SET NULL so historical
+            -- invites survive GDPR deletes (audit trail). ``email_sent_at``
+            -- is NULL when Resend was down at invite time — the founder
+            -- can detect those rows from the UI and resend manually.
+            CREATE TABLE IF NOT EXISTS beta_invitations (
+                id TEXT PRIMARY KEY,
+                email TEXT NOT NULL,
+                user_id TEXT,
+                invited_at TEXT NOT NULL,
+                email_sent_at TEXT,
+                invited_by_user_id TEXT,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_beta_invitations_email
+                ON beta_invitations(email);
+            CREATE INDEX IF NOT EXISTS idx_beta_invitations_invited_at
+                ON beta_invitations(invited_at);
             """
         )
 
@@ -586,6 +655,18 @@ def init_db() -> None:
         if not _column_exists(cursor, "user_preferences", "audio_device_id"):
             cursor.execute(
                 "ALTER TABLE user_preferences ADD COLUMN audio_device_id TEXT"
+            )
+
+        # Onboarding wizard migration (idempotent): add onboarding_complete
+        # column to user_preferences. Default 0 (False) so every pre-existing
+        # row triggers the first-run wizard exactly once — the wizard's
+        # finish/skip action PATCHes the field to True so the redirect in
+        # (app)/layout.tsx stops firing. Stored as INTEGER (0/1) — SQLite
+        # has no native boolean type.
+        if not _column_exists(cursor, "user_preferences", "onboarding_complete"):
+            cursor.execute(
+                "ALTER TABLE user_preferences "
+                "ADD COLUMN onboarding_complete INTEGER NOT NULL DEFAULT 0"
             )
 
         # Wave 2A migration (idempotent): add is_primary column to documents
@@ -618,6 +699,39 @@ def init_db() -> None:
             cursor.execute(
                 "ALTER TABLE sessions ADD COLUMN meeting_id TEXT"
             )
+
+        # Phase 2 (custom JWT auth) — add password_hash + is_admin columns
+        # to ``users``. Both nullable / default-0 so all pre-existing rows
+        # (Clerk users, dev_default) keep working. ``password_hash`` is set
+        # only when AUTH_MODE=custom and the founder creates users via
+        # POST /api/admin/users. ``is_admin`` flags the founder accounts
+        # that may call admin endpoints. Idempotent via PRAGMA gate.
+        if not _column_exists(cursor, "users", "password_hash"):
+            cursor.execute(
+                "ALTER TABLE users ADD COLUMN password_hash TEXT"
+            )
+        if not _column_exists(cursor, "users", "is_admin"):
+            cursor.execute(
+                "ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0"
+            )
+
+        # AUTH_MODE=custom backward-compat advisory. Users created via the
+        # dev/Clerk paths have no password_hash → can't log in via the
+        # custom POST /api/auth/login until the founder recreates them
+        # through POST /api/admin/users. Log once at startup so the
+        # operator sees the implication without blocking boot.
+        if os.getenv("AUTH_MODE", "dev").strip().lower() == "custom":
+            row = cursor.execute(
+                "SELECT COUNT(*) FROM users WHERE password_hash IS NULL"
+            ).fetchone()
+            count = int(row[0]) if row else 0
+            if count > 0:
+                logger.warning(
+                    "[migration] %d users without password_hash detected — "
+                    "they will not be able to log in via AUTH_MODE=custom. "
+                    "Use POST /api/admin/users to recreate them.",
+                    count,
+                )
 
         # B0 migration (idempotent): seed dev_default user + remap legacy
         # documents.user_id='default' -> 'dev_default'.
@@ -979,12 +1093,34 @@ def _seed_email_templates(conn: sqlite3.Connection) -> None:
 
 
 @contextmanager
-def get_conn() -> Iterator[sqlite3.Connection]:
+def get_conn(*, begin_transaction: bool = False) -> Iterator[sqlite3.Connection]:
+    """Open a SQLite connection.
+
+    When ``begin_transaction=True`` the connection is opened with
+    ``isolation_level=None`` (autocommit OFF in our usage pattern — we
+    explicitly BEGIN/COMMIT) and an explicit ``BEGIN IMMEDIATE`` is
+    issued. The context manager then commits on clean exit OR rolls back
+    on any exception, so multi-statement ops (e.g. refresh-token rotate:
+    revoke-old + insert-new) either fully apply or fully revert. This is
+    the only safe primitive when atomicity is load-bearing — sqlite3's
+    default per-connection autocommit is NOT enough because each cursor
+    op auto-commits before the next runs."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     # Foreign keys must be enabled per-connection in SQLite for cascades to work.
     conn.execute("PRAGMA foreign_keys = ON")
+    if begin_transaction:
+        # IMMEDIATE acquires the write lock up-front so concurrent
+        # writers don't race past the first INSERT and then deadlock
+        # at commit time (sqlite's classic SQLITE_BUSY at COMMIT).
+        conn.execute("BEGIN IMMEDIATE")
     try:
         yield conn
+        if begin_transaction:
+            conn.commit()
+    except Exception:
+        if begin_transaction:
+            conn.rollback()
+        raise
     finally:
         conn.close()

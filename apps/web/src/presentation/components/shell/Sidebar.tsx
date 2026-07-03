@@ -27,6 +27,7 @@ import {
   MonitorIcon,
   SettingsIcon,
   UserIcon,
+  XIcon,
 } from "@/design-system/icons";
 import { Badge } from "@/design-system/primitives";
 import { useAuthStore } from "@/application/stores/auth.store";
@@ -49,6 +50,17 @@ const NAV_ITEMS: readonly NavItem[] = [
   { href: "/app/recordings", label: "Grabaciones", icon: <FilmIcon size={18} /> },
   { href: "/app/settings", label: "Configuración", icon: <SettingsIcon size={18} /> },
   { href: "/app/billing", label: "Facturación", icon: <CardIcon size={18} /> },
+];
+
+// Conditional items — appended only when the auth store reports the
+// matching capability. Founder-only routes live here so the layout
+// gracefully degrades for non-admin accounts.
+const ADMIN_NAV_ITEMS: readonly NavItem[] = [
+  {
+    href: "/app/admin/invitations",
+    label: "Invitaciones",
+    icon: <UserIcon size={18} />,
+  },
 ];
 
 const TIER_LABEL: Record<UserTier, string> = {
@@ -75,9 +87,19 @@ function isActiveRoute(pathname: string, item: NavItem): boolean {
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-export function Sidebar(): JSX.Element {
+interface SidebarProps {
+  onItemClick?: () => void;
+  showCloseButton?: boolean;
+}
+
+export function Sidebar({
+  onItemClick,
+  showCloseButton = false,
+}: SidebarProps = {}): JSX.Element {
   const pathname = usePathname() ?? "";
   const tier = useAuthStore((s) => s.user?.tier ?? "free");
+  const isAdmin = useAuthStore((s) => s.user?.isAdmin ?? false);
+  const navItems = isAdmin ? [...NAV_ITEMS, ...ADMIN_NAV_ITEMS] : NAV_ITEMS;
 
   return (
     <nav
@@ -91,8 +113,43 @@ export function Sidebar(): JSX.Element {
         flexDirection: "column",
         padding: "16px 12px",
         gap: 4,
+        height: "100%",
+        boxSizing: "border-box",
       }}
     >
+      {showCloseButton && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: 8,
+          }}
+        >
+          <button
+            type="button"
+            onClick={onItemClick}
+            aria-label="Cerrar menú"
+            autoFocus
+            className="susurra-btn"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              background: "transparent",
+              border: "1px solid var(--color-border)",
+              color: "var(--color-text)",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            <XIcon size={16} />
+          </button>
+        </div>
+      )}
+
       <ul
         style={{
           listStyle: "none",
@@ -104,12 +161,13 @@ export function Sidebar(): JSX.Element {
           flex: 1,
         }}
       >
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = isActiveRoute(pathname, item);
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
+                onClick={onItemClick}
                 aria-current={active ? "page" : undefined}
                 style={{
                   display: "flex",
@@ -117,7 +175,7 @@ export function Sidebar(): JSX.Element {
                   gap: 12,
                   padding: "10px 14px",
                   borderRadius: 12,
-                  fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+                  fontFamily: "var(--font-inter)",
                   fontSize: 14,
                   fontWeight: active ? 700 : 500,
                   color: active ? "var(--color-text)" : "var(--color-text-mid)",

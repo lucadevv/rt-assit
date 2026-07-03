@@ -16,7 +16,7 @@
  *  - Description (textarea)
  *  - Icon picker (preset emoji grid)
  *  - Tone (radio: professional / casual / formal)
- *  - Scenario preferido (dropdown — 8 scenarios)
+ *  - Scenario preferido (dropdown — dev-focused scenarios)
  *  - Custom instructions (textarea)
  *  - Documentos vinculados — radio "Identidad" / "Conocimiento" / "No incluir"
  *    per document. The link/unlink calls are fired immediately when the
@@ -27,16 +27,27 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, JSX } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button, Input, Select } from "@/design-system/primitives";
+import {
+  easeOut,
+  easeOutQuart,
+  modalEntrance,
+} from "@/lib/motion-presets";
 import type {
   Persona,
   PersonaTone,
 } from "@/domain/entities/persona";
+import { PERSONA_TONE_LABELS } from "@/domain/entities/persona";
 import {
-  PERSONA_ICON_PRESETS,
-  PERSONA_TONE_LABELS,
-} from "@/domain/entities/persona";
+  PERSONA_ICONS,
+  PERSONA_ICON_KEYS,
+  PERSONA_ICON_LABELS,
+  isPersonaIconKey,
+  type PersonaIconKey,
+} from "@/design-system/primitives/icons/PersonaIcons";
 import type { Scenario } from "@/domain/entities/scenario";
+import { filterDevFocused } from "@/domain/entities/scenario";
 import type { DocumentListItem } from "@/domain/entities/document";
 import { DOC_TYPE_ICONS, DOC_TYPE_LABELS } from "@/domain/entities/document";
 
@@ -76,6 +87,7 @@ export function PersonaEditorModal({
   onSave,
 }: PersonaEditorModalProps): JSX.Element | null {
   const isEdit = persona !== null;
+  const shouldReduceMotion = useReducedMotion();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -87,6 +99,24 @@ export function PersonaEditorModal({
     new Map(),
   );
   const [error, setError] = useState<string | null>(null);
+
+  // Phase 4: only dev-focused scenarios are exposed for picking. Personas
+  // already linked to a legacy scenario keep that link visible so the
+  // dropdown doesn't appear blank — they just won't be able to switch
+  // BACK to a hidden scenario.
+  const pickerScenarios = useMemo<Scenario[]>(() => {
+    const devOnly = filterDevFocused(scenarios);
+    if (
+      scenarioId &&
+      !devOnly.some((s) => s.id === scenarioId)
+    ) {
+      const legacy = scenarios.find((s) => s.id === scenarioId);
+      if (legacy) {
+        return [...devOnly, legacy];
+      }
+    }
+    return devOnly;
+  }, [scenarios, scenarioId]);
 
   // Seed fields when modal opens or persona changes.
   useEffect(() => {
@@ -101,7 +131,7 @@ export function PersonaEditorModal({
     } else {
       setName("");
       setDescription("");
-      setIcon(PERSONA_ICON_PRESETS[0] ?? null);
+      setIcon("user");
       setTone(null);
       setScenarioId(null);
       setCustomInstructions("");
@@ -161,10 +191,13 @@ export function PersonaEditorModal({
   if (!open) return null;
 
   return (
-    <div
+    <motion.div
       onClick={(e) => {
         if (e.target === e.currentTarget && !submitting) onClose();
       }}
+      initial={shouldReduceMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: easeOut }}
       style={{
         position: "fixed",
         inset: 0,
@@ -177,17 +210,21 @@ export function PersonaEditorModal({
         padding: "5vh 16px",
       }}
     >
-      <div
+      <motion.div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={isEdit ? "Editar persona" : "Nueva persona"}
         tabIndex={-1}
+        initial={shouldReduceMotion ? false : "hidden"}
+        animate="visible"
+        variants={modalEntrance}
+        transition={{ duration: 0.24, ease: easeOutQuart }}
         style={{
           width: "100%",
           maxWidth: 720,
           maxHeight: "90vh",
-          background: "var(--color-bg)",
+          background: "var(--color-bg-warm)",
           color: "var(--color-text)",
           border: "1px solid var(--color-border)",
           borderRadius: 22,
@@ -304,7 +341,7 @@ export function PersonaEditorModal({
               aria-label="Escenario preferido"
             >
               <option value="">Sin preferencia</option>
-              {scenarios.map((s) => (
+              {pickerScenarios.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
                 </option>
@@ -391,8 +428,8 @@ export function PersonaEditorModal({
             {submitting ? "Guardando…" : isEdit ? "Guardar cambios" : "Crear persona"}
           </Button>
         </footer>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -411,7 +448,7 @@ function Field({
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <label
         style={{
-          fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+          fontFamily: "var(--font-mono)",
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.6px",
@@ -456,10 +493,10 @@ function TextArea({
       rows={rows}
       placeholder={placeholder}
       style={{
-        fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+        fontFamily: "var(--font-inter)",
         fontSize: 14,
         fontWeight: 500,
-        background: "var(--color-bg)",
+        background: "var(--color-bg-soft)",
         color: "var(--color-text)",
         border: "1px solid var(--color-border)",
         borderRadius: 12,
@@ -480,42 +517,52 @@ function IconPicker({
   value: string | null;
   onChange: (next: string) => void;
 }): JSX.Element {
+  const selectedKey: PersonaIconKey | null =
+    value && isPersonaIconKey(value) ? value : null;
   return (
     <div
       role="radiogroup"
       aria-label="Ícono de la persona"
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(48px, 1fr))",
+        gridTemplateColumns: "repeat(4, 1fr)",
         gap: 8,
       }}
     >
-      {PERSONA_ICON_PRESETS.map((emoji) => {
-        const selected = emoji === value;
+      {PERSONA_ICON_KEYS.map((key) => {
+        const Icon = PERSONA_ICONS[key];
+        const selected = selectedKey === key;
         const style: CSSProperties = {
           appearance: "none",
-          border: `2px solid ${selected ? "var(--color-text)" : "var(--color-border)"}`,
-          background: selected ? "var(--color-bg-soft)" : "var(--color-bg)",
+          border: `2px solid ${selected ? "var(--color-coral)" : "var(--color-border)"}`,
+          background: selected
+            ? "var(--color-coral-soft)"
+            : "var(--color-bg-soft)",
+          color: selected
+            ? "var(--color-coral-deep)"
+            : "var(--color-text-mid)",
           borderRadius: 12,
-          padding: 8,
-          fontSize: 22,
-          lineHeight: 1,
+          padding: 0,
+          width: "100%",
+          height: 44,
           cursor: "pointer",
-          aspectRatio: "1 / 1",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          transition: "background 150ms var(--ease-out, ease-out), border-color 150ms var(--ease-out, ease-out), color 150ms var(--ease-out, ease-out)",
         };
         return (
           <button
-            key={emoji}
+            key={key}
             type="button"
             role="radio"
             aria-checked={selected}
-            onClick={() => onChange(emoji)}
+            aria-label={PERSONA_ICON_LABELS[key]}
+            title={PERSONA_ICON_LABELS[key]}
+            onClick={() => onChange(key)}
             style={style}
           >
-            <span aria-hidden>{emoji}</span>
+            <Icon size={20} />
           </button>
         );
       })}
@@ -559,7 +606,7 @@ function ToneRadio({
               borderRadius: 12,
               padding: "10px 12px",
               cursor: "pointer",
-              fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+              fontFamily: "var(--font-inter)",
               fontSize: 13,
               fontWeight: 600,
             }}
@@ -646,7 +693,7 @@ function DocLinkRow({
         alignItems: "center",
         gap: 12,
         padding: "8px 12px",
-        background: "var(--color-bg)",
+        background: "var(--color-bg-soft)",
         border: "1px solid var(--color-border)",
         borderRadius: 10,
       }}
@@ -700,7 +747,7 @@ function DocLinkRow({
               onClick={() => onChange(opt.value)}
               style={{
                 appearance: "none",
-                fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+                fontFamily: "var(--font-inter)",
                 fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: "0.4px",

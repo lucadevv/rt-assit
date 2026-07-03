@@ -39,6 +39,10 @@ export const colors = {
   primary: "#FF7B5C",
   primaryHover: "#E55A3F",
 
+  // Danger — semantic red for invalid inputs, delete actions, errors
+  danger: "oklch(58% 0.22 25)",
+  dangerSoft: "oklch(58% 0.22 25 / 0.1)",
+
   // -----------------------------------------------------------------
   // Legacy hero gradient — rebranded onto carbon tones (still used by
   // .susurra-hero-gradient and HeroBanner).

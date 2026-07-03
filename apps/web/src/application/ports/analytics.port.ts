@@ -20,7 +20,14 @@ export type AnalyticsEvent =
   | {
       name: "onboarding_step";
       step: number;
-      action: "completed" | "skipped";
+      /**
+       * - `completed`: the user advanced past this step normally.
+       * - `skipped`: the user opted out of an optional step (e.g. CV upload).
+       * - `back`: the user navigated backwards in the wizard.
+       * - `cancelled`: the user abandoned the wizard mid-flow (does not
+       *   mark onboarding complete on the backend).
+       */
+      action: "completed" | "skipped" | "back" | "cancelled";
     }
   | { name: "cv_uploaded"; method: "file" | "url" | "text" }
   | { name: "session_start"; scenario: string }

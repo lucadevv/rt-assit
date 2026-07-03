@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 
 type SectionTitleProps = {
-  eyebrow: string;
+  eyebrow?: string;
   heading: ReactNode;
   description?: ReactNode;
   invert?: boolean;
+  align?: 'left' | 'center';
 };
 
 /**
@@ -16,24 +17,28 @@ export function SectionTitle({
   heading,
   description,
   invert = false,
+  align = 'center',
 }: SectionTitleProps) {
+  const isLeft = align === 'left';
   return (
-    <div className="text-center mb-16">
-      <span
-        className="block"
-        style={{
-          fontSize: '11px',
-          fontWeight: 600,
-          color: invert ? 'var(--color-coral)' : 'var(--color-coral-deep)',
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          marginBottom: '16px',
-        }}
-      >
-        {eyebrow}
-      </span>
+    <div className={`${isLeft ? '' : 'text-center'} mb-16`}>
+      {eyebrow && (
+        <span
+          className="block"
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            color: invert ? 'var(--color-coral)' : 'var(--color-coral-text)',
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            marginBottom: '16px',
+          }}
+        >
+          {eyebrow}
+        </span>
+      )}
       <h2
-        className="mx-auto"
+        className={isLeft ? '' : 'mx-auto'}
         style={{
           fontFamily: 'var(--font-sans)',
           fontWeight: 500,
@@ -41,7 +46,7 @@ export function SectionTitle({
           lineHeight: 1.05,
           letterSpacing: '-0.035em',
           maxWidth: '720px',
-          margin: '0 auto',
+          margin: isLeft ? '0' : '0 auto',
           color: invert ? 'var(--color-ivory)' : 'var(--color-carbon)',
         }}
       >
@@ -49,14 +54,14 @@ export function SectionTitle({
       </h2>
       {description && (
         <p
-          className="mx-auto"
+          className={isLeft ? '' : 'mx-auto'}
           style={{
             fontSize: '17px',
             color: invert
               ? 'rgba(245,239,230,0.7)'
               : 'var(--text-dim)',
             maxWidth: '540px',
-            margin: '20px auto 0',
+            margin: isLeft ? '20px 0 0' : '20px auto 0',
             lineHeight: 1.55,
           }}
         >
@@ -72,11 +77,9 @@ export function SerifEm({ children }: { children: ReactNode }) {
   return (
     <span
       style={{
-        fontFamily: 'var(--font-serif)',
-        fontStyle: 'italic',
-        color: 'var(--color-coral)',
-        fontWeight: 400,
-        fontSize: 'clamp(36px, 5.5vw, 60px)',
+        fontFamily: 'var(--font-sans)',
+        fontWeight: 600,
+        color: 'var(--color-coral-text)',
       }}
     >
       {children}

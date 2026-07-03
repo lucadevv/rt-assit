@@ -29,6 +29,7 @@ from app.infrastructure.persistence.sqlite.db import init_db
 from app.presentation.api import (
     admin_router,
     api_keys_router,
+    auth_router,
     billing_router,
     documents_router,
     health_router,
@@ -37,16 +38,19 @@ from app.presentation.api import (
     notifications_router,
     oauth_router,
     personas_router,
+    pre_meeting_notes_router,
     recordings_router,
     scenarios_router,
     session_materials_router,
     sessions_router,
     share_router,
+    waitlist_router,
 )
 from app.presentation.deps import (
     build_check_trial_expiration_use_case,
     build_cleanup_abandoned_sessions_use_case,
     build_cleanup_expired_recordings_use_case,
+    build_refresh_tokens_repository,
     build_reset_monthly_usage_use_case,
     build_send_dunning_email_use_case,
     build_send_trial_expiring_email_use_case,
@@ -207,6 +211,29 @@ def _register_cron_jobs() -> None:
         minutes=5,
     )
 
+    # Auth Sprint A — prune refresh_tokens rows whose expires_at is in the
+    # past. Daily at 02:15 UTC (offset from the 02:00/03:00 jobs to avoid
+    # a simultaneous I/O burst). Idempotent + cheap (single DELETE WHERE
+    # over an indexed column) so re-runs on missed schedules are fine.
+    def _prune_expired_refresh_tokens():
+        try:
+            deleted = build_refresh_tokens_repository().prune_expired()
+            logger.info(
+                f"[Cron] prune_expired_refresh_tokens deleted={deleted}"
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.warning(
+                f"[Cron] prune_expired_refresh_tokens failed: {e}"
+            )
+
+    scheduler.register_job(
+        job_id="prune_expired_refresh_tokens",
+        func=_prune_expired_refresh_tokens,
+        trigger="cron",
+        hour=2,
+        minute=15,
+    )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -249,23 +276,23 @@ def create_app() -> FastAPI:
 
     # CORS — origins driven by env. Defaults are the dev frontends (Vite
     # 5173, Next 3000). In prod the deployer sets ALLOWED_ORIGINS to a
-    # comma-separated list of trusted origins. The wildcard "*" is only
-    # honoured if the deployer explicitly opts in, and in that case
-    # allow_credentials is forced to False (browsers reject "*" combined
-    # with credentials, and the pairing is a CSRF/credential-exfil vector).
+    # comma-separated list of trusted origins. We HARD-FAIL on the
+    # ('*' + credentials) combo because it's a known CSRF / credential-
+    # exfil vector and silently downgrading at runtime hides the misconfig
+    # from operators (the backend would boot "fine" but cookies wouldn't
+    # work, leading to a confusing debug session in prod).
     raw_origins = os.getenv(
         "ALLOWED_ORIGINS",
         "http://localhost:5173,http://localhost:3000",
     )
     cors_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
     cors_allow_credentials = True
-    if "*" in cors_origins:
-        logger.warning(
-            "[CORS] ALLOWED_ORIGINS contains '*' — disabling "
-            "allow_credentials to comply with browsers' CORS spec. Set "
-            "explicit origins for production with credentials."
+    if "*" in cors_origins and cors_allow_credentials:
+        raise RuntimeError(
+            "CORS misconfiguration: ALLOWED_ORIGINS='*' is incompatible with "
+            "credential-based auth (cookies/Bearer). Set ALLOWED_ORIGINS to "
+            "an explicit list of origins OR disable credentials."
         )
-        cors_allow_credentials = False
 
     app.add_middleware(
         CORSMiddleware,
@@ -280,6 +307,7 @@ def create_app() -> FastAPI:
         return {"message": "RTAssist API", "ws": "/ws"}
 
     app.include_router(health_router.router, tags=["health"])
+    app.include_router(auth_router.router, tags=["auth"])
     app.include_router(me_router.router, tags=["users"])
     app.include_router(documents_router.router, tags=["documents"])
     app.include_router(scenarios_router.router, tags=["scenarios"])
@@ -296,6 +324,10 @@ def create_app() -> FastAPI:
     app.include_router(
         session_materials_router.router, tags=["session-materials"]
     )
+    app.include_router(
+        pre_meeting_notes_router.router, tags=["pre-meeting-notes"]
+    )
+    app.include_router(waitlist_router.router, tags=["waitlist"])
     app.include_router(ws_router.router, tags=["websocket"])
 
     return app

@@ -15,8 +15,14 @@
  */
 
 import { useEffect, useRef, useState, type JSX } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/design-system/primitives";
 import { FocusTrap } from "@/presentation/components/a11y/FocusTrap";
+import {
+  easeOut,
+  easeOutQuart,
+  modalEntrance,
+} from "@/lib/motion-presets";
 import { formatDateLong } from "./utils";
 
 interface CancelConfirmModalProps {
@@ -39,6 +45,7 @@ export function CancelConfirmModal({
 }: CancelConfirmModalProps): JSX.Element | null {
   const [reason, setReason] = useState("");
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (open) setReason("");
@@ -64,10 +71,13 @@ export function CancelConfirmModal({
   if (!open) return null;
 
   return (
-    <div
+    <motion.div
       onClick={(e) => {
         if (e.target === e.currentTarget && !pending) onClose();
       }}
+      initial={shouldReduceMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: easeOut }}
       style={{
         position: "fixed",
         inset: 0,
@@ -81,17 +91,21 @@ export function CancelConfirmModal({
       }}
     >
       <FocusTrap onEscape={pending ? undefined : onClose}>
-      <div
+      <motion.div
         ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="cancel-sub-title"
         tabIndex={-1}
+        initial={shouldReduceMotion ? false : "hidden"}
+        animate="visible"
+        variants={modalEntrance}
+        transition={{ duration: 0.24, ease: easeOutQuart }}
         style={{
           width: "100%",
           maxWidth: 520,
           maxHeight: "90vh",
-          background: "var(--color-bg)",
+          background: "var(--color-bg-warm)",
           color: "var(--color-text)",
           border: "1px solid var(--color-border)",
           borderRadius: 22,
@@ -195,12 +209,12 @@ export function CancelConfirmModal({
             disabled={pending}
             style={{
               width: "100%",
-              fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+              fontFamily: "var(--font-inter)",
               fontSize: 13,
               padding: "10px 12px",
               borderRadius: 12,
               border: "1px solid var(--color-border)",
-              background: "var(--color-bg)",
+              background: "var(--color-bg-soft)",
               color: "var(--color-text)",
               resize: "vertical",
               outline: "none",
@@ -250,8 +264,8 @@ export function CancelConfirmModal({
             {pending ? "Cancelando…" : "Cancelar suscripción"}
           </Button>
         </footer>
-      </div>
+      </motion.div>
       </FocusTrap>
-    </div>
+    </motion.div>
   );
 }

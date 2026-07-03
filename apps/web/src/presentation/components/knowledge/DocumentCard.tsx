@@ -67,7 +67,8 @@ export function DocumentCard({
         border: isPrimary
           ? "1px solid var(--color-amber)"
           : "1px solid var(--color-border)",
-        background: "var(--color-bg)",
+        background: "var(--color-bg-soft)",
+        boxShadow: "var(--shadow-card-1)",
         transition: "transform 120ms ease, box-shadow 120ms ease",
       }}
     >
@@ -200,8 +201,8 @@ export function DocumentCard({
           type="button"
           style={{
             ...buttonStyle,
-            color: "oklch(58% 0.22 25)",
-            borderColor: "oklch(58% 0.22 25 / 0.5)",
+            color: "var(--color-danger)",
+            borderColor: "color-mix(in srgb, var(--color-danger) 50%, transparent)",
           }}
           onClick={onDelete}
         >

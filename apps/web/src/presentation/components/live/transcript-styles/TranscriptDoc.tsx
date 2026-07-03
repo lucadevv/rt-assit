@@ -89,7 +89,7 @@ export function TranscriptDoc(): JSX.Element {
         display: "flex",
         flexDirection: "column",
         gap: 4,
-        fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+        fontFamily: "var(--font-inter)",
       }}
     >
       {transcripts.map((t, idx) => (

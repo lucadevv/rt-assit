@@ -4,22 +4,25 @@
  * useCurrentUser — exposes the authenticated user (with full domain shape:
  * tier, language, timestamps) to components.
  *
- * Flow on mount:
- *   1. Read AuthPort state synchronously.
- *   2. If `loading` -> mark store loading.
- *   3. If `unauthenticated` -> clear store.
- *   4. If `authenticated` -> immediately seed store with the auth-port user
- *      (id, email, name, avatar — no tier yet) so the UI renders fast,
- *      then fetch `/api/me` to enrich with tier/language/etc.
+ * Fase D cookie-only flow:
+ *   1. On mount, unconditionally fetch GET /api/me — cookies are the source
+ *      of truth in the browser, so we always ask the backend "who am I?".
+ *   2. 200 → seed store with full user, fire analytics identify (+ optional
+ *      signup event if account was just created).
+ *   3. 401 → FetchApiClient interceptor tries /refresh; if that fails it
+ *      calls onSessionExpired which hard-navigates to /sign-in. We catch
+ *      SessionExpiredError silently and clear local store.
+ *   4. Other errors → clear store; AuthGuard sees user=null and redirects.
  *
- * The store is the source of truth for the rest of the app. This hook
- * exists once at the top of the protected layout so the network call
- * happens exactly once per session, not per consumer.
+ * Single-fire via `fetchedRef` — StrictMode dev double-mount must not
+ * trigger two /api/me calls.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useContainer } from "@/infrastructure/di/container";
 import { useAuthStore } from "@/application/stores/auth.store";
+import { NetworkError } from "@/infrastructure/http/network.error";
+import { SessionExpiredError } from "@/infrastructure/http/session-expired.error";
 import type { User } from "@/domain/entities/user";
 
 interface UseCurrentUserResult {
@@ -27,56 +30,44 @@ interface UseCurrentUserResult {
   loading: boolean;
 }
 
-/**
- * "Recently created" threshold for emitting `signup` analytics. We
- * intentionally pick a small window (5 min) so refreshing the page right
- * after signup still fires the event, but a normal repeat-visitor never
- * gets miscounted as a new signup.
- */
 const SIGNUP_THRESHOLD_MS = 5 * 60 * 1000;
 
+/**
+ * Stale window for /api/me. While the timestamp in the auth store is
+ * younger than this, the hook skips the fetch. This dedups across:
+ *  - StrictMode dev double-mount
+ *  - HMR-driven component remounts
+ *  - Concurrent mounts of useCurrentUser in sibling subtrees
+ *
+ * 30s is short enough that any tier/language change reaches the UI
+ * promptly, and long enough that HMR-mass-remount won't hammer the API.
+ */
+const ME_STALE_MS = 30_000;
+
 export function useCurrentUser(): UseCurrentUserResult {
-  const { auth, getCurrentUser, analytics } = useContainer();
+  const { getCurrentUser, analytics } = useContainer();
   const user = useAuthStore((s) => s.user);
   const loading = useAuthStore((s) => s.loading);
   const setUser = useAuthStore((s) => s.setUser);
   const setLoading = useAuthStore((s) => s.setLoading);
-
-  // StrictMode dedup with reactive key: keyed by `${status}:${user_id}` so
-  // login/logout/user-switch still triggers the enrich fetch, but the dev
-  // double-mount does not re-call /api/me.
-  const lastFetchKeyRef = useRef<string | null>(null);
+  const setLastFetchedMeAt = useAuthStore((s) => s.setLastFetchedMeAt);
 
   useEffect(() => {
-    const state = auth.getState();
-    const fetchKey = `${state.status}:${
-      state.status === "authenticated" ? state.user.id : ""
-    }`;
-    if (lastFetchKeyRef.current === fetchKey) return;
-    lastFetchKeyRef.current = fetchKey;
-
-    if (state.status === "loading") {
-      setLoading(true);
+    // Dedup via store-level timestamp — survives remount because Zustand
+    // is module-singleton. Reads the freshest value via getState().
+    const lastFetched = useAuthStore.getState().lastFetchedMeAt;
+    if (lastFetched !== null && Date.now() - lastFetched < ME_STALE_MS) {
       return;
     }
-    if (state.status === "unauthenticated") {
-      setUser(null);
-      // Drop any cached identity in the analytics provider on logout.
-      analytics.reset();
-      return;
-    }
+    // Mark fetch as inflight BEFORE the await so concurrent mounts skip.
+    setLastFetchedMeAt(Date.now());
 
-    // Optimistic seed so the UI shows the avatar/name immediately.
-    setUser(state.user);
-
-    // Enrich with backend record (tier, language_preferred, real timestamps).
+    setLoading(true);
     getCurrentUser
       .execute()
       .then((enriched) => {
         setUser(enriched);
-        // Stamp analytics identity (tier as trait — used in funnels).
         analytics.identify(enriched.id, { tier: enriched.tier });
-        // Detect "just signed up" by comparing createdAt with now.
         const createdAt = enriched.createdAt
           ? new Date(enriched.createdAt).getTime()
           : null;
@@ -89,11 +80,28 @@ export function useCurrentUser(): UseCurrentUserResult {
         }
       })
       .catch((err: unknown) => {
+        // Roll back the timestamp so a retry can happen sooner than the
+        // stale window (e.g. user clicks back to /app after a flaky net).
+        setLastFetchedMeAt(null);
+        if (err instanceof NetworkError) {
+          // Transport failure — backend unreachable. Keep the current
+          // user state intact (don't sign the user out) so the UI stays
+          // mounted; a future user action will retry naturally.
+          // eslint-disable-next-line no-console -- intentional dev signal
+          console.warn("[susurra] /api/me unreachable (network)");
+          return;
+        }
+        if (err instanceof SessionExpiredError) {
+          setUser(null);
+          analytics.reset();
+          return;
+        }
         // eslint-disable-next-line no-console -- surfaced to dev console for debugging
         console.error("[susurra] failed to fetch /api/me:", err);
-        // Keep the optimistic user — UI already has a usable identity.
+        setUser(null);
+        analytics.reset();
       });
-  }, [auth, getCurrentUser, setUser, setLoading, analytics]);
+  }, [getCurrentUser, setUser, setLoading, setLastFetchedMeAt, analytics]);
 
   return { user, loading };
 }

@@ -53,6 +53,7 @@ class UpdateUserPreferencesUseCase:
         auto_delete_recordings_days: Optional[int] = None,
         keyboard_shortcuts: Optional[dict[str, Any]] = None,
         audio_device_id: Any = UNSET,
+        onboarding_complete: Optional[bool] = None,
     ) -> UserPreferences:
         if theme is not None and theme not in VALID_THEMES:
             raise ValidationError(f"Tema inválido: {theme}")
@@ -112,6 +113,8 @@ class UpdateUserPreferencesUseCase:
         ]
         if audio_device_id_set:
             changed_fields.append("audio_device_id")
+        if onboarding_complete is not None:
+            changed_fields.append("onboarding_complete")
         if changed_fields:
             logger.info(
                 "preferences.updated user_id=%s fields=%s",
@@ -131,4 +134,5 @@ class UpdateUserPreferencesUseCase:
             keyboard_shortcuts=keyboard_shortcuts,
             audio_device_id=audio_device_value,
             audio_device_id_set=audio_device_id_set,
+            onboarding_complete=onboarding_complete,
         )

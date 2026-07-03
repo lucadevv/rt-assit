@@ -32,6 +32,14 @@ export interface TweaksState {
   isHidden: boolean;
   pipMode: PipMode;
   pipTheme: PipTheme;
+  /**
+   * Show the live conversation-metrics card (talk ratio / WPM /
+   * monologue alert) inside Sidebar layout. Default ON because the
+   * metrics actively help self-correct during interviews. Users who
+   * prefer zen mode (no on-screen analytics) can turn this off from
+   * the Tweaks panel; their choice persists across reloads.
+   */
+  showConversationMetrics: boolean;
 }
 
 export const LAYOUT_MODES: readonly LayoutMode[] = [

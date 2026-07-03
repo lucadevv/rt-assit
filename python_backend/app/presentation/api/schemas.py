@@ -6,7 +6,7 @@ plain dataclasses so they don't depend on Pydantic."""
 from datetime import datetime
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 from app.domain.entities.hint import Hint
 from app.domain.entities.integration import Integration
@@ -15,6 +15,7 @@ from app.domain.entities.payment_method import PaymentMethod
 from app.domain.entities.persisted_transcript import PersistedTranscript
 from app.domain.entities.persona import Persona
 from app.domain.entities.plan import Plan
+from app.domain.entities.pre_meeting_note import PreMeetingNote
 from app.domain.entities.session_material import SessionMaterial
 from app.domain.entities.promo_code import PromoCode
 from app.domain.entities.recording import Recording
@@ -89,6 +90,7 @@ class ScenarioSummary(BaseModel):
     doc_types: list[str]
     description: str = ""
     color: str = "lime"
+    is_dev_focused: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -105,6 +107,7 @@ class UserResponse(BaseModel):
     language_preferred: str
     created_at: datetime
     updated_at: datetime
+    is_admin: bool = False
 
     @classmethod
     def from_domain(cls, user: User) -> "UserResponse":
@@ -117,6 +120,7 @@ class UserResponse(BaseModel):
             language_preferred=user.language_preferred,
             created_at=user.created_at,
             updated_at=user.updated_at,
+            is_admin=user.is_admin,
         )
 
 
@@ -136,6 +140,7 @@ class UserPreferencesResponse(BaseModel):
     auto_delete_recordings_days: Optional[int] = None
     keyboard_shortcuts: dict[str, Any] = Field(default_factory=dict)
     audio_device_id: Optional[str] = None
+    onboarding_complete: bool = False
     updated_at: Optional[datetime] = None
 
     @classmethod
@@ -151,6 +156,7 @@ class UserPreferencesResponse(BaseModel):
             auto_delete_recordings_days=prefs.auto_delete_recordings_days,
             keyboard_shortcuts=prefs.keyboard_shortcuts,
             audio_device_id=prefs.audio_device_id,
+            onboarding_complete=prefs.onboarding_complete,
             updated_at=prefs.updated_at,
         )
 
@@ -161,7 +167,11 @@ class UpdatePreferencesRequest(BaseModel):
     ``audio_device_id`` admits explicit ``null`` to reset the field, so the
     router uses ``model_fields_set`` (Pydantic v2) to distinguish "missing
     from request" vs "explicit null". All other fields keep the
-    "None = unchanged" semantic."""
+    "None = unchanged" semantic.
+
+    ``onboarding_complete`` is flipped by the /app/onboarding wizard once
+    the user finishes (or explicitly skips) the first-run flow. Once True
+    it never flips back via this endpoint."""
 
     theme: Optional[str] = None
     density: Optional[str] = None
@@ -172,6 +182,7 @@ class UpdatePreferencesRequest(BaseModel):
     auto_delete_recordings_days: Optional[int] = None
     keyboard_shortcuts: Optional[dict[str, Any]] = None
     audio_device_id: Optional[str] = None
+    onboarding_complete: Optional[bool] = None
 
 
 class IntegrationResponse(BaseModel):
@@ -1080,3 +1091,155 @@ class CreateSessionMaterialRequest(BaseModel):
     title: Optional[str] = Field(default=None, max_length=500)
     content: Optional[str] = None
     source_url: Optional[str] = Field(default=None, max_length=2000)
+
+
+# ---------------------------------------------------------------------------
+# Pre-Interview Wizard — AI-generated prep attached to a session
+# ---------------------------------------------------------------------------
+
+
+class GeneratePreMeetingRequest(BaseModel):
+    """Generate (without persisting) — pre-session preview payload."""
+
+    scenario_id: str = Field(min_length=1, max_length=100)
+    persona_id: Optional[int] = None
+    role_target: str = Field(min_length=1, max_length=300)
+    company_context: str = Field(min_length=1, max_length=500)
+    job_description: Optional[str] = Field(default=None, max_length=8000)
+    raw_user_input: str = Field(min_length=1, max_length=4000)
+
+
+class GeneratePreMeetingResponse(BaseModel):
+    probing_questions: list[str]
+    prep_checklist: list[str]
+
+
+class CreatePreMeetingRequest(BaseModel):
+    """Persist after the user reviewed the generated output."""
+
+    session_id: str = Field(min_length=1, max_length=200)
+    role_target: str = Field(min_length=1, max_length=300)
+    company_context: str = Field(min_length=1, max_length=500)
+    job_description: Optional[str] = Field(default=None, max_length=8000)
+    probing_questions: list[str] = Field(default_factory=list, max_length=12)
+    prep_checklist: list[str] = Field(default_factory=list, max_length=12)
+    raw_user_input: str = Field(min_length=1, max_length=4000)
+
+
+class PreMeetingNoteResponse(BaseModel):
+    id: str
+    session_id: str
+    user_id: str
+    role_target: str
+    company_context: str
+    job_description: Optional[str] = None
+    probing_questions: list[str]
+    prep_checklist: list[str]
+    raw_user_input: str
+    created_at: datetime
+
+    @classmethod
+    def from_domain(cls, note: "PreMeetingNote") -> "PreMeetingNoteResponse":
+        return cls(
+            id=note.id,
+            session_id=note.session_id,
+            user_id=note.user_id,
+            role_target=note.role_target,
+            company_context=note.company_context,
+            job_description=note.job_description,
+            probing_questions=list(note.probing_questions),
+            prep_checklist=list(note.prep_checklist),
+            raw_user_input=note.raw_user_input,
+            created_at=note.created_at,
+        )
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 (custom JWT auth) — login + admin user provisioning
+# ---------------------------------------------------------------------------
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=1, max_length=200)
+
+
+class LoginUserPayload(BaseModel):
+    id: str
+    email: str
+    is_admin: bool
+
+
+class LoginResponse(BaseModel):
+    """Response shape for ``POST /api/auth/login``.
+
+    Auth Fase A: the canonical credential carriers are the HttpOnly
+    cookies set on the response (``susurra_access``, ``susurra_refresh``).
+    The ``access_token`` field stays in the body for backward compat
+    with legacy Bearer clients during the migration window — Fase D
+    will drop it and shrink the body to ``{ user }`` only."""
+
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+    expires_in: int
+    user: LoginUserPayload
+
+
+class RefreshResponse(BaseModel):
+    """Response shape for ``POST /api/auth/refresh``.
+
+    Identical shape to ``LoginResponse`` so the frontend's auth-port
+    adapter can treat both flows with one type. ``access_token`` here
+    is ALSO Bearer-compat only — the rotated refresh ships as a cookie."""
+
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+    expires_in: int
+    user: LoginUserPayload
+
+
+class CreateUserRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=12, max_length=200)
+    is_admin: bool = False
+    name: Optional[str] = Field(default=None, max_length=200)
+
+
+class CreateUserResponse(BaseModel):
+    id: str
+    email: str
+    is_admin: bool
+
+
+# ---------------------------------------------------------------------------
+# Admin Invitations (founder-only daily workflow)
+# ---------------------------------------------------------------------------
+
+
+class InviteBetaUserRequest(BaseModel):
+    email: EmailStr
+    is_admin: bool = False
+
+
+class InviteBetaUserResponse(BaseModel):
+    invitation_id: str
+    user_id: str
+    email: str
+    email_sent: bool
+
+
+class InvitationSummary(BaseModel):
+    """One row in the admin invitations list (newest-first).
+
+    ``has_logged_in`` is computed from the ``refresh_tokens`` table —
+    every successful login mints a row, so MAX(created_at) is the best
+    "user actually came back" signal available without instrumenting
+    the auth hot path."""
+
+    id: str
+    email: str
+    invited_at: datetime
+    email_sent: bool
+    has_logged_in: bool
+    last_login_at: Optional[datetime] = None
+    invited_by_user_id: Optional[str] = None

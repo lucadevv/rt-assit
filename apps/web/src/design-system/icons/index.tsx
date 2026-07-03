@@ -227,3 +227,13 @@ export function LogOutIcon({ size = 20, ...rest }: IconProps): JSX.Element {
     </svg>
   );
 }
+
+export function HamburgerIcon({ size = 20, ...rest }: IconProps): JSX.Element {
+  return (
+    <svg {...baseProps(size, rest)}>
+      <path d="M4 7h16" />
+      <path d="M4 12h16" />
+      <path d="M4 17h11" />
+    </svg>
+  );
+}

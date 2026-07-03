@@ -48,6 +48,12 @@ export interface UserPreferences {
   autoDeleteRecordingsDays: number | null;
   audioDeviceId: string | null;
   keyboardShortcuts: Record<string, string>;
+  /**
+   * True once the user finishes (or explicitly skips) the /app/onboarding
+   * wizard. Drives the redirect in `(app)/layout.tsx` — first-time users
+   * (False) are pushed to /app/onboarding; everyone else lands on /app.
+   */
+  onboardingComplete: boolean;
   updatedAt: string | null;
 }
 
@@ -68,6 +74,7 @@ export interface UpdateUserPreferences {
   autoDeleteRecordingsDays?: number | null;
   audioDeviceId?: string | null;
   keyboardShortcuts?: Record<string, string>;
+  onboardingComplete?: boolean;
 }
 
 export const VALID_THEMES: readonly ThemeMode[] = ["light", "dark", "system"];

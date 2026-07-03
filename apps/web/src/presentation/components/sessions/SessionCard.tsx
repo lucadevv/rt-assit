@@ -138,7 +138,7 @@ export function SessionCard({
             <span
               style={{
                 fontFamily:
-                  "var(--font-jetbrains-mono), ui-monospace, monospace",
+                  "var(--font-mono)",
               }}
             >
               {duration}

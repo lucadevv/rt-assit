@@ -160,7 +160,7 @@ export function usageColors(percent: number): UsageBarColors {
     };
   }
   return {
-    fill: "oklch(58% 0.22 25)", // danger red — same as Button danger variant
+    fill: "var(--color-danger)",
     background: "var(--color-bg-soft)",
   };
 }

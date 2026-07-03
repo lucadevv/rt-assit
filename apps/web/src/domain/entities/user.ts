@@ -30,4 +30,10 @@ export interface User {
   languagePreferred: string;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Founder flag. Backend sets this on the few accounts that may invoke
+   * admin endpoints (e.g. /api/admin/invitations). Defaults to `false`
+   * for every other account.
+   */
+  isAdmin: boolean;
 }

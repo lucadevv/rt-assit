@@ -17,8 +17,9 @@
  * refresh the list inline.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useContainer } from "@/infrastructure/di/container";
+import { useAuthStore } from "@/application/stores/auth.store";
 import { useBilling } from "./use-billing";
 import { useTierGate } from "./use-tier-gate";
 import type { FeatureAvailability } from "./use-tier-gate";
@@ -31,6 +32,14 @@ interface UseRecordingsResult {
   refresh: () => Promise<void>;
   tierGate: FeatureAvailability;
 }
+
+const RECORDINGS_STALE_MS = 30_000;
+
+// Module-scope dedup state — no Zustand store for recordings (data lives
+// in local state). Survives HMR remount the same way Zustand does.
+// `tierKey` is bundled so a tier flip (Free→Pro) bypasses the stale window.
+let recordingsLastFetchedAt: number | null = null;
+let recordingsLastTierKey: string | null = null;
 
 export function useRecordings(): UseRecordingsResult {
   const { listRecordings } = useContainer();
@@ -66,16 +75,28 @@ export function useRecordings(): UseRecordingsResult {
     }
   }, [listRecordings, tierGate.available]);
 
-  // StrictMode dedup with reactive key: tierGate.available flips from
-  // false → true once billing loads. We re-fetch only when the actual
-  // gate identity changes, not on dev-mode re-mounts.
-  const lastFetchKeyRef = useRef<string | null>(null);
+  // Gate fetch on authenticated user (auth store = single source of truth).
+  const isAuthed = useAuthStore((s) => s.user !== null);
+
+  // Dedup with stale window + tier-change override. A tier flip
+  // (Free→Pro after billing loads) bypasses the window and re-fetches;
+  // within the same tier, HMR remounts within 30s are deduped.
   const fetchKey = String(tierGate.available);
   useEffect(() => {
-    if (lastFetchKeyRef.current === fetchKey) return;
-    lastFetchKeyRef.current = fetchKey;
-    void refresh();
-  }, [fetchKey, refresh]);
+    if (!isAuthed) return;
+    if (
+      recordingsLastTierKey === fetchKey &&
+      recordingsLastFetchedAt !== null &&
+      Date.now() - recordingsLastFetchedAt < RECORDINGS_STALE_MS
+    ) {
+      return;
+    }
+    recordingsLastTierKey = fetchKey;
+    recordingsLastFetchedAt = Date.now();
+    void refresh().catch(() => {
+      recordingsLastFetchedAt = null;
+    });
+  }, [fetchKey, isAuthed, refresh]);
 
   return { recordings, loading, error, refresh, tierGate };
 }

@@ -33,7 +33,7 @@ export function Avatar({
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+    fontFamily: "var(--font-inter)",
     fontWeight: 700,
     fontSize: Math.round(size * 0.4),
     border: "2px solid var(--color-bg)",

@@ -20,11 +20,13 @@
 
 import { useCallback, useEffect, type JSX } from "react";
 import { Button, Card } from "@/design-system/primitives";
+import { AgentIcon, ScribeIcon } from "@/design-system/primitives/icons/ModeIcons";
 import { useTweaksStore } from "@/application/stores/tweaks.store";
 import { useSessionStore } from "@/application/stores/session.store";
 import { useScreenOcrStore } from "@/application/stores/screen-ocr.store";
 import { useAnalytics } from "@/presentation/hooks/use-analytics";
 import { useBilling } from "@/presentation/hooks/use-billing";
+import { OCR_DEBUG_ENABLED } from "@/lib/feature-flags";
 import {
   HINT_STYLES,
   LAYOUT_MODES,
@@ -96,7 +98,7 @@ function RadioGroup<T extends string>({
     >
       <div
         style={{
-          fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+          fontFamily: "var(--font-mono)",
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.6px",
@@ -134,7 +136,7 @@ function RadioGroup<T extends string>({
                 border: `1px solid ${active ? "transparent" : "var(--color-border)"}`,
                 background: active ? "var(--color-lime)" : "var(--color-bg)",
                 color: active ? "var(--color-lime-ink)" : "var(--color-text)",
-                fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+                fontFamily: "var(--font-inter)",
                 fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: "0.4px",
@@ -158,12 +160,18 @@ export function TweaksPanel(): JSX.Element {
   const pipOpacity = useTweaksStore((s) => s.pipOpacity);
   const pipMode = useTweaksStore((s) => s.pipMode);
   const pipTheme = useTweaksStore((s) => s.pipTheme);
+  const showConversationMetrics = useTweaksStore(
+    (s) => s.showConversationMetrics,
+  );
   const setLayout = useTweaksStore((s) => s.setLayout);
   const setHintStyle = useTweaksStore((s) => s.setHintStyle);
   const setTranscriptStyle = useTweaksStore((s) => s.setTranscriptStyle);
   const setPipOpacity = useTweaksStore((s) => s.setPipOpacity);
   const setPipMode = useTweaksStore((s) => s.setPipMode);
   const setPipTheme = useTweaksStore((s) => s.setPipTheme);
+  const setShowConversationMetrics = useTweaksStore(
+    (s) => s.setShowConversationMetrics,
+  );
   const ocrEnabled = useScreenOcrStore((s) => s.enabled);
   const setOcrEnabled = useScreenOcrStore((s) => s.setEnabled);
   // `mode` is fixed for the lifetime of the session — TweaksPanel shows
@@ -369,7 +377,19 @@ export function TweaksPanel(): JSX.Element {
         </>
       ) : null}
 
-      <OcrToggle enabled={ocrEnabled} onChange={onOcrToggle} />
+      {/* Conversation metrics toggle — only meaningful inside Sidebar
+          layout (the only surface where the metrics card currently
+          renders). Hidden in other layouts to keep the panel quiet. */}
+      {layout === "sidebar" ? (
+        <ConversationMetricsToggle
+          enabled={showConversationMetrics}
+          onChange={setShowConversationMetrics}
+        />
+      ) : null}
+
+      {OCR_DEBUG_ENABLED ? (
+        <OcrToggle enabled={ocrEnabled} onChange={onOcrToggle} />
+      ) : null}
 
       {sessionMode ? <ActiveModeLabel mode={sessionMode} /> : null}
 
@@ -389,6 +409,82 @@ export function TweaksPanel(): JSX.Element {
 }
 
 // ---------------------------------------------------------------
+// ConversationMetricsToggle — controls visibility of the live coaching
+// card (talk ratio / WPM / monologue alert) inside Sidebar layout.
+// Default ON because the metrics actively help; the toggle exists for
+// users who prefer a zen mode during high-stakes interviews.
+// ---------------------------------------------------------------
+
+interface ConversationMetricsToggleProps {
+  enabled: boolean;
+  onChange: (v: boolean) => void;
+}
+
+function ConversationMetricsToggle({
+  enabled,
+  onChange,
+}: ConversationMetricsToggleProps): JSX.Element {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.6px",
+          textTransform: "uppercase",
+          color: "var(--color-text-mid)",
+        }}
+      >
+        Métricas de conversación
+      </div>
+      <div
+        style={{
+          fontSize: 12,
+          lineHeight: 1.4,
+          color: "var(--color-text-dim)",
+        }}
+      >
+        Mostrá talk-ratio, ritmo y aviso de monólogo en vivo dentro del
+        modo sidebar. Apagalo si preferís cero distracciones durante la
+        entrevista.
+      </div>
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          cursor: "pointer",
+          padding: "8px 10px",
+          borderRadius: 8,
+          border: `1px solid ${enabled ? "transparent" : "var(--color-border)"}`,
+          background: enabled ? "var(--color-lime)" : "var(--color-bg)",
+          color: enabled ? "var(--color-lime-ink)" : "var(--color-text)",
+          transition: "background 120ms ease, color 120ms ease",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => onChange(e.target.checked)}
+          style={{ cursor: "pointer" }}
+        />
+        <span
+          style={{
+            fontFamily: "var(--font-inter)",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: "0.4px",
+          }}
+        >
+          {enabled ? "Activado" : "Activar métricas"}
+        </span>
+      </label>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------
 // OCR toggle (G1 — beta). Lives here so it shares the Tweaks panel
 // surface. The actual capture lifecycle is driven by useScreenOcr in
 // SidebarLayout when this flag flips on.
@@ -404,7 +500,7 @@ function OcrToggle({ enabled, onChange }: OcrToggleProps): JSX.Element {
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <div
         style={{
-          fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+          fontFamily: "var(--font-mono)",
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.6px",
@@ -448,7 +544,7 @@ function OcrToggle({ enabled, onChange }: OcrToggleProps): JSX.Element {
         />
         <span
           style={{
-            fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+            fontFamily: "var(--font-inter)",
             fontSize: 12,
             fontWeight: 700,
             letterSpacing: "0.4px",
@@ -486,7 +582,7 @@ function OpacitySlider({ value, onChange }: OpacitySliderProps): JSX.Element {
       >
         <span
           style={{
-            fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+            fontFamily: "var(--font-mono)",
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: "0.6px",
@@ -498,7 +594,7 @@ function OpacitySlider({ value, onChange }: OpacitySliderProps): JSX.Element {
         </span>
         <span
           style={{
-            fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+            fontFamily: "var(--font-mono)",
             fontSize: 11,
             fontWeight: 700,
             color: "var(--color-text)",
@@ -535,17 +631,21 @@ function OpacitySlider({ value, onChange }: OpacitySliderProps): JSX.Element {
 // mode they're in while looking at the panel.
 // ---------------------------------------------------------------
 
-const MODE_LABELS: Record<SessionMode, string> = {
-  agent: "⚡ Agente",
-  scribe: "\u{1F4DD} Scribe",
-};
+function renderModeLabel(mode: SessionMode): JSX.Element {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      {mode === "agent" ? <AgentIcon /> : <ScribeIcon />}
+      <span>{mode === "agent" ? "Agente" : "Scribe"}</span>
+    </span>
+  );
+}
 
 function ActiveModeLabel({ mode }: { mode: SessionMode }): JSX.Element {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <div
         style={{
-          fontFamily: "var(--font-jetbrains, ui-monospace), monospace",
+          fontFamily: "var(--font-mono)",
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.6px",
@@ -564,13 +664,13 @@ function ActiveModeLabel({ mode }: { mode: SessionMode }): JSX.Element {
           borderRadius: 10,
           background: "var(--color-bg-soft)",
           border: "1px solid var(--color-border)",
-          fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+          fontFamily: "var(--font-inter)",
           fontSize: 13,
           fontWeight: 700,
           color: "var(--color-text)",
         }}
       >
-        {MODE_LABELS[mode]}
+        {renderModeLabel(mode)}
       </div>
       <div
         style={{
